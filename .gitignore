@@ -1,0 +1,7 @@
+build.xml
+gen
+out
+*.swp
+local.properties
+.idea
+*.iml
