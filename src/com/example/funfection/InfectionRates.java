@@ -1,4 +1,4 @@
-package com.example.infect;
+package com.example.funfection;
 
 public enum InfectionRates {
     HIGH

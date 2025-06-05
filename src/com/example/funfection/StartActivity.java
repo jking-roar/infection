@@ -1,4 +1,4 @@
-package com.example.infect;
+package com.example.funfection;
 
 import android.app.Activity;
 import android.os.Bundle;
