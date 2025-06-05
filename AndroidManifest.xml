@@ -14,7 +14,7 @@
         </activity>
         <activity android:name=".MyVirusActivity">
             <intent-filter>
-                <action android:name="android.inte.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
