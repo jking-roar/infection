@@ -1,9 +1,9 @@
 package com.example.infect;
 
-import android.app.Activity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class StartActivity extends Activity {
+public class StartActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
