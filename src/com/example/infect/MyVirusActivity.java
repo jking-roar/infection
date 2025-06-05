@@ -1,10 +1,10 @@
 package com.example.infect;
 
-import android.app.Activity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
-public class MyVirusActivity extends Activity {
+public class MyVirusActivity extends AppCompatActivity {
 
     private TextView patientZero;
     private TextView infectedPopulation;
