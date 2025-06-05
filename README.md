@@ -1,3 +1,3 @@
-# infection
+# funfection
 
-Infect your friends with *fun*
+Infect your friends - with fun
