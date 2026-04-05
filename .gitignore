@@ -1,6 +1,9 @@
 build.xml
 gen
 out
+.gradle
+build
+app/build
 *.swp
 local.properties
 .idea

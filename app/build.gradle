@@ -1,0 +1,43 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.example.funfection'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.example.funfection'
+        minSdk 11
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), '../proguard-project.txt'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile '../AndroidManifest.xml'
+            java.srcDirs = ['../src']
+            res.srcDirs = ['../res']
+        }
+    }
+}
+
+dependencies {
+}
