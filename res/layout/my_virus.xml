@@ -2,18 +2,33 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
-
+              android:layout_height="match_parent"
+              android:padding="16dp">
 
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Patient Zero"
+            android:text="Virus"
+            />
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="32sp"
+            android:id="@+id/virusName"
+            android:textStyle="bold"
+            android:layout_gravity="right"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Carrier"
             />
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="60dip"
+            android:textSize="24sp"
             android:hint="Someone"
             android:id="@+id/patientZero" android:layout_gravity="right"/>
 
@@ -25,7 +40,7 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="40dip"
+            android:textSize="30sp"
             android:hint="720"
             android:id="@+id/infectionPopulation" android:layout_gravity="right"/>
 
@@ -37,16 +52,66 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="40dip"
+            android:textSize="30sp"
             android:hint="high"
             android:id="@+id/infectionRate" android:layout_gravity="right"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Family"
+            />
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:id="@+id/virusFamily"
+            android:layout_gravity="right"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Chaos"
+            />
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:id="@+id/virusChaos"
+            android:layout_gravity="right"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Genome"
+            />
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/virusGenome"
+            android:textSize="18sp" />
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Origin"
+            />
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/virusOrigin"
+            android:textSize="18sp" />
 
 
     <Button
             android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="Fix data"
-            android:onClick="onClickFixData"
+            android:layout_width="match_parent"
+            android:text="Back to lab"
+            android:onClick="onClose"
             android:layout_gravity="end"
             android:layout_marginTop="14sp"
             />
