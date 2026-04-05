@@ -1,10 +1,14 @@
-package com.example.funfection;
+package com.example.funfection.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.funfection.R;
+import com.example.funfection.data.VirusRepository;
+import com.example.funfection.model.Virus;
 
 public class MyVirusActivity extends AppCompatActivity {
 

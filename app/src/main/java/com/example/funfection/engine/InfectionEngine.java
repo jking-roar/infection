@@ -1,4 +1,9 @@
-package com.example.funfection;
+package com.example.funfection.engine;
+
+import com.example.funfection.model.Chaos;
+import com.example.funfection.model.Infectivity;
+import com.example.funfection.model.Resilience;
+import com.example.funfection.model.Virus;
 
 import java.util.ArrayList;
 import java.util.List;

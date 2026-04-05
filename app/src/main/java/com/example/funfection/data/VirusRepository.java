@@ -1,4 +1,7 @@
-package com.example.funfection;
+package com.example.funfection.data;
+
+import com.example.funfection.engine.VirusFactory;
+import com.example.funfection.model.Virus;
 
 import java.util.ArrayList;
 import java.util.Collections;

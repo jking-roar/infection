@@ -1,4 +1,4 @@
-package com.example.funfection;
+package com.example.funfection.model;
 
 import java.io.Serializable;
 

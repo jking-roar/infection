@@ -1,4 +1,4 @@
-package com.example.funfection;
+package com.example.funfection.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +13,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.funfection.R;
+import com.example.funfection.data.VirusRepository;
+import com.example.funfection.engine.InfectionEngine;
+import com.example.funfection.engine.VirusFactory;
+import com.example.funfection.model.Virus;
 
 import java.util.ArrayList;
 import java.util.List;

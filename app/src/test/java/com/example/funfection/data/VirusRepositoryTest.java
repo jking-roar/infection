@@ -1,4 +1,9 @@
-package com.example.funfection;
+package com.example.funfection.data;
+
+import com.example.funfection.model.Chaos;
+import com.example.funfection.model.Infectivity;
+import com.example.funfection.model.Resilience;
+import com.example.funfection.model.Virus;
 
 import org.junit.After;
 import org.junit.Before;
