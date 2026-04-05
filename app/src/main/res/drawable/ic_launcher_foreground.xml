@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+            android:gravity="center"
+            android:width="88dp"
+            android:height="88dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/launcher_orb" />
+        </shape>
+    </item>
+
+    <item
+            android:gravity="center_horizontal|center_vertical"
+            android:top="14dp"
+            android:left="20dp"
+            android:right="20dp"
+            android:bottom="14dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/launcher_orb_secondary" />
+        </shape>
+    </item>
+
+    <item
+            android:gravity="center"
+            android:width="18dp"
+            android:height="18dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/funfection_on_seed" />
+        </shape>
+    </item>
+</layer-list>

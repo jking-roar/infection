@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="funfection_seed">#102542</color>
+    <color name="funfection_accent">#FF6B35</color>
+    <color name="funfection_highlight">#2EC4B6</color>
+    <color name="funfection_canvas">#FFF7ED</color>
+    <color name="funfection_surface">#FFFFFFFF</color>
+    <color name="funfection_on_seed">#FFFFFFFF</color>
+    <color name="funfection_on_canvas">#1F2933</color>
+    <color name="launcher_background">#102542</color>
+    <color name="launcher_orb">#FF6B35</color>
+    <color name="launcher_orb_secondary">#2EC4B6</color>
+</resources>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Funfection" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/funfection_highlight</item>
+        <item name="colorPrimaryVariant">@color/funfection_seed</item>
+        <item name="colorSecondary">@color/funfection_accent</item>
+        <item name="colorSecondaryVariant">@color/funfection_highlight</item>
+        <item name="android:statusBarColor">@color/funfection_seed</item>
+        <item name="android:navigationBarColor">@color/funfection_seed</item>
+        <item name="colorSurface">@color/funfection_seed</item>
+        <item name="android:colorBackground">@color/funfection_seed</item>
+        <item name="colorOnPrimary">@color/funfection_on_seed</item>
+        <item name="colorOnSecondary">@color/funfection_on_seed</item>
+        <item name="colorOnBackground">@color/funfection_on_seed</item>
+        <item name="colorOnSurface">@color/funfection_on_seed</item>
+        <item name="android:windowBackground">@color/funfection_seed</item>
+        <item name="android:textColorPrimary">@color/funfection_on_seed</item>
+        <item name="android:fontFamily">@string/theme_primary_font</item>
+        <item name="fontFamily">@string/theme_primary_font</item>
+        <item name="materialButtonStyle">@style/Widget.Funfection.Button</item>
+        <item name="android:listViewStyle">@style/Widget.Funfection.ListView</item>
+    </style>
+</resources>

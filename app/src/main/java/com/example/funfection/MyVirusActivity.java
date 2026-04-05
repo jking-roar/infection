@@ -1,11 +1,12 @@
 package com.example.funfection;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
-public class MyVirusActivity extends Activity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MyVirusActivity extends AppCompatActivity {
 
     public static final String EXTRA_VIRUS_ID = "com.example.funfection.VIRUS_ID";
 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Funfection" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/funfection_seed</item>
+        <item name="colorPrimaryVariant">@color/funfection_seed</item>
+        <item name="colorSecondary">@color/funfection_accent</item>
+        <item name="colorSecondaryVariant">@color/funfection_highlight</item>
+        <item name="android:statusBarColor">@color/funfection_seed</item>
+        <item name="android:navigationBarColor">@color/funfection_seed</item>
+        <item name="colorSurface">@color/funfection_surface</item>
+        <item name="android:colorBackground">@color/funfection_canvas</item>
+        <item name="colorOnPrimary">@color/funfection_on_seed</item>
+        <item name="colorOnSecondary">@color/funfection_on_seed</item>
+        <item name="colorOnBackground">@color/funfection_on_canvas</item>
+        <item name="colorOnSurface">@color/funfection_on_canvas</item>
+        <item name="android:windowBackground">@color/funfection_canvas</item>
+        <item name="android:textColorPrimary">@color/funfection_on_canvas</item>
+        <item name="android:fontFamily">@string/theme_primary_font</item>
+        <item name="fontFamily">@string/theme_primary_font</item>
+        <item name="materialButtonStyle">@style/Widget.Funfection.Button</item>
+        <item name="android:listViewStyle">@style/Widget.Funfection.ListView</item>
+    </style>
+
+    <style name="Widget.Funfection.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="backgroundTint">@color/funfection_seed</item>
+        <item name="android:textColor">@color/funfection_on_seed</item>
+    </style>
+
+    <style name="Widget.Funfection.ListView" parent="@android:style/Widget.ListView">
+        <item name="android:divider">@android:color/transparent</item>
+        <item name="android:dividerHeight">8dp</item>
+        <item name="android:listSelector">@android:color/darker_gray</item>
+    </style>
+</resources>

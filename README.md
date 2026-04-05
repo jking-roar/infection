@@ -14,7 +14,7 @@ Project details:
 - Namespace and applicationId: com.example.funfection
 - compileSdk: 34
 - targetSdk: 34
-- minSdk: 11
+- minSdk: 21
 - Gradle wrapper: 8.7
 - Android Gradle Plugin: 8.5.2
 

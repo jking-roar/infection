@@ -54,7 +54,7 @@ public final class InfectionEngine {
         return new Virus(id, name, family, carrier, infectivity, resilience, chaos, mutated, genome, "Collapsed host strain");
     }
 
-    private static Virus combine(Virus left, Virus right) {
+    static Virus combine(Virus left, Virus right) {
         String dominantFamily = left.getFamily().equals(right.getFamily()) ? left.getFamily() : mixFamily(left, right);
         int infectivity = mergeStat(left.getInfectivity(), right.getInfectivity(), true);
         int resilience = mergeStat(left.getResilience(), right.getResilience(), false);
@@ -75,7 +75,7 @@ public final class InfectionEngine {
         return new Virus(id, name, dominantFamily, carrier, infectivity, resilience, chaos, mutation, genome, origin);
     }
 
-    private static boolean shouldMutate(Virus left, Virus right) {
+    static boolean shouldMutate(Virus left, Virus right) {
         int similarity = 0;
         if (left.getFamily().equals(right.getFamily())) {
             similarity += 35;
