@@ -10,9 +10,9 @@ public class Virus implements Serializable {
     private final String name;
     private final String family;
     private final String carrier;
-    private final int infectivity;
-    private final int resilience;
-    private final int chaos;
+    private final Infectivity infectivity;
+    private final Resilience resilience;
+    private final Chaos chaos;
     private final boolean mutation;
     private final String genome;
     private final String origin;
@@ -21,9 +21,9 @@ public class Virus implements Serializable {
                  String name,
                  String family,
                  String carrier,
-                 int infectivity,
-                 int resilience,
-                 int chaos,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
                  boolean mutation,
                  String genome,
                  String origin) {
@@ -55,15 +55,15 @@ public class Virus implements Serializable {
         return carrier;
     }
 
-    public int getInfectivity() {
+    public Infectivity getInfectivity() {
         return infectivity;
     }
 
-    public int getResilience() {
+    public Resilience getResilience() {
         return resilience;
     }
 
-    public int getChaos() {
+    public Chaos getChaos() {
         return chaos;
     }
 
@@ -80,11 +80,11 @@ public class Virus implements Serializable {
     }
 
     public InfectionRates getInfectionRate() {
-        return InfectionRates.fromScore(infectivity + resilience + chaos);
+        return InfectionRates.fromScore(infectivity.score() + resilience.score() + chaos.score());
     }
 
     public String toShareCode() {
-        return id + ":" + family + ":" + infectivity + ":" + resilience + ":" + chaos + ":"
+        return id + ":" + family + ":" + infectivity.score() + ":" + resilience.score() + ":" + chaos.score() + ":"
                 + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(name) + ":" + sanitize(carrier);
     }
 

@@ -42,10 +42,10 @@ public class MyVirusActivity extends AppCompatActivity {
     private void showVirusInformation(Virus virus) {
         virusName.setText(virus.getName());
         patientZero.setText(virus.getCarrier());
-        infectedPopulation.setText(Integer.toString(virus.getInfectivity() * 10 + virus.getResilience() * 7));
+        infectedPopulation.setText(Integer.toString(virus.getInfectivity().score() * 10 + virus.getResilience().score() * 7));
         infectionRate.setText(virus.getInfectionRate().toString());
         virusFamily.setText(virus.getFamily());
-        virusChaos.setText(Integer.toString(virus.getChaos()));
+        virusChaos.setText(Integer.toString(virus.getChaos().score()));
         virusGenome.setText(virus.getGenome());
         virusOrigin.setText(virus.getOrigin());
     }

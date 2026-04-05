@@ -34,8 +34,11 @@ public final class VirusFactory {
         int resilience = 1 + Math.abs(random.nextInt()) % 10;
         int chaos = 1 + Math.abs(random.nextInt()) % 10;
         boolean mutation = (Math.abs(random.nextInt()) % 100) < 12;
-        String genome = buildGenome(id, family, infectivity, resilience, chaos, mutation);
-        return new Virus(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome, "Seeded in lab");
+        Infectivity infectivityRate = Infectivity.rate(infectivity);
+        Resilience resilienceValue = Resilience.of(resilience);
+        Chaos chaosLevel = Chaos.level(chaos);
+        String genome = buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutation);
+        return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, "Seeded in lab");
     }
 
     public static List<Virus> parseInviteCode(String inviteCode) {
@@ -71,7 +74,13 @@ public final class VirusFactory {
             String genome = pieces[6];
             String name = pieces[7];
             String carrier = pieces[8];
-            return new Virus(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome, "Imported from invite");
+                return new Virus(id, name, family, carrier,
+                    Infectivity.rate(infectivity),
+                    Resilience.of(resilience),
+                    Chaos.level(chaos),
+                    mutation,
+                    genome,
+                    "Imported from invite");
         } catch (NumberFormatException error) {
             return null;
         }
@@ -84,13 +93,14 @@ public final class VirusFactory {
 
     public static String buildGenome(String id,
                                      String family,
-                                     int infectivity,
-                                     int resilience,
-                                     int chaos,
+                                     Infectivity infectivity,
+                                     Resilience resilience,
+                                     Chaos chaos,
                                      boolean mutation) {
         String compactId = id.replace("-", "");
         String familyCode = family.substring(0, Math.min(3, family.length())).toUpperCase(Locale.US);
         String mutationCode = mutation ? "M" : "S";
-        return familyCode + "-" + compactId.substring(0, 6) + "-" + infectivity + resilience + chaos + "-" + mutationCode;
+        return familyCode + "-" + compactId.substring(0, 6) + "-"
+                + infectivity.score() + resilience.score() + chaos.score() + "-" + mutationCode;
     }
 }

@@ -31,9 +31,9 @@ public final class InfectionEngine {
         boolean mutated = false;
 
         for (Virus virus : viruses) {
-            infectivity += virus.getInfectivity();
-            resilience += virus.getResilience();
-            chaos += virus.getChaos();
+            infectivity += virus.getInfectivity().score();
+            resilience += virus.getResilience().score();
+            chaos += virus.getChaos().score();
             mutated = mutated || virus.hasMutation();
             if (!family.equals(virus.getFamily())) {
                 sameFamily = false;
@@ -50,15 +50,18 @@ public final class InfectionEngine {
 
         String id = UUID.nameUUIDFromBytes((family + infectivity + resilience + chaos + carrier).getBytes()).toString();
         String name = (sameFamily ? family : "Hybrid") + " Cluster";
-        String genome = VirusFactory.buildGenome(id, family, infectivity, resilience, chaos, mutated);
-        return new Virus(id, name, family, carrier, infectivity, resilience, chaos, mutated, genome, "Collapsed host strain");
+        Infectivity infectivityRate = Infectivity.rate(infectivity);
+        Resilience resilienceValue = Resilience.of(resilience);
+        Chaos chaosLevel = Chaos.level(chaos);
+        String genome = VirusFactory.buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutated);
+        return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome, "Collapsed host strain");
     }
 
     static Virus combine(Virus left, Virus right) {
         String dominantFamily = left.getFamily().equals(right.getFamily()) ? left.getFamily() : mixFamily(left, right);
-        int infectivity = mergeStat(left.getInfectivity(), right.getInfectivity(), true);
-        int resilience = mergeStat(left.getResilience(), right.getResilience(), false);
-        int chaos = mergeStat(left.getChaos(), right.getChaos(), true);
+        int infectivity = mergeStat(left.getInfectivity().score(), right.getInfectivity().score(), true);
+        int resilience = mergeStat(left.getResilience().score(), right.getResilience().score(), false);
+        int chaos = mergeStat(left.getChaos().score(), right.getChaos().score(), true);
         boolean mutation = shouldMutate(left, right);
 
         if (mutation) {
@@ -70,9 +73,12 @@ public final class InfectionEngine {
         String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation).getBytes()).toString();
         String carrier = left.getCarrier() + " x " + right.getCarrier();
         String name = dominantFamily + (mutation ? " Chimera" : " Remix");
-        String genome = VirusFactory.buildGenome(id, dominantFamily, infectivity, resilience, chaos, mutation);
+        Infectivity infectivityRate = Infectivity.rate(infectivity);
+        Resilience resilienceValue = Resilience.of(resilience);
+        Chaos chaosLevel = Chaos.level(chaos);
+        String genome = VirusFactory.buildGenome(id, dominantFamily, infectivityRate, resilienceValue, chaosLevel, mutation);
         String origin = "Infected from " + left.getName() + " and " + right.getName();
-        return new Virus(id, name, dominantFamily, carrier, infectivity, resilience, chaos, mutation, genome, origin);
+        return new Virus(id, name, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, origin);
     }
 
     static boolean shouldMutate(Virus left, Virus right) {
@@ -80,9 +86,9 @@ public final class InfectionEngine {
         if (left.getFamily().equals(right.getFamily())) {
             similarity += 35;
         }
-        similarity += 10 - Math.abs(left.getInfectivity() - right.getInfectivity());
-        similarity += 10 - Math.abs(left.getResilience() - right.getResilience());
-        similarity += 10 - Math.abs(left.getChaos() - right.getChaos());
+        similarity += 10 - Math.abs(left.getInfectivity().score() - right.getInfectivity().score());
+        similarity += 10 - Math.abs(left.getResilience().score() - right.getResilience().score());
+        similarity += 10 - Math.abs(left.getChaos().score() - right.getChaos().score());
         int mutationChance = 12 + Math.max(0, 18 - similarity);
         long seed = (long) left.getGenome().hashCode() * 31L + right.getGenome().hashCode();
         Random random = new Random(seed);

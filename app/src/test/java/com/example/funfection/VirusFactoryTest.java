@@ -27,14 +27,15 @@ public class VirusFactoryTest {
     public void fromSeedProducesStatsWithinExpectedBounds() {
         Virus virus = VirusFactory.fromSeed("Dana", "bounded-seed");
 
-        assertTrue(virus.getInfectivity() >= 1 && virus.getInfectivity() <= 10);
-        assertTrue(virus.getResilience() >= 1 && virus.getResilience() <= 10);
-        assertTrue(virus.getChaos() >= 1 && virus.getChaos() <= 10);
+        assertTrue(virus.getInfectivity().score() >= 1 && virus.getInfectivity().score() <= 10);
+        assertTrue(virus.getResilience().score() >= 1 && virus.getResilience().score() <= 10);
+        assertTrue(virus.getChaos().score() >= 1 && virus.getChaos().score() <= 10);
     }
 
     @Test
     public void parseInviteCodeIgnoresBlankAndInvalidLines() {
-        Virus original = new Virus("virus-1", "Spark:Name", "Spark", "Carrier|One", 4, 5, 6, true, "GEN-123", "Fixture");
+        Virus original = new Virus("virus-1", "Spark:Name", "Spark", "Carrier|One",
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123", "Fixture");
 
         List<Virus> viruses = VirusFactory.parseInviteCode("\n" + original.toShareCode() + "\ninvalid\n");
 
@@ -61,8 +62,10 @@ public class VirusFactoryTest {
 
     @Test
     public void buildGenomeIncludesMutationMarker() {
-        String stableGenome = VirusFactory.buildGenome("12345678-1234-1234-1234-123456789012", "Spark", 4, 5, 6, false);
-        String mutatedGenome = VirusFactory.buildGenome("12345678-1234-1234-1234-123456789012", "Spark", 4, 5, 6, true);
+        String stableGenome = VirusFactory.buildGenome("12345678-1234-1234-1234-123456789012", "Spark",
+            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false);
+        String mutatedGenome = VirusFactory.buildGenome("12345678-1234-1234-1234-123456789012", "Spark",
+            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true);
 
         assertTrue(stableGenome.endsWith("-S"));
         assertTrue(mutatedGenome.endsWith("-M"));

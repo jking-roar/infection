@@ -36,9 +36,9 @@ public class InfectionEngineTest {
 
         assertTrue(result.hasMutation());
         assertEquals("Spark Chimera", result.getName());
-        assertEquals(9, result.getInfectivity());
-        assertEquals(7, result.getResilience());
-        assertEquals(10, result.getChaos());
+        assertEquals(Infectivity.rate(9), result.getInfectivity());
+        assertEquals(Resilience.of(7), result.getResilience());
+        assertEquals(Chaos.level(10), result.getChaos());
     }
 
     @Test
@@ -51,9 +51,9 @@ public class InfectionEngineTest {
         assertFalse(result.hasMutation());
         assertEquals("Spark", result.getFamily());
         assertEquals("Spark Remix", result.getName());
-        assertEquals(8, result.getInfectivity());
-        assertEquals(7, result.getResilience());
-        assertEquals(8, result.getChaos());
+        assertEquals(Infectivity.rate(8), result.getInfectivity());
+        assertEquals(Resilience.of(7), result.getResilience());
+        assertEquals(Chaos.level(8), result.getChaos());
         assertEquals("Tester x Tester", result.getCarrier());
     }
 
@@ -79,8 +79,10 @@ public class InfectionEngineTest {
 
     @Test
     public void infectCollapsesOwnedVirusesBeforeCombining() {
-        Virus ownedFirst = new Virus("owned-1", "Spark One", "Spark", "Owner", 9, 6, 3, false, "OWN-1", "Fixture");
-        Virus ownedSecond = new Virus("owned-2", "Spark Two", "Spark", "Owner", 3, 6, 9, true, "OWN-2", "Fixture");
+        Virus ownedFirst = new Virus("owned-1", "Spark One", "Spark", "Owner",
+            Infectivity.rate(9), Resilience.of(6), Chaos.level(3), false, "OWN-1", "Fixture");
+        Virus ownedSecond = new Virus("owned-2", "Spark Two", "Spark", "Owner",
+            Infectivity.rate(3), Resilience.of(6), Chaos.level(9), true, "OWN-2", "Fixture");
         Virus friend = virus("friend-1", "Spark", 7, 7, 7, "AAA-0");
 
         Virus result = InfectionEngine.infect(Arrays.asList(ownedFirst, ownedSecond), Collections.singletonList(friend));
@@ -91,6 +93,12 @@ public class InfectionEngineTest {
     }
 
     private Virus virus(String id, String family, int infectivity, int resilience, int chaos, String genome) {
-        return new Virus(id, family + " Sample", family, "Tester", infectivity, resilience, chaos, false, genome, "Test fixture");
+        return new Virus(id, family + " Sample", family, "Tester",
+                Infectivity.rate(infectivity),
+                Resilience.of(resilience),
+                Chaos.level(chaos),
+                false,
+                genome,
+                "Test fixture");
     }
 }

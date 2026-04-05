@@ -11,7 +11,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 
 public class VirusRepositoryTest {
 
@@ -40,7 +39,8 @@ public class VirusRepositoryTest {
     @Test
     public void addVirusPlacesVirusAtFrontOfCollection() {
         VirusRepository.ensureSeeded();
-        Virus added = new Virus("added-1", "Custom", "Spark", "Tester", 1, 2, 3, false, "GEN-1", "Fixture");
+        Virus added = new Virus("added-1", "Custom", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(2), Chaos.level(3), false, "GEN-1", "Fixture");
 
         VirusRepository.addVirus(added);
 
@@ -58,8 +58,10 @@ public class VirusRepositoryTest {
 
     @Test
     public void pickByIdsReturnsMatchesInRequestedOrder() {
-        Virus first = new Virus("first", "First", "Spark", "Tester", 1, 1, 1, false, "GEN-1", "Fixture");
-        Virus second = new Virus("second", "Second", "Echo", "Tester", 2, 2, 2, false, "GEN-2", "Fixture");
+        Virus first = new Virus("first", "First", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-1", "Fixture");
+        Virus second = new Virus("second", "Second", "Echo", "Tester",
+            Infectivity.rate(2), Resilience.of(2), Chaos.level(2), false, "GEN-2", "Fixture");
 
         VirusRepository.addVirus(first);
         VirusRepository.addVirus(second);
