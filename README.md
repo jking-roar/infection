@@ -4,7 +4,7 @@ Infect your friends - with fun.
 
 ## Android Studio Setup
 
-This project now includes a Gradle-based Android Studio configuration while keeping the original legacy source layout.
+This project is now organized as a standard Gradle-based Android Studio application.
 
 Open the repository root in Android Studio and let it import the Gradle project.
 
@@ -18,11 +18,12 @@ Project details:
 - Gradle wrapper: 8.7
 - Android Gradle Plugin: 8.5.2
 
-The Gradle module uses sourceSets to point at the existing project files:
+Project structure:
 
-- Java sources: src/
-- Resources: res/
-- Manifest: AndroidManifest.xml
+- App module: app/
+- Manifest: app/src/main/AndroidManifest.xml
+- Java sources: app/src/main/java/
+- Resources: app/src/main/res/
 
 Local machine requirements:
 
