@@ -135,20 +135,61 @@ public class Virus implements Serializable {
         return origin;
     }
 
+    /**
+     * Calculates the UI-facing infection severity band for this strain.
+     *
+     * <p>The app does not store a separate severity field. Instead, it derives the displayed
+     * infection rate from the combined infectivity, resilience, and chaos scores each time the
+     * value is requested. That keeps the display tier consistent with the underlying stat model
+     * used by the engine.</p>
+     *
+     * @return severity band derived from the combined stat total
+     */
     public InfectionRates getInfectionRate() {
         return InfectionRates.fromScore(infectivity.score() + resilience.score() + chaos.score());
     }
 
+    /**
+     * Serializes this virus into the share-code format consumed by the engine.
+     *
+     * <p>Field order:</p>
+     * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier}</p>
+     *
+     * <p>The mutation slot uses {@code 1} for mutated strains and {@code 0} for stable strains.
+     * The name and carrier fields are sanitized to remove reserved separators before they are
+     * appended, which keeps the encoded row safe for {@code VirusFactory.parseSingle(...)}.</p>
+     *
+     * @return one-line share code representing this virus
+     */
     public String toShareCode() {
         return id + ":" + family + ":" + infectivity.score() + ":" + resilience.score() + ":" + chaos.score() + ":"
                 + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(name) + ":" + sanitize(carrier);
     }
 
+    /**
+     * Builds a compact list-row label for the lab screen.
+     *
+     * <p>The summary intentionally shows only the name, family, mutation state, and derived
+     * infection-rate tier so the selection list stays readable while still surfacing the most
+     * important gameplay signals.</p>
+     *
+     * @return short human-readable summary for list display
+     */
     public String getSummaryLine() {
         String mutationLabel = mutation ? "Mutated" : "Stable";
         return name + "  |  " + family + "  |  " + mutationLabel + "  |  Rate " + getInfectionRate();
     }
 
+    /**
+     * Removes reserved delimiter characters from user-facing text before serialization.
+     *
+     * <p>Share codes use {@code :} as a field separator and the UI summary uses {@code |} as a
+     * visual divider. Replacing those characters preserves readability while ensuring that names
+     * and carriers cannot corrupt the encoded invite format.</p>
+     *
+     * @param value display text to normalize for serialization
+     * @return sanitized text safe to embed inside a share-code row
+     */
     private String sanitize(String value) {
         return value.replace(':', '-').replace('|', '/');
     }
