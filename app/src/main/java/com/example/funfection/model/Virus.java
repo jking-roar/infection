@@ -2,21 +2,77 @@ package com.example.funfection.model;
 
 import java.io.Serializable;
 
+/**
+ * Immutable domain record describing a single virus strain in the app.
+ */
 public class Virus implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Stable identifier used for repository lookups and intent extras.
+     */
     private final String id;
+
+    /**
+     * Display name shown to the player for this strain.
+     */
     private final String name;
+
+    /**
+     * Family label grouping related strains, such as starter and offspring lineages.
+     */
     private final String family;
+
+    /**
+     * Fictional host or patient-zero label associated with the strain.
+     */
     private final String carrier;
+
+    /**
+     * Transmission strength score representing how easily the strain spreads.
+     */
     private final Infectivity infectivity;
+
+    /**
+     * Durability score representing how well the strain survives resistance.
+     */
     private final Resilience resilience;
+
+    /**
+     * Volatility score representing how unstable or unpredictable the strain is.
+     */
     private final Chaos chaos;
+
+    /**
+     * Flag indicating whether the strain is a mutated offspring rather than a stable merge.
+     */
     private final boolean mutation;
+
+    /**
+     * Compact genome signature used to describe and deterministically combine strains.
+     */
     private final String genome;
+
+    /**
+     * Human-readable provenance text describing how or where this strain was created.
+     */
     private final String origin;
 
+    /**
+     * Creates a virus strain with its identity, stat profile, and provenance metadata.
+     *
+     * @param id stable identifier used for lookups and sharing inside the app
+     * @param name display name shown in lists and detail views
+     * @param family lineage label used when grouping or combining strains
+     * @param carrier fictional host label for flavor text and detail screens
+     * @param infectivity spread strength score for the strain
+     * @param resilience resistance and survivability score for the strain
+     * @param chaos instability score used in outbreak and mutation behavior
+     * @param mutation true when this strain resulted from a mutation event
+     * @param genome compact genome signature used in deterministic combination logic
+     * @param origin description of how the strain entered the player's collection
+     */
     public Virus(String id,
                  String name,
                  String family,
