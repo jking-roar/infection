@@ -108,6 +108,12 @@ Local machine requirements:
 - JDK 17 or newer. JDK 21 is known to work.
 - An Android SDK installation with Android API 34 available.
 
+Machine-specific Java setup (do not commit):
+
+- Keep repository `gradle.properties` environment-neutral.
+- Set `JAVA_HOME` to a local JDK 17+ install, or add `org.gradle.java.home=...` in `%USERPROFILE%\\.gradle\\gradle.properties`.
+- Do not put machine-specific Java paths in the project `gradle.properties` file.
+
 Useful commands:
 
 - ./gradlew --version
