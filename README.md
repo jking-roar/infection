@@ -62,7 +62,7 @@ Tests:
 ## Local development requirements
 
 - JDK 17+
-- Android Studio (current stable)
+- ~~Android Studio (current stable)~~ IntelliJ used for dev consider install studio?
 - Android SDK installed for API 36
 - An Android device running API 24+ (or emulator)
 
