@@ -30,6 +30,8 @@ import java.util.UUID;
  */
 public final class VirusFactory {
 
+    private static final String LAB_CARRIER = "Lab";
+
     private static final String[] FAMILIES = {
             "Spark","Echo","Mirth","Glitch","Bloom","Pulse",
             "Aether","Bramble","Cinder","Drizzle","Ember","Fable",
@@ -122,6 +124,22 @@ public final class VirusFactory {
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutation);
         return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, "Seeded in lab");
+    }
+
+    /**
+     * Creates a lab virus from user-provided seed text or a random fallback seed.
+     *
+     * <p>When the supplied text contains visible characters, the trimmed value is used as the
+     * deterministic seed. Blank input generates a fresh random UUID seed so repeated taps can
+     * still create distinct strains without any text entry.</p>
+     *
+     * @param seedInput optional player-entered seed text
+     * @return lab-created virus based on the trimmed seed or a random fallback
+     */
+    public static Virus createLabVirus(String seedInput) {
+        String normalizedSeed = seedInput == null ? "" : seedInput.trim();
+        String effectiveSeed = normalizedSeed.isEmpty() ? UUID.randomUUID().toString() : normalizedSeed;
+        return fromSeed(LAB_CARRIER, effectiveSeed);
     }
 
     /**

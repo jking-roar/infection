@@ -20,4 +20,11 @@
     <string name="infection_preview_stats">Transmission profile: infectivity %1$d, resilience %2$d, chaos %3$d, rate %4$s.</string>
     <string name="infection_preview_carrier_chain">Carrier chain: %1$s.</string>
     <string name="infection_preview_seed_item">• %1$s — %2$s | genome %3$s | rate %4$s</string>
+    <string name="lab_seed_title">Create a lab virus</string>
+    <string name="lab_seed_hint">Enter a seed or leave blank for a random virus</string>
+    <string name="create_virus_button">Create Virus</string>
+    <string name="create_virus_toast">New virus created: %1$s</string>
+    <string name="create_virus_seed_manual">Seed used: %1$s.</string>
+    <string name="create_virus_seed_random">Seed used: random.</string>
+    <string name="create_virus_summary">Created %1$s in the %2$s family with genome %3$s. %4$s</string>
 </resources>

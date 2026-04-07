@@ -29,6 +29,7 @@ public class StartActivity extends AppCompatActivity {
     private ListView virusList;
     private TextView collectionSummary;
     private TextView resultSummary;
+    private EditText labSeedInput;
     private EditText friendCode;
     private ArrayAdapter<String> adapter;
     private List<Virus> viruses;
@@ -41,11 +42,20 @@ public class StartActivity extends AppCompatActivity {
         virusList = (ListView) findViewById(R.id.virusList);
         collectionSummary = (TextView) findViewById(R.id.collectionSummary);
         resultSummary = (TextView) findViewById(R.id.resultSummary);
+        labSeedInput = (EditText) findViewById(R.id.labSeedInput);
         friendCode = (EditText) findViewById(R.id.friendCode);
 
+        Button createButton = (Button) findViewById(R.id.createButton);
         Button infectButton = (Button) findViewById(R.id.infectButton);
         Button shareButton = (Button) findViewById(R.id.shareButton);
         Button viewButton = (Button) findViewById(R.id.viewButton);
+
+        createButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createLabVirus();
+            }
+        });
 
         infectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +99,30 @@ public class StartActivity extends AppCompatActivity {
     private void infectFriend() {
         InfectionPlan plan = prepareInfectionPlan();
         showInfectionPreview(plan);
+    }
+
+    private void createLabVirus() {
+        String rawSeedInput = labSeedInput.getText().toString();
+        String normalizedSeed = rawSeedInput.trim();
+        Virus virus = VirusFactory.createLabVirus(rawSeedInput);
+
+        VirusRepository.addVirus(virus);
+        refreshCollection();
+        virusList.clearChoices();
+        virusList.setItemChecked(0, true);
+        virusList.smoothScrollToPosition(0);
+        labSeedInput.setText("");
+
+        String seedSummary = TextUtils.isEmpty(normalizedSeed)
+                ? getString(R.string.create_virus_seed_random)
+                : getString(R.string.create_virus_seed_manual, normalizedSeed);
+        resultSummary.setText(getString(
+                R.string.create_virus_summary,
+                virus.getName(),
+                virus.getFamily(),
+                virus.getGenome(),
+                seedSummary));
+        Toast.makeText(this, getString(R.string.create_virus_toast, virus.getName()), Toast.LENGTH_SHORT).show();
     }
 
     private InfectionPlan prepareInfectionPlan() {

@@ -11,6 +11,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -35,6 +36,29 @@ public class VirusFactoryTest {
         assertTrue(virus.getInfectivity().score() >= 1 && virus.getInfectivity().score() <= 10);
         assertTrue(virus.getResilience().score() >= 1 && virus.getResilience().score() <= 10);
         assertTrue(virus.getChaos().score() >= 1 && virus.getChaos().score() <= 10);
+    }
+
+    @Test
+    public void createLabVirusUsesTrimmedSeedDeterministically() {
+        Virus trimmed = VirusFactory.createLabVirus("  custom-seed  ");
+        Virus plain = VirusFactory.createLabVirus("custom-seed");
+
+        assertEquals(trimmed.getId(), plain.getId());
+        assertEquals(trimmed.getName(), plain.getName());
+        assertEquals("Lab", trimmed.getCarrier());
+        assertEquals("Seeded in lab", trimmed.getOrigin());
+    }
+
+    @Test
+    public void createLabVirusFallsBackToRandomSeedWhenBlank() {
+        Virus first = VirusFactory.createLabVirus("   ");
+        Virus second = VirusFactory.createLabVirus(null);
+
+        assertNotNull(first.getId());
+        assertNotNull(second.getId());
+        assertNotEquals(first.getId(), second.getId());
+        assertEquals("Lab", first.getCarrier());
+        assertEquals("Lab", second.getCarrier());
     }
 
     @Test
