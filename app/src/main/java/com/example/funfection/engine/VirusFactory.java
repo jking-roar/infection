@@ -30,9 +30,51 @@ import java.util.UUID;
  */
 public final class VirusFactory {
 
-    private static final String[] FAMILIES = {"Spark", "Echo", "Mirth", "Glitch", "Bloom", "Pulse"};
-    private static final String[] PREFIXES = {"Neon", "Velvet", "Wild", "Lucky", "Static", "Sunny"};
-    private static final String[] SUFFIXES = {"Sneezle", "Wiggle", "Giggle", "Whisper", "Bouncer", "Fizzle"};
+    private static final String[] FAMILIES = {
+            "Spark","Echo","Mirth","Glitch","Bloom","Pulse",
+            "Aether","Bramble","Cinder","Drizzle","Ember","Fable",
+            "Glimmer","Hollow","Icicle","Jumble","Kindle","Lattice",
+            "Murmur","Nimbus","Oracle","Pollen","Quiver","Ripple",
+            "Sprocket","Tangle","Umber","Velour","Wobble","Xyloid",
+            "Yonder","Zephyr",
+
+            // breadth additions
+            "Axon","Byway","Cwm","Djin","Eddy","Fjord",
+            "Gyoza","Hyrax","Ibex","Jowl","Krait","Lyric",
+            "Myrrh","Nexus","Oxbow","Pylon","Quark","Rhyme",
+            "Skald","Tizzy","Uvula","Voxel","Wrack","Xebec",
+            "Yolk","Zymic"
+    };
+
+    private static final String[] PREFIXES = {
+            "Neon","Velvet","Wild","Lucky","Static","Sunny",
+            "Amber","Brisk","Curly","Dizzy","Electric","Frosty",
+            "Golden","Hazy","Icy","Jazzy","Keen","Lunar",
+            "Misty","Nimble","Odd","Prickly","Quaint","Rusty",
+            "Spicy","Twinkly","Ultra","Vivid","Whimsy","Xeno",
+            "Young","Zesty",
+
+            // breadth additions
+            "Awkward","Breezy","Crux","Dapple","Ebon","Fuzzy",
+            "Gawky","Hushed","Inky","Jaunty","Knobby","Lopsided",
+            "Murky","Nubby","Ochre","Pithy","Quirky","Ragged",
+            "Sylvan","Thorny","Uneven","Vortex","Wonky","Xylic",
+            "Yappy","Zonal"
+    };
+
+    private static final String[] SUFFIXES = {
+            "Sneezle","Wiggle","Giggle","Whisper","Bouncer","Fizzle",
+            "Bumble","Crackle","Doodle","Flitter","Glimpse","Hiccup",
+            "Jingle","Kabloo","Lobber","Mizzle","Nuzzle","Puffin",
+            "Quibble","Razzle","Snicker","Tizzy","Uproar","Vizzle",
+            "Wobble","Xizzle","Yapper","Zinger",
+
+            // breadth additions
+            "Babble","Chirp","Doink","Flump","Grizzle","Honk",
+            "Jounce","Klaxon","Lurk","Mump","Nerp","Plonk",
+            "Quonk","Rumpus","Skitter","Thunk","Unzip","Vroom",
+            "Whomp","Xyzzle","Yowl","Zonk"
+    };
 
     private VirusFactory() {
     }
@@ -46,7 +88,7 @@ public final class VirusFactory {
      * @return deterministic starter strains for a fresh repository
      */
     public static List<Virus> createStarterViruses() {
-        List<Virus> viruses = new ArrayList<Virus>();
+        List<Virus> viruses = new ArrayList<>();
         viruses.add(fromSeed("Jerry", "starter-alpha"));
         viruses.add(fromSeed("Sam", "starter-beta"));
         viruses.add(fromSeed("Alex", "starter-gamma"));
@@ -68,13 +110,13 @@ public final class VirusFactory {
     public static Virus fromSeed(String carrier, String seed) {
         Random random = new Random(seed.hashCode());
         String id = UUID.nameUUIDFromBytes(seed.getBytes()).toString();
-        String family = FAMILIES[Math.abs(random.nextInt()) % FAMILIES.length];
-        String name = PREFIXES[Math.abs(random.nextInt()) % PREFIXES.length] + " "
-                + SUFFIXES[Math.abs(random.nextInt()) % SUFFIXES.length];
-        int infectivity = 1 + Math.abs(random.nextInt()) % 10;
-        int resilience = 1 + Math.abs(random.nextInt()) % 10;
-        int chaos = 1 + Math.abs(random.nextInt()) % 10;
-        boolean mutation = (Math.abs(random.nextInt()) % 100) < 12;
+        String family = FAMILIES[random.nextInt(FAMILIES.length)];
+        String name = PREFIXES[random.nextInt(PREFIXES.length)] + " "
+                + SUFFIXES[random.nextInt(SUFFIXES.length)];
+        int infectivity = 1 + (random.nextInt(10));
+        int resilience = 1 + (random.nextInt(10));
+        int chaos = 1 + (random.nextInt(10));
+        boolean mutation = random.nextDouble() < 0.12;
         Infectivity infectivityRate = Infectivity.rate(infectivity);
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
@@ -97,13 +139,13 @@ public final class VirusFactory {
      * @return parsed viruses, excluding malformed entries
      */
     public static List<Virus> parseInviteCode(String inviteCode) {
-        List<Virus> viruses = new ArrayList<Virus>();
+        List<Virus> viruses = new ArrayList<>();
         if (inviteCode == null) {
             return viruses;
         }
         String[] entries = inviteCode.split("\\n");
-        for (int index = 0; index < entries.length; index++) {
-            Virus virus = parseSingle(entries[index].trim());
+        for (String entry : entries) {
+            Virus virus = parseSingle(entry.trim());
             if (virus != null) {
                 viruses.add(virus);
             }
@@ -125,7 +167,7 @@ public final class VirusFactory {
      * @return imported virus, or {@code null} when the row is empty or malformed
      */
     public static Virus parseSingle(String encoded) {
-        if (encoded == null || encoded.length() == 0) {
+        if (encoded == null || encoded.isEmpty()) {
             return null;
         }
         String[] pieces = encoded.split(":");
