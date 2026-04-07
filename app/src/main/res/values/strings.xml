@@ -2,4 +2,22 @@
 <resources>
     <string name="app_name">funfection</string>
     <string name="theme_primary_font">sans-serif-medium</string>
+    <string name="infection_preview_title">Confirm infection</string>
+    <string name="infection_preview_cancel">Cancel</string>
+    <string name="infection_preview_proceed">Proceed with infection</string>
+    <string name="infection_preview_seeds_heading">Seeds of infection</string>
+    <string name="infection_preview_auto_selected">No local strain was selected, so %1$s has been armed automatically.</string>
+    <string name="infection_preview_no_local_seed">No local strain is selected. The lab fallback seed will drive your side of the infection.</string>
+    <string name="infection_preview_your_seeds">Your prepared strains</string>
+    <string name="infection_preview_friend_seeds">Incoming friend strains</string>
+    <string name="infection_preview_no_seed_entries">• No direct strain entries found.</string>
+    <string name="infection_preview_friend_source_invite">Friend source: invite code decoded into %1$d strain(s).</string>
+    <string name="infection_preview_friend_source_random">Friend source: no valid invite code was found, so random strain %1$s will be used.</string>
+    <string name="infection_preview_possibilities_heading">Projected possibilities</string>
+    <string name="infection_preview_lineage">Projected lineage: %1$s family with genome %2$s.</string>
+    <string name="infection_preview_mutation_likely">Mutation outlook: a volatile mutation spike is expected from this pairing.</string>
+    <string name="infection_preview_mutation_stable">Mutation outlook: this pairing is projected to remain a stable transfer.</string>
+    <string name="infection_preview_stats">Transmission profile: infectivity %1$d, resilience %2$d, chaos %3$d, rate %4$s.</string>
+    <string name="infection_preview_carrier_chain">Carrier chain: %1$s.</string>
+    <string name="infection_preview_seed_item">• %1$s — %2$s | genome %3$s | rate %4$s</string>
 </resources>
