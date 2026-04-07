@@ -78,6 +78,46 @@ public class VirusRepositoryTest {
         assertEquals("second", picked.get(1).getId());
     }
 
+    @Test
+    public void incrementInfectionCountsIncreasesCountForMatchedIds() {
+        Virus v = new Virus("inc-1", "Inc", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-I", "Fixture");
+        VirusRepository.addVirus(v);
+
+        VirusRepository.incrementInfectionCounts(Arrays.asList("inc-1"));
+
+        assertEquals(1, VirusRepository.getVirusById("inc-1").getInfectionCount());
+    }
+
+    @Test
+    public void incrementInfectionCountsIgnoresMissingIds() {
+        Virus v = new Virus("safe-1", "Safe", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-S", "Fixture");
+        VirusRepository.addVirus(v);
+
+        VirusRepository.incrementInfectionCounts(Arrays.asList("not-here"));
+
+        assertEquals(0, VirusRepository.getVirusById("safe-1").getInfectionCount());
+    }
+
+    @Test
+    public void replaceVirusUpdatesExistingEntryById() {
+        Virus original = new Virus("rep-1", "Rep", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-R", "Fixture");
+        VirusRepository.addVirus(original);
+
+        Virus updated = original.incrementInfectionCount();
+        VirusRepository.replaceVirus(updated);
+
+        assertEquals(1, VirusRepository.getVirusById("rep-1").getInfectionCount());
+        // should not have added a duplicate
+        long count = 0;
+        for (Virus vv : VirusRepository.getViruses()) {
+            if (vv.getId().equals("rep-1")) count++;
+        }
+        assertEquals(1, count);
+    }
+
     private void clearRepository() throws Exception {
         Field collectionField = VirusRepository.class.getDeclaredField("COLLECTION");
         collectionField.setAccessible(true);

@@ -40,6 +40,38 @@ public final class VirusRepository {
         COLLECTION.add(0, virus);
     }
 
+    public static void replaceVirus(Virus virus) {
+        ensureSeeded();
+        for (int index = 0; index < COLLECTION.size(); index++) {
+            if (COLLECTION.get(index).getId().equals(virus.getId())) {
+                COLLECTION.set(index, virus);
+                return;
+            }
+        }
+        COLLECTION.add(0, virus);
+    }
+
+    public static List<Virus> incrementInfectionCounts(List<String> ids) {
+        ensureSeeded();
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Virus> updated = new ArrayList<Virus>();
+        for (String id : ids) {
+            for (int index = 0; index < COLLECTION.size(); index++) {
+                Virus virus = COLLECTION.get(index);
+                if (virus.getId().equals(id)) {
+                    Virus incremented = virus.incrementInfectionCount();
+                    COLLECTION.set(index, incremented);
+                    updated.add(incremented);
+                    break;
+                }
+            }
+        }
+        return updated;
+    }
+
     public static List<Virus> pickByIds(List<String> ids) {
         ensureSeeded();
         if (ids == null || ids.isEmpty()) {

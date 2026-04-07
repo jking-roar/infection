@@ -64,7 +64,7 @@ public class VirusFactoryTest {
     @Test
     public void parseInviteCodeIgnoresBlankAndInvalidLines() {
         Virus original = new Virus("virus-1", "Spark:Name", "Spark", "Carrier|One",
-                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123", "Fixture");
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123", "Fixture", 7);
 
         List<Virus> viruses = VirusFactory.parseInviteCode("\n" + original.toShareCode() + "\ninvalid\n");
 
@@ -72,6 +72,18 @@ public class VirusFactoryTest {
         assertEquals("Spark-Name", viruses.get(0).getName());
         assertEquals("Carrier/One", viruses.get(0).getCarrier());
         assertEquals("Imported from invite", viruses.get(0).getOrigin());
+        assertEquals(7, viruses.get(0).getInfectionCount());
+    }
+
+    @Test
+    public void parseInviteCodeDefaultsLegacyNineFieldCodesToZeroCount() {
+        // A legacy 9-field share code without trailing infectionCount
+        String legacyCode = "virus-L:Spark:4:5:6:1:GEN-123:LegacyName:LegacyCarrier";
+
+        List<Virus> viruses = VirusFactory.parseInviteCode(legacyCode);
+
+        assertEquals(1, viruses.size());
+        assertEquals(0, viruses.get(0).getInfectionCount());
     }
 
     @Test

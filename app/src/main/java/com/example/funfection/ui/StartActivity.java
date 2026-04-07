@@ -155,6 +155,7 @@ public class StartActivity extends AppCompatActivity {
     }
 
     private void executeInfection(InfectionPlan plan) {
+        VirusRepository.incrementInfectionCounts(getVirusIds(plan.selectedViruses));
         Virus offspring = plan.offspring;
         VirusRepository.addVirus(offspring);
         refreshCollection();
@@ -221,7 +222,9 @@ public class StartActivity extends AppCompatActivity {
                     virus.getName(),
                     virus.getFamily(),
                     virus.getGenome(),
-                    virus.getInfectionRate().toString()));
+                    virus.getInfectionRate().toString(),
+                    Integer.valueOf(virus.getInfectionStrength()),
+                    Integer.valueOf(virus.getInfectionCount())));
         }
     }
 
@@ -232,9 +235,15 @@ public class StartActivity extends AppCompatActivity {
             return;
         }
 
+        List<Virus> sharedViruses = VirusRepository.incrementInfectionCounts(getVirusIds(selectedViruses));
+        if (sharedViruses.isEmpty()) {
+            sharedViruses = selectedViruses;
+        }
+        refreshCollection();
+
         StringBuilder body = new StringBuilder();
         body.append("Swap strains with me in Funfection. Paste this invite code into the lab:\n\n");
-        for (Virus virus : selectedViruses) {
+        for (Virus virus : sharedViruses) {
             body.append(virus.toShareCode()).append("\n");
         }
 
@@ -269,6 +278,14 @@ public class StartActivity extends AppCompatActivity {
         return selectedViruses;
     }
 
+    private List<String> getVirusIds(List<Virus> source) {
+        List<String> ids = new ArrayList<String>();
+        for (Virus virus : source) {
+            ids.add(virus.getId());
+        }
+        return ids;
+    }
+
     private String buildOutbreakSummary(List<Virus> selectedViruses,
                                         List<Virus> friendViruses,
                                         Virus offspring,
@@ -279,7 +296,8 @@ public class StartActivity extends AppCompatActivity {
         String inviteMode = decodedInviteCode ? "Invite code decoded." : "Random friend strain used.";
         return "Combined " + hostLabel + " with " + friendLabel + ". "
                 + offspring.getName() + " emerged in the " + offspring.getFamily() + " family with genome "
-                + offspring.getGenome() + ". " + mutationLabel + " " + inviteMode;
+                + offspring.getGenome() + ". Strength " + offspring.getInfectionStrength()
+                + ", lineage infections " + offspring.getInfectionCount() + ". " + mutationLabel + " " + inviteMode;
     }
 
     private static final class InfectionPlan {

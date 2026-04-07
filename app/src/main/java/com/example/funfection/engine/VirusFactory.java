@@ -17,7 +17,7 @@ import java.util.UUID;
  * <p>This class defines the two main string formats used by the engine:</p>
  *
  * <p>Invite code layout:</p>
- * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier}</p>
+ * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount]}</p>
  *
  * <p>Genome layout:</p>
  * <p>{@code FAM-ABC123-xyz-M}</p>
@@ -146,9 +146,9 @@ public final class VirusFactory {
      * Parses one or more newline-delimited invite-code entries into virus instances.
      *
      * <p>Each non-empty line is expected to use the serialized share-code format from
-     * {@code Virus.toShareCode()}:</p>
-     *
-     * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier}</p>
+      * {@code Virus.toShareCode()}:</p>
+      *
+      * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount]}</p>
      *
      * <p>Malformed rows are ignored so a partially valid invite block can still import the
      * entries that parse cleanly.</p>
@@ -174,12 +174,14 @@ public final class VirusFactory {
     /**
      * Parses a single serialized invite-code row.
      *
-     * <p>The expected field order is:</p>
-     * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier}</p>
+      * <p>The expected field order is:</p>
+      * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount]}</p>
      *
-     * <p>The mutation field uses {@code 1} for mutated strains and {@code 0} for stable
-     * strains. The genome token is trusted as imported metadata rather than recomputed during
-     * parsing, which preserves the sender's exact shared fingerprint.</p>
+      * <p>The mutation field uses {@code 1} for mutated strains and {@code 0} for stable
+      * strains. The optional trailing infection-count field preserves committed lineage usage
+      * across sharing. When it is absent, legacy invite codes default to {@code 0}. The genome
+      * token is trusted as imported metadata rather than recomputed during parsing, which
+      * preserves the sender's exact shared fingerprint.</p>
      *
      * @param encoded single invite-code row
      * @return imported virus, or {@code null} when the row is empty or malformed
@@ -202,13 +204,15 @@ public final class VirusFactory {
             String genome = pieces[6];
             String name = pieces[7];
             String carrier = pieces[8];
+            int infectionCount = pieces.length > 9 ? Math.max(0, Integer.parseInt(pieces[9])) : 0;
                 return new Virus(id, name, family, carrier,
                     Infectivity.rate(infectivity),
                     Resilience.of(resilience),
                     Chaos.level(chaos),
                     mutation,
                     genome,
-                    "Imported from invite");
+                    "Imported from invite",
+                    infectionCount);
         } catch (NumberFormatException error) {
             return null;
         }

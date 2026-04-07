@@ -34,8 +34,8 @@ public class InfectionEngineTest {
 
     @Test
     public void combineBoostsStatsAndNameWhenMutationOccurs() {
-        Virus left = virus("left-3", "Spark", 7, 7, 7, "AAA-0");
-        Virus right = virus("right-3", "Spark", 7, 7, 7, "AAA-19");
+        Virus left = virus("left-3", "Spark", 7, 7, 7, "AAA-0", 2);
+        Virus right = virus("right-3", "Spark", 7, 7, 7, "AAA-19", 3);
 
         Virus result = InfectionEngine.combine(left, right);
 
@@ -44,12 +44,14 @@ public class InfectionEngineTest {
         assertEquals(Infectivity.rate(9), result.getInfectivity());
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(10), result.getChaos());
+        // infectionCount = left(2) + right(3) + 1 committed event = 6
+        assertEquals(6, result.getInfectionCount());
     }
 
     @Test
     public void combineKeepsFamilyAndStableSuffixWhenMutationDoesNotOccur() {
-        Virus left = virus("left-4", "Spark", 7, 7, 7, "AAA-0");
-        Virus right = virus("right-4", "Spark", 7, 7, 7, "AAA-0");
+        Virus left = virus("left-4", "Spark", 7, 7, 7, "AAA-0", 0);
+        Virus right = virus("right-4", "Spark", 7, 7, 7, "AAA-0", 0);
 
         Virus result = InfectionEngine.combine(left, right);
 
@@ -60,6 +62,8 @@ public class InfectionEngineTest {
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(8), result.getChaos());
         assertEquals("Tester x Tester", result.getCarrier());
+        // infectionCount = left(0) + right(0) + 1 committed event = 1
+        assertEquals(1, result.getInfectionCount());
     }
 
     @Test
@@ -98,12 +102,17 @@ public class InfectionEngineTest {
     }
 
     private Virus virus(String id, String family, int infectivity, int resilience, int chaos, String genome) {
+        return virus(id, family, infectivity, resilience, chaos, genome, 0);
+    }
+
+    private Virus virus(String id, String family, int infectivity, int resilience, int chaos, String genome, int infectionCount) {
         return new Virus(id, family + " Sample", family, "Tester",
                 Infectivity.rate(infectivity),
                 Resilience.of(resilience),
                 Chaos.level(chaos),
                 false,
                 genome,
-                "Test fixture");
+                "Test fixture",
+                infectionCount);
     }
 }

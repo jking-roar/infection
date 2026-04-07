@@ -17,6 +17,7 @@ public class MyVirusActivity extends AppCompatActivity {
     private TextView virusName;
     private TextView patientZero;
     private TextView infectedPopulation;
+    private TextView infectionCount;
     private TextView infectionRate;
     private TextView virusFamily;
     private TextView virusChaos;
@@ -31,6 +32,7 @@ public class MyVirusActivity extends AppCompatActivity {
         virusName = (TextView) findViewById(R.id.virusName);
         patientZero = (TextView) findViewById(R.id.patientZero);
         infectedPopulation = (TextView) findViewById(R.id.infectionPopulation);
+        infectionCount = (TextView) findViewById(R.id.infectionCount);
         infectionRate = (TextView) findViewById(R.id.infectionRate);
 
         virusFamily = (TextView) findViewById(R.id.virusFamily);
@@ -46,7 +48,8 @@ public class MyVirusActivity extends AppCompatActivity {
     private void showVirusInformation(Virus virus) {
         virusName.setText(virus.getName());
         patientZero.setText(virus.getCarrier());
-        infectedPopulation.setText(Integer.toString(virus.getInfectivity().score() * 10 + virus.getResilience().score() * 7));
+        infectedPopulation.setText(Integer.toString(virus.getInfectionStrength()));
+        infectionCount.setText(Integer.toString(virus.getInfectionCount()));
         infectionRate.setText(virus.getInfectionRate().toString());
         virusFamily.setText(virus.getFamily());
         virusChaos.setText(Integer.toString(virus.getChaos().score()));

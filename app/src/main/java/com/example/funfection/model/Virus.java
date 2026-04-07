@@ -73,6 +73,14 @@ public class Virus implements Serializable {
     private final String origin;
 
     /**
+     * Number of committed infection actions this strain lineage has participated in.
+     *
+     * <p>This count only changes after a share or combine action is committed. Preview flows do
+     * not modify it. Offspring strains inherit a combined count from their parent templates.</p>
+     */
+    private final int infectionCount;
+
+    /**
      * Creates a virus strain with its identity, stat profile, and provenance metadata.
      *
      * @param id stable identifier used for lookups and sharing inside the app
@@ -96,6 +104,20 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  String origin) {
+        this(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome, origin, 0);
+    }
+
+    public Virus(String id,
+                 String name,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 String origin,
+                 int infectionCount) {
         this.id = id;
         this.name = name;
         this.family = family;
@@ -106,6 +128,7 @@ public class Virus implements Serializable {
         this.mutation = mutation;
         this.genome = genome;
         this.origin = origin;
+        this.infectionCount = Math.max(0, infectionCount);
     }
 
     public String getId() {
@@ -148,6 +171,25 @@ public class Virus implements Serializable {
         return origin;
     }
 
+    public int getInfectionCount() {
+        return infectionCount;
+    }
+
+    /**
+     * Calculates the UI-facing infection strength score for this strain.
+     *
+     * <p>This renames the old "friends infected" concept without changing its gameplay math.
+     * Strength remains a derived display metric rather than a stored field.</p>
+     *
+     * <p>Formula:</p>
+     * <p>{@code infectivity.score() * 10 + resilience.score() * 7}</p>
+     *
+     * @return derived infection-strength score shown on the details screen
+     */
+    public int getInfectionStrength() {
+        return infectivity.score() * 10 + resilience.score() * 7;
+    }
+
     /**
      * Calculates the UI-facing infection severity band for this strain.
      *
@@ -173,7 +215,7 @@ public class Virus implements Serializable {
      * Serializes this virus into the share-code format consumed by the engine.
      *
      * <p>Field order:</p>
-     * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier}</p>
+     * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier:infectionCount}</p>
      *
      * <p>Serialization math and encoding:</p>
      * <p>{@code infectivity = infectivity.score()}</p>
@@ -183,13 +225,15 @@ public class Virus implements Serializable {
      *
      * <p>The mutation slot uses {@code 1} for mutated strains and {@code 0} for stable strains.
      * The name and carrier fields are sanitized to remove reserved separators before they are
-     * appended, which keeps the encoded row safe for {@code VirusFactory.parseSingle(...)}.</p>
+     * appended, and the trailing infection-count field carries the committed lineage infection
+     * total. Older invite codes without the trailing count still parse correctly.</p>
      *
      * @return one-line share code representing this virus
      */
     public String toShareCode() {
         return id + ":" + family + ":" + infectivity.score() + ":" + resilience.score() + ":" + chaos.score() + ":"
-                + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(name) + ":" + sanitize(carrier);
+                + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(name) + ":" + sanitize(carrier)
+                + ":" + infectionCount;
     }
 
     /**
@@ -203,7 +247,28 @@ public class Virus implements Serializable {
      */
     public String getSummaryLine() {
         String mutationLabel = mutation ? "Mutated" : "Stable";
-        return name + "  |  " + family + "  |  " + mutationLabel + "  |  Rate " + getInfectionRate();
+        return name + "  |  " + family + "  |  " + mutationLabel + "  |  Rate " + getInfectionRate()
+                + "  |  Infections " + infectionCount;
+    }
+
+    /**
+     * Returns a copy of this strain with a replaced infection count.
+     *
+     * @param updatedInfectionCount new committed infection count for the strain
+     * @return copied virus preserving all non-count fields
+     */
+    public Virus withInfectionCount(int updatedInfectionCount) {
+        return new Virus(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
+                updatedInfectionCount);
+    }
+
+    /**
+     * Returns a copy of this strain with its committed infection count incremented by one.
+     *
+     * @return copied virus with infection count increased by one
+     */
+    public Virus incrementInfectionCount() {
+        return withInfectionCount(infectionCount + 1);
     }
 
     /**

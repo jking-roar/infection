@@ -19,6 +19,9 @@ import java.util.UUID;
  * <p>Second, the two templates are merged into an offspring whose genome and mutation state
  * are derived from both parents.</p>
  *
+ * <p>Committed infection counts are also carried through those templates so new offspring can
+ * inherit a combined lineage infection total.</p>
+ *
  * <p>The engine interprets virus strings in two ways:</p>
  * <p>Invite-code strings are parsed earlier by {@link VirusFactory} into {@link Virus} values.</p>
  * <p>Genome strings are then used here as stable fingerprints when computing mutation chance,
@@ -77,6 +80,7 @@ public final class InfectionEngine {
         int infectivity = 0;
         int resilience = 0;
         int chaos = 0;
+        int infectionCount = 0;
         String family = viruses.get(0).getFamily();
         String carrier = viruses.get(0).getCarrier();
         boolean sameFamily = true;
@@ -86,6 +90,7 @@ public final class InfectionEngine {
             infectivity += virus.getInfectivity().score();
             resilience += virus.getResilience().score();
             chaos += virus.getChaos().score();
+            infectionCount += virus.getInfectionCount();
             mutated = mutated || virus.hasMutation();
             if (!family.equals(virus.getFamily())) {
                 sameFamily = false;
@@ -106,7 +111,8 @@ public final class InfectionEngine {
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutated);
-        return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome, "Collapsed host strain");
+        return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome,
+                "Collapsed host strain", infectionCount);
     }
 
     /**
@@ -121,6 +127,7 @@ public final class InfectionEngine {
      * <p>{@code infectivity = mergeStat(left.infectivity, right.infectivity, true)}</p>
      * <p>{@code resilience = mergeStat(left.resilience, right.resilience, false)}</p>
      * <p>{@code chaos = mergeStat(left.chaos, right.chaos, true)}</p>
+     * <p>{@code infectionCount = left.infectionCount + right.infectionCount + 1}</p>
      *
      * <p>If mutation occurs:</p>
      * <p>{@code infectivity = clamp(infectivity + 1)}</p>
@@ -138,6 +145,7 @@ public final class InfectionEngine {
         int infectivity = mergeStat(left.getInfectivity().score(), right.getInfectivity().score(), true);
         int resilience = mergeStat(left.getResilience().score(), right.getResilience().score(), false);
         int chaos = mergeStat(left.getChaos().score(), right.getChaos().score(), true);
+        int infectionCount = left.getInfectionCount() + right.getInfectionCount() + 1;
         boolean mutation = shouldMutate(left, right);
 
         if (mutation) {
@@ -154,7 +162,8 @@ public final class InfectionEngine {
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, dominantFamily, infectivityRate, resilienceValue, chaosLevel, mutation);
         String origin = "Infected from " + left.getName() + " and " + right.getName();
-        return new Virus(id, name, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, origin);
+        return new Virus(id, name, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,
+                genome, origin, infectionCount);
     }
 
     /**

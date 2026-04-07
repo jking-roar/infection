@@ -35,14 +35,26 @@
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Friends Infected"
+            android:text="Infection Strength"
             />
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="30sp"
-            android:hint="720"
+            android:hint="115"
             android:id="@+id/infectionPopulation" android:layout_gravity="right"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Infections"
+            />
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:hint="0"
+            android:id="@+id/infectionCount" android:layout_gravity="right"/>
 
     <TextView
             android:layout_width="wrap_content"
