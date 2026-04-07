@@ -101,6 +101,33 @@ public class InfectionEngineTest {
         assertTrue(result.getOrigin().contains("Spark Cluster"));
     }
 
+    @Test
+    public void infectLocalUsesOnlyOwnedSelectionAndMarksLocalOrigin() {
+        Virus first = virus("owned-local-1", "Spark", 9, 5, 3, "OWN-L1", 2);
+        Virus second = virus("owned-local-2", "Spark", 3, 7, 9, "OWN-L2", 4);
+
+        Virus result = InfectionEngine.infectLocal(Arrays.asList(first, second));
+
+        assertEquals("Spark", result.getFamily());
+        assertEquals("Spark Local Mix", result.getName());
+        assertEquals("Combined from local strains", result.getOrigin());
+        assertEquals(Infectivity.rate(6), result.getInfectivity());
+        assertEquals(Resilience.of(6), result.getResilience());
+        assertEquals(Chaos.level(6), result.getChaos());
+        // sum(parent counts) + one committed combine action
+        assertEquals(7, result.getInfectionCount());
+    }
+
+    @Test
+    public void infectLocalFallsBackWhenSelectionIsEmpty() {
+        Virus result = InfectionEngine.infectLocal(Collections.<Virus>emptyList());
+
+        assertEquals("Combined from local strains", result.getOrigin());
+        assertTrue(result.getName().endsWith(" Local Mix"));
+        assertTrue(result.getGenome().length() > 0);
+        assertEquals(1, result.getInfectionCount());
+    }
+
     private Virus virus(String id, String family, int infectivity, int resilience, int chaos, String genome) {
         return virus(id, family, infectivity, resilience, chaos, genome, 0);
     }

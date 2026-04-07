@@ -13,6 +13,7 @@
     <string name="infection_preview_no_seed_entries">• No direct strain entries found.</string>
     <string name="infection_preview_friend_source_invite">Friend source: invite code decoded into %1$d strain(s).</string>
     <string name="infection_preview_friend_source_random">Friend source: no valid invite code was found, so random strain %1$s will be used.</string>
+    <string name="infection_preview_local_only">Local-only combine: using only your selected strains.</string>
     <string name="infection_preview_possibilities_heading">Projected possibilities</string>
     <string name="infection_preview_lineage">Projected lineage: %1$s family with genome %2$s.</string>
     <string name="infection_preview_mutation_likely">Mutation outlook: a volatile mutation spike is expected from this pairing.</string>
@@ -27,4 +28,5 @@
     <string name="create_virus_seed_manual">Seed used: %1$s.</string>
     <string name="create_virus_seed_random">Seed used: random.</string>
     <string name="create_virus_summary">Created %1$s in the %2$s family with genome %3$s. %4$s</string>
+    <string name="combine_local_button">Combine Selected</string>
 </resources>

@@ -55,6 +55,31 @@ public final class InfectionEngine {
     }
 
     /**
+     * Produces an offspring virus from only locally selected strains.
+     *
+     * <p>This bypasses invite-code parsing and friend/random fallback behavior. The selected
+     * strains are collapsed into one local template, then emitted as a local-only offspring.
+     * Infection count inherits the collapsed lineage count and increments once for the committed
+     * local combine action.</p>
+     *
+     * @param ownedViruses selected local viruses to combine
+     * @return newly combined local offspring virus
+     */
+    public static Virus infectLocal(List<Virus> ownedViruses) {
+        Virus merged = collapse(ownedViruses, "You");
+        String id = UUID.nameUUIDFromBytes((merged.getId() + "-local").getBytes()).toString();
+        String name = merged.getFamily() + " Local Mix";
+        String carrier = merged.getCarrier();
+        Infectivity infectivityRate = Infectivity.rate(merged.getInfectivity().score());
+        Resilience resilienceValue = Resilience.of(merged.getResilience().score());
+        Chaos chaosLevel = Chaos.level(merged.getChaos().score());
+        String genome = VirusFactory.buildGenome(id, merged.getFamily(), infectivityRate, resilienceValue, chaosLevel,
+                merged.hasMutation());
+        return new Virus(id, name, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
+                merged.hasMutation(), genome, "Combined from local strains", merged.getInfectionCount() + 1);
+    }
+
+    /**
      * Reduces a list of viruses into a single template strain.
      *
      * <p>The template is a normalized parent used for the final merge step. Infectivity,

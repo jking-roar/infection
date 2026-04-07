@@ -39,16 +39,17 @@ public class StartActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start);
 
-        virusList = (ListView) findViewById(R.id.virusList);
-        collectionSummary = (TextView) findViewById(R.id.collectionSummary);
-        resultSummary = (TextView) findViewById(R.id.resultSummary);
-        labSeedInput = (EditText) findViewById(R.id.labSeedInput);
-        friendCode = (EditText) findViewById(R.id.friendCode);
+        virusList = findViewById(R.id.virusList);
+        collectionSummary = findViewById(R.id.collectionSummary);
+        resultSummary = findViewById(R.id.resultSummary);
+        labSeedInput = findViewById(R.id.labSeedInput);
+        friendCode = findViewById(R.id.friendCode);
 
-        Button createButton = (Button) findViewById(R.id.createButton);
-        Button infectButton = (Button) findViewById(R.id.infectButton);
-        Button shareButton = (Button) findViewById(R.id.shareButton);
-        Button viewButton = (Button) findViewById(R.id.viewButton);
+        Button createButton = findViewById(R.id.createButton);
+        Button infectButton = findViewById(R.id.infectButton);
+        Button shareButton = findViewById(R.id.shareButton);
+        Button combineLocalButton = findViewById(R.id.combineLocalButton);
+        Button viewButton = findViewById(R.id.viewButton);
 
         createButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,6 +69,13 @@ public class StartActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 shareInvite();
+            }
+        });
+
+        combineLocalButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                combineLocalSelection();
             }
         });
 
@@ -97,7 +105,12 @@ public class StartActivity extends AppCompatActivity {
     }
 
     private void infectFriend() {
-        InfectionPlan plan = prepareInfectionPlan();
+        InfectionPlan plan = prepareInfectionPlan(false);
+        showInfectionPreview(plan);
+    }
+
+    private void combineLocalSelection() {
+        InfectionPlan plan = prepareInfectionPlan(true);
         showInfectionPreview(plan);
     }
 
@@ -125,7 +138,7 @@ public class StartActivity extends AppCompatActivity {
         Toast.makeText(this, getString(R.string.create_virus_toast, virus.getName()), Toast.LENGTH_SHORT).show();
     }
 
-    private InfectionPlan prepareInfectionPlan() {
+    private InfectionPlan prepareInfectionPlan(boolean localOnly) {
         List<Virus> selectedViruses = getSelectedViruses();
         boolean autoSelectedPrimary = false;
         if (selectedViruses.isEmpty() && !viruses.isEmpty()) {
@@ -134,15 +147,21 @@ public class StartActivity extends AppCompatActivity {
             autoSelectedPrimary = true;
         }
 
-        String inviteCodeText = friendCode.getText().toString();
-        List<Virus> friendViruses = VirusFactory.parseInviteCode(inviteCodeText);
-        boolean decodedInviteCode = !friendViruses.isEmpty();
-        if (friendViruses.isEmpty()) {
-            friendViruses.add(VirusFactory.createRandomFriendVirus());
+        List<Virus> friendViruses = new ArrayList<Virus>();
+        boolean decodedInviteCode = false;
+        Virus offspring;
+        if (localOnly) {
+            offspring = InfectionEngine.infectLocal(selectedViruses);
+        } else {
+            String inviteCodeText = friendCode.getText().toString();
+            friendViruses = VirusFactory.parseInviteCode(inviteCodeText);
+            decodedInviteCode = !friendViruses.isEmpty();
+            if (friendViruses.isEmpty()) {
+                friendViruses.add(VirusFactory.createRandomFriendVirus());
+            }
+            offspring = InfectionEngine.infect(selectedViruses, friendViruses);
         }
-
-        Virus offspring = InfectionEngine.infect(selectedViruses, friendViruses);
-        return new InfectionPlan(selectedViruses, friendViruses, offspring, autoSelectedPrimary, decodedInviteCode);
+        return new InfectionPlan(selectedViruses, friendViruses, offspring, autoSelectedPrimary, decodedInviteCode, localOnly);
     }
 
     private void showInfectionPreview(final InfectionPlan plan) {
@@ -159,7 +178,8 @@ public class StartActivity extends AppCompatActivity {
         Virus offspring = plan.offspring;
         VirusRepository.addVirus(offspring);
         refreshCollection();
-        resultSummary.setText(buildOutbreakSummary(plan.selectedViruses, plan.friendViruses, offspring, plan.decodedInviteCode));
+        resultSummary.setText(buildOutbreakSummary(plan.selectedViruses, plan.friendViruses, offspring,
+                plan.decodedInviteCode, plan.localOnly));
         Toast.makeText(this, "New virus created: " + offspring.getName(), Toast.LENGTH_SHORT).show();
     }
 
@@ -178,13 +198,16 @@ public class StartActivity extends AppCompatActivity {
 
         appendVirusList(message, getString(R.string.infection_preview_your_seeds), plan.selectedViruses);
         message.append("\n");
-        appendVirusList(message, getString(R.string.infection_preview_friend_seeds), plan.friendViruses);
-        message.append("\n");
-
-        if (plan.decodedInviteCode) {
-            message.append(getString(R.string.infection_preview_friend_source_invite, Integer.valueOf(plan.friendViruses.size())));
+        if (plan.localOnly) {
+            message.append(getString(R.string.infection_preview_local_only));
         } else {
-            message.append(getString(R.string.infection_preview_friend_source_random, plan.friendViruses.get(0).getName()));
+            appendVirusList(message, getString(R.string.infection_preview_friend_seeds), plan.friendViruses);
+            message.append("\n");
+            if (plan.decodedInviteCode) {
+                message.append(getString(R.string.infection_preview_friend_source_invite, Integer.valueOf(plan.friendViruses.size())));
+            } else {
+                message.append(getString(R.string.infection_preview_friend_source_random, plan.friendViruses.get(0).getName()));
+            }
         }
 
         message.append("\n\n");
@@ -289,7 +312,14 @@ public class StartActivity extends AppCompatActivity {
     private String buildOutbreakSummary(List<Virus> selectedViruses,
                                         List<Virus> friendViruses,
                                         Virus offspring,
-                                        boolean decodedInviteCode) {
+                                        boolean decodedInviteCode,
+                                        boolean localOnly) {
+        if (localOnly) {
+            return "Combined " + selectedViruses.size() + " of your strains locally. "
+                    + offspring.getName() + " emerged in the " + offspring.getFamily() + " family with genome "
+                    + offspring.getGenome() + ". Strength " + offspring.getInfectionStrength()
+                    + ", lineage infections " + offspring.getInfectionCount() + ".";
+        }
         String hostLabel = selectedViruses.size() + " of yours";
         String friendLabel = friendViruses.size() + " from your friend";
         String mutationLabel = offspring.hasMutation() ? "Mutation detected." : "Stable transfer.";
@@ -307,17 +337,20 @@ public class StartActivity extends AppCompatActivity {
         private final Virus offspring;
         private final boolean autoSelectedPrimary;
         private final boolean decodedInviteCode;
+        private final boolean localOnly;
 
         private InfectionPlan(List<Virus> selectedViruses,
                               List<Virus> friendViruses,
                               Virus offspring,
                               boolean autoSelectedPrimary,
-                              boolean decodedInviteCode) {
+                               boolean decodedInviteCode,
+                               boolean localOnly) {
             this.selectedViruses = selectedViruses;
             this.friendViruses = friendViruses;
             this.offspring = offspring;
             this.autoSelectedPrimary = autoSelectedPrimary;
             this.decodedInviteCode = decodedInviteCode;
+            this.localOnly = localOnly;
         }
     }
 }
