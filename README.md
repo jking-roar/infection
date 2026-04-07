@@ -103,7 +103,7 @@ Run unit tests:
 
 If multiple devices are connected, pick one device ID and install with `adb`:
 
-```powershell
+```powershell 
 adb devices
 adb -s <device-id> install -r .\app\build\outputs\apk\debug\app-debug.apk
 ```

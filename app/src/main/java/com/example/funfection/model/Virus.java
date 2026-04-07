@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 /**
  * Immutable domain record describing a single virus strain in the app.
+ *
+ * <p>Stat wrappers on this model use a gameplay range of {@code 1..10} per axis:
+ * infectivity (spread), resilience (survivability), and chaos (instability).
+ * Derived totals therefore span {@code 3..30} when all three axes are present.</p>
  */
 public class Virus implements Serializable {
 
@@ -31,16 +35,25 @@ public class Virus implements Serializable {
 
     /**
      * Transmission strength score representing how easily the strain spreads.
+     *
+     * <p>Expected engine range: {@code 1..10}. Higher values increase contagiousness and
+     * contribute linearly to the derived infection-rate total.</p>
      */
     private final Infectivity infectivity;
 
     /**
      * Durability score representing how well the strain survives resistance.
+     *
+     * <p>Expected engine range: {@code 1..10}. This is the defensive axis in infection math
+     * and contributes linearly to the derived infection-rate total.</p>
      */
     private final Resilience resilience;
 
     /**
      * Volatility score representing how unstable or unpredictable the strain is.
+     *
+     * <p>Expected engine range: {@code 1..10}. Higher chaos raises mutation pressure in merge
+     * logic and contributes linearly to the derived infection-rate total.</p>
      */
     private final Chaos chaos;
 
@@ -66,9 +79,9 @@ public class Virus implements Serializable {
      * @param name display name shown in lists and detail views
      * @param family lineage label used when grouping or combining strains
      * @param carrier fictional host label for flavor text and detail screens
-     * @param infectivity spread strength score for the strain
-     * @param resilience resistance and survivability score for the strain
-     * @param chaos instability score used in outbreak and mutation behavior
+     * @param infectivity spread strength score for the strain (engine-normalized to {@code 1..10})
+     * @param resilience resistance and survivability score for the strain (engine-normalized to {@code 1..10})
+     * @param chaos instability score used in outbreak and mutation behavior (engine-normalized to {@code 1..10})
      * @param mutation true when this strain resulted from a mutation event
      * @param genome compact genome signature used in deterministic combination logic
      * @param origin description of how the strain entered the player's collection
@@ -143,6 +156,13 @@ public class Virus implements Serializable {
      * value is requested. That keeps the display tier consistent with the underlying stat model
      * used by the engine.</p>
      *
+     * <p>Formula:</p>
+     * <p>{@code total = infectivity.score() + resilience.score() + chaos.score()}</p>
+     *
+     * <p>With engine-normalized stats, {@code total} is typically {@code 3..30} and maps to:
+     * {@code LOW} when {@code total <= 10}, {@code MEDIUM} when {@code total <= 18},
+     * {@code HIGH} when {@code total <= 24}, otherwise {@code OUTBREAK}.</p>
+     *
      * @return severity band derived from the combined stat total
      */
     public InfectionRates getInfectionRate() {
@@ -154,6 +174,12 @@ public class Virus implements Serializable {
      *
      * <p>Field order:</p>
      * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier}</p>
+     *
+     * <p>Serialization math and encoding:</p>
+     * <p>{@code infectivity = infectivity.score()}</p>
+     * <p>{@code resilience = resilience.score()}</p>
+     * <p>{@code chaos = chaos.score()}</p>
+     * <p>{@code mutation = hasMutation() ? 1 : 0}</p>
      *
      * <p>The mutation slot uses {@code 1} for mutated strains and {@code 0} for stable strains.
      * The name and carrier fields are sanitized to remove reserved separators before they are
