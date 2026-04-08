@@ -54,7 +54,7 @@ public class MyVirusActivity extends AppCompatActivity {
         virusFamily.setText(virus.getFamily());
         virusChaos.setText(Integer.toString(virus.getChaos().score()));
         virusGenome.setText(virus.getGenome());
-        virusOrigin.setText(virus.getOrigin());
+        virusOrigin.setText(virus.getOriginReport());
     }
 
     private Virus resolveVirus(Intent intent) {

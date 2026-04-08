@@ -4,6 +4,7 @@ import com.example.funfection.model.Chaos;
 import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
 import com.example.funfection.model.Virus;
+import com.example.funfection.model.VirusOrigin;
 
 import org.junit.Test;
 
@@ -159,6 +160,46 @@ public class InfectionEngineTest {
 
         assertEquals("Echo", result.getFamily());
         assertEquals("Echo Local Mix", result.getName());
+    }
+
+    @Test
+    public void infectKeepsFurthestPatientZerosAndResetsKnownDirectFriendToOneDegree() {
+        Virus local = new Virus("owned-origin-1", "Local Sample", "Spark", "Owner",
+            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "OWN-O1",
+            VirusOrigin.importedFromInvite(
+                VirusOrigin.infectedFrom("Seed", VirusOrigin.seededInLab(), "Far Friend",
+                    VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Far Friend")),
+                "Near Friend"),
+            0);
+        Virus friend = new Virus("friend-origin-1", "Friend Sample", "Spark", "Near Friend",
+            Infectivity.rate(6), Resilience.of(5), Chaos.level(4), false, "FRI-O1",
+            VirusOrigin.importedFromInvite(
+                VirusOrigin.infectedFrom("Seed", VirusOrigin.seededInLab(), "Far Friend",
+                    VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Far Friend")),
+                "Near Friend"),
+            0);
+
+        Virus result = InfectionEngine.infect(Collections.singletonList(local), Collections.singletonList(friend));
+
+        assertEquals("Infected from Spark Cluster and Spark Cluster", result.getOrigin());
+        assertTrue(result.getOriginInfo().hasDirectSource());
+        assertEquals(1, result.getOriginInfo().getDegreeOfSeparation());
+        assertEquals("Near Friend", result.getOriginInfo().getDirectSource().getDisplayName());
+        assertFalse(result.getOriginInfo().getPatientZeros().isEmpty());
+        assertEquals(2, result.getOriginInfo().getPatientZeros().get(0).getDegreeOfSeparation());
+    }
+
+    @Test
+    public void infectWithRandomFriendDoesNotCreatePatientZeroDegree() {
+        Virus owned = virus("owned-sim-1", "Spark", 5, 5, 5, "OWN-S1", 0);
+        Virus fakeFriend = VirusFactory.createRandomFriendVirus();
+
+        Virus result = InfectionEngine.infect(Collections.singletonList(owned), Collections.singletonList(fakeFriend));
+
+        assertTrue(result.getOriginInfo().hasDirectSource());
+        assertFalse(result.getOriginInfo().isRealFriendSource());
+        assertEquals(0, result.getOriginInfo().getDegreeOfSeparation());
+        assertTrue(result.getOriginInfo().getPatientZeros().isEmpty());
     }
 
     private Virus virus(String id, String family, int infectivity, int resilience, int chaos, String genome) {

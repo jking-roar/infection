@@ -19,12 +19,18 @@ public class Virus implements Serializable {
     private final String id;
 
     /**
-     * Display name shown to the player for this strain.
+        * Display name shown to the player for this strain.
+        *
+        * <p>This is presentation-facing flavor text, not the canonical lineage key. Multiple
+        * strains can share a family while having different display names.</p>
      */
     private final String name;
 
     /**
-     * Family label grouping related strains, such as starter and offspring lineages.
+        * Family label grouping related strains, such as starter and offspring lineages.
+        *
+        * <p>The engine combines and compares families as lineage metadata separate from the
+        * display name. UI copy should treat name and family as two distinct fields.</p>
      */
     private final String family;
 
@@ -63,14 +69,17 @@ public class Virus implements Serializable {
     private final boolean mutation;
 
     /**
-     * Compact genome signature used to describe and deterministically combine strains.
+        * Compact genome signature used to describe and deterministically combine strains.
+        *
+        * <p>This stays a display-oriented fingerprint used for deterministic seeding and flavor
+        * text. It is not the source of truth for reconstructing the stat model.</p>
      */
     private final String genome;
 
     /**
-     * Human-readable provenance text describing how or where this strain was created.
+     * Structured provenance metadata describing how or where this strain was created.
      */
-    private final String origin;
+    private final VirusOrigin origin;
 
     /**
      * Number of committed infection actions this strain lineage has participated in.
@@ -104,7 +113,8 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  String origin) {
-        this(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome, origin, 0);
+            this(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome,
+                VirusOrigin.legacy(origin), 0);
     }
 
     public Virus(String id,
@@ -118,6 +128,34 @@ public class Virus implements Serializable {
                  String genome,
                  String origin,
                  int infectionCount) {
+            this(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome,
+                VirusOrigin.legacy(origin), infectionCount);
+            }
+
+            public Virus(String id,
+                 String name,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 VirusOrigin origin) {
+            this(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome, origin, 0);
+            }
+
+            public Virus(String id,
+                 String name,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 VirusOrigin origin,
+                 int infectionCount) {
         this.id = id;
         this.name = name;
         this.family = family;
@@ -127,7 +165,7 @@ public class Virus implements Serializable {
         this.chaos = chaos;
         this.mutation = mutation;
         this.genome = genome;
-        this.origin = origin;
+        this.origin = origin == null ? VirusOrigin.legacy("Unknown origin") : origin;
         this.infectionCount = Math.max(0, infectionCount);
     }
 
@@ -168,7 +206,15 @@ public class Virus implements Serializable {
     }
 
     public String getOrigin() {
+        return origin.getSummary();
+    }
+
+    public VirusOrigin getOriginInfo() {
         return origin;
+    }
+
+    public String getOriginReport() {
+        return origin.describeDetailed();
     }
 
     public int getInfectionCount() {
@@ -215,7 +261,7 @@ public class Virus implements Serializable {
      * Serializes this virus into the share-code format consumed by the engine.
      *
      * <p>Field order:</p>
-     * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier:infectionCount}</p>
+    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier:infectionCount[:originPayload]}</p>
      *
      * <p>Serialization math and encoding:</p>
      * <p>{@code infectivity = infectivity.score()}</p>
@@ -232,8 +278,8 @@ public class Virus implements Serializable {
      */
     public String toShareCode() {
         return id + ":" + family + ":" + infectivity.score() + ":" + resilience.score() + ":" + chaos.score() + ":"
-                + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(name) + ":" + sanitize(carrier)
-                + ":" + infectionCount;
+            + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(name) + ":" + sanitize(carrier)
+            + ":" + infectionCount + ":" + origin.toSharePayload();
     }
 
     /**

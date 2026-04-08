@@ -118,6 +118,8 @@ You can also run from Android Studio:
 
 - Repository state is in-memory only; restarting the app resets the collection.
 - A blank invite input still produces an offspring strain by generating a seeded friend strain.
+- Virus display names and families are intentionally separate: the name is flavor text for a specific strain, while the family is the lineage label used by combine logic and UI grouping.
+- Genome strings are display-oriented fingerprints used for deterministic mutation behavior and flavor text; they are not treated as a parseable source of truth for stats.
 - Package-level docs are available in:
   - `app/src/main/java/com/example/funfection/ui/README.md`
   - `app/src/main/java/com/example/funfection/engine/README.md`
