@@ -63,12 +63,14 @@ public final class VirusOrigin implements Serializable {
 
     public static VirusOrigin collapsed(List<Virus> viruses) {
         List<PatientZero> lineage = new ArrayList<PatientZero>();
+        Source directSource = null;
         if (viruses != null) {
             for (Virus virus : viruses) {
+                directSource = choosePreferredDirectSource(directSource, virus.getOriginInfo().directSource);
                 lineage.addAll(virus.getOriginInfo().exportLineage());
             }
         }
-        return new VirusOrigin(Type.COLLAPSED, "Collapsed host strain", null, lineage);
+        return new VirusOrigin(Type.COLLAPSED, "Collapsed host strain", directSource, lineage);
     }
 
     public static VirusOrigin combinedLocally(VirusOrigin mergedOrigin) {
@@ -313,6 +315,22 @@ public final class VirusOrigin implements Serializable {
             return new ArrayList<PatientZero>(deduped);
         }
         return new ArrayList<PatientZero>(deduped.subList(0, MAX_PATIENT_ZEROS));
+    }
+
+    private static Source choosePreferredDirectSource(Source current, Source candidate) {
+        if (candidate == null) {
+            return current;
+        }
+        if (current == null) {
+            return candidate;
+        }
+        if (candidate.isRealFriend() != current.isRealFriend()) {
+            return candidate.isRealFriend() ? candidate : current;
+        }
+        if (candidate.getDegreeOfSeparation() != current.getDegreeOfSeparation()) {
+            return candidate.getDegreeOfSeparation() < current.getDegreeOfSeparation() ? candidate : current;
+        }
+        return candidate.getDisplayName().compareTo(current.getDisplayName()) < 0 ? candidate : current;
     }
 
     private static boolean isLikelyRealFriendCarrier(String carrier) {

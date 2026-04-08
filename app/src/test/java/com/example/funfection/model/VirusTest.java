@@ -3,6 +3,7 @@ package com.example.funfection.model;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class VirusTest {
@@ -12,7 +13,12 @@ public class VirusTest {
         Virus virus = new Virus("virus-1", "Spark:Name", "Spark", "Carrier|One",
             Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123", "Fixture", 3);
 
-        assertEquals("virus-1:Spark:4:5:6:1:GEN-123:Spark-Name:Carrier/One:3", virus.toShareCode());
+        String shareCode = virus.toShareCode();
+
+        assertTrue(shareCode.startsWith("virus-1:Spark:4:5:6:1:GEN-123:Spark-Name:Carrier/One:3:"));
+        String[] pieces = shareCode.split(":");
+        assertEquals(11, pieces.length);
+        assertNotNull(VirusOrigin.fromSharePayload(pieces[10]));
     }
 
     @Test

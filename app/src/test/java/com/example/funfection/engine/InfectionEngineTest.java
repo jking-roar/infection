@@ -129,8 +129,8 @@ public class InfectionEngineTest {
         assertEquals(1, result.getInfectionCount());
     }
 
-        @Test
-        public void infectKeepsFurthestPatientZerosAndResetsKnownDirectFriendToOneDegree() {
+    @Test
+    public void infectKeepsFurthestPatientZerosAndResetsKnownDirectFriendToOneDegree() {
         Virus local = new Virus("owned-origin-1", "Local Sample", "Spark", "Owner",
             Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "OWN-O1",
             VirusOrigin.importedFromInvite(
@@ -154,10 +154,10 @@ public class InfectionEngineTest {
         assertEquals("Near Friend", result.getOriginInfo().getDirectSource().getDisplayName());
         assertFalse(result.getOriginInfo().getPatientZeros().isEmpty());
         assertEquals(2, result.getOriginInfo().getPatientZeros().get(0).getDegreeOfSeparation());
-        }
+    }
 
-        @Test
-        public void infectWithRandomFriendDoesNotCreatePatientZeroDegree() {
+    @Test
+    public void infectWithRandomFriendDoesNotCreatePatientZeroDegree() {
         Virus owned = virus("owned-sim-1", "Spark", 5, 5, 5, "OWN-S1", 0);
         Virus fakeFriend = VirusFactory.createRandomFriendVirus();
 
@@ -167,7 +167,7 @@ public class InfectionEngineTest {
         assertFalse(result.getOriginInfo().isRealFriendSource());
         assertEquals(0, result.getOriginInfo().getDegreeOfSeparation());
         assertTrue(result.getOriginInfo().getPatientZeros().isEmpty());
-        }
+    }
 
     private Virus virus(String id, String family, int infectivity, int resilience, int chaos, String genome) {
         return virus(id, family, infectivity, resilience, chaos, genome, 0);
