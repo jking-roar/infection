@@ -4,6 +4,7 @@ import com.example.funfection.model.Chaos;
 import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
 import com.example.funfection.model.Virus;
+import com.example.funfection.model.VirusOrigin;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -32,8 +33,14 @@ import java.util.UUID;
 public final class VirusFactory {
 
     private static final String LAB_CARRIER = "Lab";
-    private static final String LAB_ORIGIN = "Seeded in lab";
-    private static final String FRIEND_FALLBACK_ORIGIN = "Generated as random friend fallback";
+    private static final String SIMULATED_FRIEND_FLAG = "[SIMULATED]";
+    private static final String[] MAD_SCIENTIST_NAMES = {
+            "Professor Tesla",
+            "Doctor Curie",
+            "Doc Brown",
+            "Professor Xavier",
+            "The Gutter Man"
+    };
 
     private static final String[] FAMILIES = {
             "Spark","Echo","Mirth","Glitch","Bloom","Pulse",
@@ -113,10 +120,10 @@ public final class VirusFactory {
      * @return generated virus with reproducible identity and stats
      */
     public static Virus fromSeed(String carrier, String seed) {
-        return fromSeed(carrier, seed, LAB_ORIGIN);
+        return fromSeed(carrier, seed, VirusOrigin.seededInLab());
     }
 
-    private static Virus fromSeed(String carrier, String seed, String origin) {
+    private static Virus fromSeed(String carrier, String seed, VirusOrigin origin) {
         Random random = new Random(seed.hashCode());
         String id = UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).toString();
         String family = FAMILIES[random.nextInt(FAMILIES.length)];
@@ -155,7 +162,7 @@ public final class VirusFactory {
      * <p>Each non-empty line is expected to use the serialized share-code format from
       * {@code Virus.toShareCode()}:</p>
       *
-      * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount]}</p>
+    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount[:originPayload]]}</p>
      *
      * <p>Malformed rows are ignored so a partially valid invite block can still import the
      * entries that parse cleanly.</p>
@@ -182,7 +189,7 @@ public final class VirusFactory {
      * Parses a single serialized invite-code row.
      *
       * <p>The expected field order is:</p>
-      * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount]}</p>
+    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount[:originPayload]]}</p>
      *
       * <p>The mutation field uses {@code 1} for mutated strains and {@code 0} for stable
       * strains. The optional trailing infection-count field preserves committed lineage usage
@@ -212,13 +219,15 @@ public final class VirusFactory {
             String name = pieces[7];
             String carrier = pieces[8];
             int infectionCount = pieces.length > 9 ? Math.max(0, Integer.parseInt(pieces[9])) : 0;
-                return new Virus(id, name, family, carrier,
+            VirusOrigin sharedOrigin = pieces.length > 10 ? VirusOrigin.fromSharePayload(pieces[10]) : null;
+            VirusOrigin importedOrigin = VirusOrigin.importedFromInvite(sharedOrigin, carrier);
+            return new Virus(id, name, family, carrier,
                     Infectivity.rate(infectivity),
                     Resilience.of(resilience),
                     Chaos.level(chaos),
                     mutation,
                     genome,
-                    "Imported from invite",
+                    importedOrigin,
                     infectionCount);
         } catch (NumberFormatException error) {
             return null;
@@ -234,8 +243,11 @@ public final class VirusFactory {
      * @return seeded stand-in virus representing a random friend contribution
      */
     public static Virus createRandomFriendVirus() {
-        String guestName = "Friend-" + Integer.toString(Math.abs(new Random().nextInt()) % 99 + 1, 10);
-        return fromSeed(guestName, guestName.toLowerCase(Locale.US), FRIEND_FALLBACK_ORIGIN);
+        Random random = new Random();
+        String alias = MAD_SCIENTIST_NAMES[Math.abs(random.nextInt()) % MAD_SCIENTIST_NAMES.length];
+        String guestName = alias + " " + SIMULATED_FRIEND_FLAG;
+        String seed = guestName.toLowerCase(Locale.US) + ":" + UUID.randomUUID().toString();
+        return fromSeed(guestName, seed, VirusOrigin.randomFriendFallback(guestName));
     }
 
     /**

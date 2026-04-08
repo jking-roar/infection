@@ -4,6 +4,7 @@ import com.example.funfection.model.Chaos;
 import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
 import com.example.funfection.model.Virus;
+import com.example.funfection.model.VirusOrigin;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -77,8 +78,9 @@ public final class InfectionEngine {
         Chaos chaosLevel = Chaos.level(merged.getChaos().score());
         String genome = VirusFactory.buildGenome(id, merged.getFamily(), infectivityRate, resilienceValue, chaosLevel,
                 merged.hasMutation());
+        VirusOrigin origin = VirusOrigin.combinedLocally(merged.getOriginInfo());
         return new Virus(id, name, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
-                merged.hasMutation(), genome, "Combined from local strains", merged.getInfectionCount() + 1);
+            merged.hasMutation(), genome, origin, merged.getInfectionCount() + 1);
     }
 
     /**
@@ -139,8 +141,9 @@ public final class InfectionEngine {
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutated);
+        VirusOrigin origin = VirusOrigin.collapsed(viruses);
         return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome,
-                "Collapsed host strain", infectionCount);
+            origin, infectionCount);
     }
 
     /**
@@ -190,7 +193,7 @@ public final class InfectionEngine {
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, dominantFamily, infectivityRate, resilienceValue, chaosLevel, mutation);
-        String origin = "Infected from " + left.getName() + " and " + right.getName();
+        VirusOrigin origin = VirusOrigin.infectedFrom(left.getName(), left.getOriginInfo(), right.getName(), right.getOriginInfo());
         return new Virus(id, name, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,
                 genome, origin, infectionCount);
     }
