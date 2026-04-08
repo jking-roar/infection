@@ -7,9 +7,18 @@
 - [x] Decide whether genomes should remain display-only fingerprints or move to a parseable format; if parseable, zero-pad or delimit stat segments.
 - [x] Document the current distinction between display name and family so the code and UX are explicit about the existing model.
 
-## Random Friend Generator
-- Random friend generator should include a list of Mad Scientist-like names. like "Professor X" or "the Gutter man" or "Charlie Brown"
-  - Consider appending a flag to the friend moniker to indicate it is auto generated
+## Random Fake Friend Generator
+- [ ] Random friend generator should include a list of Mad Scientist-like names. like "Professor X" or "the Gutter man" or "Charlie Brown"
+  - [ ] make a list of 20 scientist names inspired by history and pop culture
+  - [ ] Append a flag to the friend moniker to indicate it is not a real friend
+
+## Track the Friend origination as a first class object
+- [ ] flag real or not
+- [ ] flag known degree of separation
+  - [ ] sharing a virus with patient zero of one of your friends with another friend that doesn't know that particular friend should be 2 degrees
+  - [ ] getting infected with a virus that is a combination containing patient zero of a friend you know should be reset to 1 degree of separation
+- [ ] users and friends are identified with uuid
+
 
 ## Naming Model Decisions
 
