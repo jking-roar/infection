@@ -29,4 +29,5 @@
     <string name="create_virus_seed_random">Seed used: random.</string>
     <string name="create_virus_summary">Created %1$s in the %2$s family with genome %3$s. %4$s</string>
     <string name="combine_local_button">Combine Selected</string>
+    <string name="collection_summary_collected_viruses">"Collected viruses: %1$d"</string>
 </resources>

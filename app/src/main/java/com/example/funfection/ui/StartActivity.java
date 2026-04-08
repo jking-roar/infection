@@ -4,16 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.funfection.R;
 import com.example.funfection.data.VirusRepository;
 import com.example.funfection.engine.InfectionEngine;
@@ -31,7 +23,6 @@ public class StartActivity extends AppCompatActivity {
     private TextView resultSummary;
     private EditText labSeedInput;
     private EditText friendCode;
-    private ArrayAdapter<String> adapter;
     private List<Virus> viruses;
 
     @Override
@@ -51,40 +42,15 @@ public class StartActivity extends AppCompatActivity {
         Button combineLocalButton = findViewById(R.id.combineLocalButton);
         Button viewButton = findViewById(R.id.viewButton);
 
-        createButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                createLabVirus();
-            }
-        });
+        createButton.setOnClickListener(view -> createLabVirus());
 
-        infectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                infectFriend();
-            }
-        });
+        infectButton.setOnClickListener(view -> infectFriend());
 
-        shareButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                shareInvite();
-            }
-        });
+        shareButton.setOnClickListener(view -> shareInvite());
 
-        combineLocalButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                combineLocalSelection();
-            }
-        });
+        combineLocalButton.setOnClickListener(view -> combineLocalSelection());
 
-        viewButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openSelectedVirus();
-            }
-        });
+        viewButton.setOnClickListener(view -> openSelectedVirus());
     }
 
     @Override
@@ -95,13 +61,13 @@ public class StartActivity extends AppCompatActivity {
 
     private void refreshCollection() {
         viruses = VirusRepository.getViruses();
-        List<String> labels = new ArrayList<String>();
+        List<String> labels = new ArrayList<>();
         for (Virus virus : viruses) {
             labels.add(virus.getSummaryLine());
         }
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, labels);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_multiple_choice, labels);
         virusList.setAdapter(adapter);
-        collectionSummary.setText("Collected viruses: " + viruses.size());
+        collectionSummary.setText(getString(R.string.collection_summary_collected_viruses, viruses.size()));
     }
 
     private void infectFriend() {
@@ -147,7 +113,7 @@ public class StartActivity extends AppCompatActivity {
             autoSelectedPrimary = true;
         }
 
-        List<Virus> friendViruses = new ArrayList<Virus>();
+        List<Virus> friendViruses = new ArrayList<>();
         boolean decodedInviteCode = false;
         Virus offspring;
         if (localOnly) {
@@ -204,7 +170,7 @@ public class StartActivity extends AppCompatActivity {
             appendVirusList(message, getString(R.string.infection_preview_friend_seeds), plan.friendViruses);
             message.append("\n");
             if (plan.decodedInviteCode) {
-                message.append(getString(R.string.infection_preview_friend_source_invite, Integer.valueOf(plan.friendViruses.size())));
+                message.append(getString(R.string.infection_preview_friend_source_invite, plan.friendViruses.size()));
             } else {
                 message.append(getString(R.string.infection_preview_friend_source_random, plan.friendViruses.get(0).getName()));
             }
@@ -221,9 +187,9 @@ public class StartActivity extends AppCompatActivity {
         message.append("\n");
         message.append(getString(
                 R.string.infection_preview_stats,
-                Integer.valueOf(plan.offspring.getInfectivity().score()),
-                Integer.valueOf(plan.offspring.getResilience().score()),
-                Integer.valueOf(plan.offspring.getChaos().score()),
+                plan.offspring.getInfectivity().score(),
+                plan.offspring.getResilience().score(),
+                plan.offspring.getChaos().score(),
                 plan.offspring.getInfectionRate().toString()));
         message.append("\n");
         message.append(getString(R.string.infection_preview_carrier_chain, plan.offspring.getCarrier()));
@@ -246,8 +212,8 @@ public class StartActivity extends AppCompatActivity {
                     virus.getFamily(),
                     virus.getGenome(),
                     virus.getInfectionRate().toString(),
-                    Integer.valueOf(virus.getInfectionStrength()),
-                    Integer.valueOf(virus.getInfectionCount())));
+                    virus.getInfectionStrength(),
+                    virus.getInfectionCount()));
         }
     }
 
@@ -291,7 +257,7 @@ public class StartActivity extends AppCompatActivity {
     }
 
     private List<Virus> getSelectedViruses() {
-        List<Virus> selectedViruses = new ArrayList<Virus>();
+        List<Virus> selectedViruses = new ArrayList<>();
         SparseBooleanArray checkedItems = virusList.getCheckedItemPositions();
         for (int index = 0; index < virusList.getCount(); index++) {
             if (checkedItems.get(index)) {
@@ -302,7 +268,7 @@ public class StartActivity extends AppCompatActivity {
     }
 
     private List<String> getVirusIds(List<Virus> source) {
-        List<String> ids = new ArrayList<String>();
+        List<String> ids = new ArrayList<>();
         for (Virus virus : source) {
             ids.add(virus.getId());
         }
@@ -343,8 +309,8 @@ public class StartActivity extends AppCompatActivity {
                               List<Virus> friendViruses,
                               Virus offspring,
                               boolean autoSelectedPrimary,
-                               boolean decodedInviteCode,
-                               boolean localOnly) {
+                              boolean decodedInviteCode,
+                              boolean localOnly) {
             this.selectedViruses = selectedViruses;
             this.friendViruses = friendViruses;
             this.offspring = offspring;

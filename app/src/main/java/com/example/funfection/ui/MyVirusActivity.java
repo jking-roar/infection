@@ -3,9 +3,7 @@ package com.example.funfection.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.funfection.R;
 import com.example.funfection.data.VirusRepository;
 import com.example.funfection.model.Virus;
@@ -29,16 +27,16 @@ public class MyVirusActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_virus);
 
-        virusName = (TextView) findViewById(R.id.virusName);
-        patientZero = (TextView) findViewById(R.id.patientZero);
-        infectedPopulation = (TextView) findViewById(R.id.infectionPopulation);
-        infectionCount = (TextView) findViewById(R.id.infectionCount);
-        infectionRate = (TextView) findViewById(R.id.infectionRate);
+        virusName = findViewById(R.id.virusName);
+        patientZero = findViewById(R.id.patientZero);
+        infectedPopulation = findViewById(R.id.infectionPopulation);
+        infectionCount = findViewById(R.id.infectionCount);
+        infectionRate = findViewById(R.id.infectionRate);
 
-        virusFamily = (TextView) findViewById(R.id.virusFamily);
-        virusChaos = (TextView) findViewById(R.id.virusChaos);
-        virusGenome = (TextView) findViewById(R.id.virusGenome);
-        virusOrigin = (TextView) findViewById(R.id.virusOrigin);
+        virusFamily = findViewById(R.id.virusFamily);
+        virusChaos = findViewById(R.id.virusChaos);
+        virusGenome = findViewById(R.id.virusGenome);
+        virusOrigin = findViewById(R.id.virusOrigin);
 
         Virus virus = resolveVirus(getIntent());
 
