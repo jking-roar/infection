@@ -1,5 +1,9 @@
 # Virus Naming And Combination Assessment Tasks
 
+## Bugs
+- [ ] unable to scroll the view of collected viruses
+
+
 ## Quick Wins
 
 - [x] Make all deterministic ID derivation charset-explicit with `StandardCharsets.UTF_8` in seed and combine paths.
@@ -68,3 +72,14 @@
 - [ ] Write down the intended lore rules for seeded strains, friend strains, local mixes, remixes, and chimeras.
 - [ ] Add a small debug or test harness to measure naming diversity, collision rates, and semantic alignment after refactoring.
 - [ ] Define success metrics for lore coherence, interpretability, and determinism before the naming-system redesign begins.
+
+## UI Updates
+- [ ] tabs on bottom for separate views for differnt task modes
+  - [ ] view collection
+    - [ ] tap virus for context commands; double tap to view virus
+  - [ ] create a virus
+  - [ ] combining viruses
+  - [ ] view virus; swipe or button press to go back
+  - [ ] friend view
+  - [ ] infect a friend
+    - [ ] qr code or share link or paste infection code
