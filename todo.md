@@ -7,6 +7,10 @@
 - [x] Decide whether genomes should remain display-only fingerprints or move to a parseable format; if parseable, zero-pad or delimit stat segments.
 - [x] Document the current distinction between display name and family so the code and UX are explicit about the existing model.
 
+## Random Friend Generator
+- Random friend generator should include a list of Mad Scientist-like names. like "Professor X" or "the Gutter man" or "Charlie Brown"
+  - append a flag to the friend moniker to indicate it is auto generated?
+
 ## Naming Model Decisions
 
 - [ ] Decide whether seeded strains should continue using `PREFIX + SUFFIX` with family stored separately, or move to a structured `PREFIX + FAMILY + SUFFIX` style display model.

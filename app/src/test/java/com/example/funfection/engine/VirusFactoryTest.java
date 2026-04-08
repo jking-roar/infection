@@ -33,7 +33,7 @@ public class VirusFactoryTest {
 
     @Test
     public void fromSeedUsesUtf8ForDeterministicUuidDerivation() {
-        String seed = "caf\u00e9-b4na";
+        String seed = "caf\u00e9-\u0394na";
 
         Virus virus = VirusFactory.fromSeed("Dana", seed);
 
