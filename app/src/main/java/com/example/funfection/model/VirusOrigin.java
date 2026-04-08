@@ -48,11 +48,13 @@ public final class VirusOrigin implements Serializable {
 
     public static VirusOrigin importedFromInvite(VirusOrigin sharedOrigin, String carrier) {
         VirusOrigin base = sharedOrigin == null ? legacy("Imported from invite") : sharedOrigin;
-        Source source = base.directSource;
-        if (source != null) {
-            source = source.withDegree(source.isRealFriend() ? 1 : 0);
-        } else if (isLikelyRealFriendCarrier(carrier)) {
+        Source source;
+        if (isLikelyRealFriendCarrier(carrier)) {
             source = Source.real(stableId("carrier:" + carrier), carrier, 1);
+        } else if (base.directSource != null) {
+            source = base.directSource.withDegree(base.directSource.isRealFriend() ? 1 : 0);
+        } else {
+            source = null;
         }
 
         List<PatientZero> advancedLineage = advanceLineage(base.exportLineage(), source);
@@ -319,7 +321,7 @@ public final class VirusOrigin implements Serializable {
         }
         String normalized = carrier.trim();
         return !LAB_CARRIER.equalsIgnoreCase(normalized)
-                && normalized.indexOf('x') < 0
+            && !normalized.contains(" x ")
                 && !normalized.contains(SIMULATED_FLAG);
     }
 
