@@ -3,6 +3,7 @@ package com.example.funfection.model;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class VirusTest {
@@ -53,5 +54,19 @@ public class VirusTest {
         assertEquals(2, original.getInfectionCount());
         assertEquals(3, incremented.getInfectionCount());
         assertEquals(original.getId(), incremented.getId());
+    }
+
+    @Test
+    public void getInfectionStrengthDoesNotIncludeChaos() {
+        // getInfectionStrength uses infectivity*10 + resilience*7 (chaos is excluded).
+        // Two viruses that differ only in chaos therefore share the same infection strength,
+        // even though getInfectionRate() includes chaos and produces different bands for them.
+        Virus lowChaos = new Virus("v-lc", "A", "Spark", "C",
+            Infectivity.rate(5), Resilience.of(5), Chaos.level(1), false, "G1", "F");
+        Virus highChaos = new Virus("v-hc", "B", "Spark", "C",
+            Infectivity.rate(5), Resilience.of(5), Chaos.level(10), false, "G2", "F");
+
+        assertEquals(lowChaos.getInfectionStrength(), highChaos.getInfectionStrength());
+        assertNotEquals(lowChaos.getInfectionRate(), highChaos.getInfectionRate());
     }
 }

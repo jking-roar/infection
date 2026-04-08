@@ -228,7 +228,8 @@ public final class InfectionEngine {
         int mutationChance = 12 + Math.max(0, 18 - similarity);
         long seed = (long) left.getGenome().hashCode() * 31L + right.getGenome().hashCode();
         Random random = new Random(seed);
-        return (Math.abs(random.nextInt()) % 100) < mutationChance;
+        // Math.abs(Integer.MIN_VALUE) overflows to a negative value; Math.max(0, ...) corrects that.
+        return (Math.max(0, Math.abs(random.nextInt())) % 100) < mutationChance;
     }
 
     /**
@@ -248,7 +249,8 @@ public final class InfectionEngine {
      * <p>{@code energyBias = 1 when preferEnergy is true, otherwise 0}</p>
      *
      * <p>Otherwise use weighted merge biased toward the left template:</p>
-     * <p>{@code result = clamp((left * 2 + right) / 3)}</p>
+     * <p>{@code result = clamp((left * 2 + right) / 3 + energyBias)}</p>
+     * <p>{@code energyBias = 1 when preferEnergy is true, otherwise 0}</p>
      *
      * <p>Engine usage: {@code preferEnergy=true} for infectivity and chaos, and
      * {@code preferEnergy=false} for resilience.</p>
@@ -257,7 +259,7 @@ public final class InfectionEngine {
         if (Math.abs(left - right) <= 1) {
             return clamp((left + right) / 2 + (preferEnergy ? 1 : 0));
         }
-        return clamp((left * 2 + right) / 3);
+        return clamp((left * 2 + right) / 3 + (preferEnergy ? 1 : 0));
     }
 
     /**
