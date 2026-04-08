@@ -127,5 +127,6 @@
         "Invoke-Expression": false,
         "iex": false
     },
-    "chat.tools.terminal.enableAutoApprove": true
+    "chat.tools.terminal.enableAutoApprove": true,
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
