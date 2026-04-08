@@ -9,7 +9,7 @@
 
 ## Random Friend Generator
 - Random friend generator should include a list of Mad Scientist-like names. like "Professor X" or "the Gutter man" or "Charlie Brown"
-  - append a flag to the friend moniker to indicate it is auto generated?
+  - Consider appending a flag to the friend moniker to indicate it is auto generated
 
 ## Naming Model Decisions
 
