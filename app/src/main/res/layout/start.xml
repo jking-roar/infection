@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -35,10 +35,11 @@
                 <ListView
                         android:id="@+id/virusList"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/virus_list_height"
                         android:layout_marginTop="8dp"
                         android:dividerHeight="8dp"
-                        android:choiceMode="multipleChoice" />
+                        android:choiceMode="multipleChoice"
+                        android:nestedScrollingEnabled="true" />
 
                 <TextView
                         android:layout_width="wrap_content"
@@ -140,5 +141,5 @@
                         android:text="No infection has been triggered yet." />
 
         </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>
 
