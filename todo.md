@@ -2,10 +2,10 @@
 
 ## Quick Wins
 
-- [ ] Make all deterministic ID derivation charset-explicit with `StandardCharsets.UTF_8` in seed and combine paths.
-- [ ] Add a dedicated fallback friend generator or origin override so random friend strains do not use `Seeded in lab` provenance.
-- [ ] Decide whether genomes should remain display-only fingerprints or move to a parseable format; if parseable, zero-pad or delimit stat segments.
-- [ ] Document the current distinction between display name and family so the code and UX are explicit about the existing model.
+- [x] Make all deterministic ID derivation charset-explicit with `StandardCharsets.UTF_8` in seed and combine paths.
+- [x] Add a dedicated fallback friend generator or origin override so random friend strains do not use `Seeded in lab` provenance.
+- [x] Decide whether genomes should remain display-only fingerprints or move to a parseable format; if parseable, zero-pad or delimit stat segments.
+- [x] Document the current distinction between display name and family so the code and UX are explicit about the existing model.
 
 ## Naming Model Decisions
 

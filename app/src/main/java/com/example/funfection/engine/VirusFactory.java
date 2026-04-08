@@ -5,6 +5,7 @@ import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
 import com.example.funfection.model.Virus;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +32,8 @@ import java.util.UUID;
 public final class VirusFactory {
 
     private static final String LAB_CARRIER = "Lab";
+    private static final String LAB_ORIGIN = "Seeded in lab";
+    private static final String FRIEND_FALLBACK_ORIGIN = "Generated as random friend fallback";
 
     private static final String[] FAMILIES = {
             "Spark","Echo","Mirth","Glitch","Bloom","Pulse",
@@ -110,8 +113,12 @@ public final class VirusFactory {
      * @return generated virus with reproducible identity and stats
      */
     public static Virus fromSeed(String carrier, String seed) {
+        return fromSeed(carrier, seed, LAB_ORIGIN);
+    }
+
+    private static Virus fromSeed(String carrier, String seed, String origin) {
         Random random = new Random(seed.hashCode());
-        String id = UUID.nameUUIDFromBytes(seed.getBytes()).toString();
+        String id = UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).toString();
         String family = FAMILIES[random.nextInt(FAMILIES.length)];
         String name = PREFIXES[random.nextInt(PREFIXES.length)] + " "
                 + SUFFIXES[random.nextInt(SUFFIXES.length)];
@@ -123,7 +130,7 @@ public final class VirusFactory {
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutation);
-        return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, "Seeded in lab");
+        return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, origin);
     }
 
     /**
@@ -221,11 +228,14 @@ public final class VirusFactory {
     /**
      * Creates a temporary friend strain when the user does not provide an invite code.
      *
+     * <p>This uses the same deterministic seed pipeline as lab-created strains, but carries
+     * explicit fallback provenance so random friend stand-ins are not presented as lab seeds.</p>
+     *
      * @return seeded stand-in virus representing a random friend contribution
      */
     public static Virus createRandomFriendVirus() {
         String guestName = "Friend-" + Integer.toString(Math.abs(new Random().nextInt()) % 99 + 1, 10);
-        return fromSeed(guestName, guestName.toLowerCase(Locale.US));
+        return fromSeed(guestName, guestName.toLowerCase(Locale.US), FRIEND_FALLBACK_ORIGIN);
     }
 
     /**
@@ -240,8 +250,10 @@ public final class VirusFactory {
      * <p>{@code IRC}: infectivity, resilience, and chaos scores concatenated in that order.</p>
      * <p>{@code MARKER}: {@code M} for mutated or {@code S} for stable.</p>
      *
-     * <p>The genome is not a biological simulation. It is a readable fingerprint used by the
-     * infection engine for deterministic mutation seeding and by the UI for flavor text.</p>
+    * <p>The genome is not a biological simulation or a stable parse contract. It is a readable
+    * fingerprint used by the infection engine for deterministic mutation seeding and by the UI
+    * for flavor text. Code should treat the genome as display-oriented metadata, not as a field
+    * that needs to be losslessly decoded back into gameplay state.</p>
      *
      * @param id unique virus identifier
      * @param family virus lineage label

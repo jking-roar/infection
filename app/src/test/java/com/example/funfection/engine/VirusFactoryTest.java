@@ -7,7 +7,9 @@ import com.example.funfection.model.Virus;
 
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -27,6 +29,15 @@ public class VirusFactoryTest {
         assertEquals(first.getName(), second.getName());
         assertEquals(first.getFamily(), second.getFamily());
         assertEquals(first.getGenome(), second.getGenome());
+    }
+
+    @Test
+    public void fromSeedUsesUtf8ForDeterministicUuidDerivation() {
+        String seed = "caf\u00e9-b4na";
+
+        Virus virus = VirusFactory.fromSeed("Dana", seed);
+
+        assertEquals(UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).toString(), virus.getId());
     }
 
     @Test
@@ -59,6 +70,14 @@ public class VirusFactoryTest {
         assertNotEquals(first.getId(), second.getId());
         assertEquals("Lab", first.getCarrier());
         assertEquals("Lab", second.getCarrier());
+    }
+
+    @Test
+    public void createRandomFriendVirusUsesFriendFallbackOrigin() {
+        Virus friend = VirusFactory.createRandomFriendVirus();
+
+        assertTrue(friend.getCarrier().startsWith("Friend-"));
+        assertEquals("Generated as random friend fallback", friend.getOrigin());
     }
 
     @Test

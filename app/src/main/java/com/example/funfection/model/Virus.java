@@ -19,12 +19,18 @@ public class Virus implements Serializable {
     private final String id;
 
     /**
-     * Display name shown to the player for this strain.
+        * Display name shown to the player for this strain.
+        *
+        * <p>This is presentation-facing flavor text, not the canonical lineage key. Multiple
+        * strains can share a family while having different display names.</p>
      */
     private final String name;
 
     /**
-     * Family label grouping related strains, such as starter and offspring lineages.
+        * Family label grouping related strains, such as starter and offspring lineages.
+        *
+        * <p>The engine combines and compares families as lineage metadata separate from the
+        * display name. UI copy should treat name and family as two distinct fields.</p>
      */
     private final String family;
 
@@ -63,7 +69,10 @@ public class Virus implements Serializable {
     private final boolean mutation;
 
     /**
-     * Compact genome signature used to describe and deterministically combine strains.
+        * Compact genome signature used to describe and deterministically combine strains.
+        *
+        * <p>This stays a display-oriented fingerprint used for deterministic seeding and flavor
+        * text. It is not the source of truth for reconstructing the stat model.</p>
      */
     private final String genome;
 

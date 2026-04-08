@@ -5,6 +5,7 @@ import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
 import com.example.funfection.model.Virus;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -67,7 +68,8 @@ public final class InfectionEngine {
      */
     public static Virus infectLocal(List<Virus> ownedViruses) {
         Virus merged = collapse(ownedViruses, "You");
-        String id = UUID.nameUUIDFromBytes((merged.getId() + "-local").getBytes()).toString();
+        String id = UUID.nameUUIDFromBytes((merged.getId() + "-local")
+            .getBytes(StandardCharsets.UTF_8)).toString();
         String name = merged.getFamily() + " Local Mix";
         String carrier = merged.getCarrier();
         Infectivity infectivityRate = Infectivity.rate(merged.getInfectivity().score());
@@ -130,7 +132,8 @@ public final class InfectionEngine {
             family = viruses.get(size - 1).getFamily();
         }
 
-        String id = UUID.nameUUIDFromBytes((family + infectivity + resilience + chaos + carrier).getBytes()).toString();
+        String id = UUID.nameUUIDFromBytes((family + infectivity + resilience + chaos + carrier)
+            .getBytes(StandardCharsets.UTF_8)).toString();
         String name = (sameFamily ? family : "Hybrid") + " Cluster";
         Infectivity infectivityRate = Infectivity.rate(infectivity);
         Resilience resilienceValue = Resilience.of(resilience);
@@ -179,7 +182,8 @@ public final class InfectionEngine {
         }
 
         String lineage = left.getId().substring(0, 4) + right.getId().substring(0, 4);
-        String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation).getBytes()).toString();
+        String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation)
+            .getBytes(StandardCharsets.UTF_8)).toString();
         String carrier = left.getCarrier() + " x " + right.getCarrier();
         String name = dominantFamily + (mutation ? " Chimera" : " Remix");
         Infectivity infectivityRate = Infectivity.rate(infectivity);
