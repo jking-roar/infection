@@ -5,5 +5,19 @@
     "ghcr.io/devcontainers/features/java:1": {
       "version": "21"
     }
+  },
+  "containerEnv": {
+    "JAVA_HOME": "/usr/local/sdkman/candidates/java/current"
+  },
+  "remoteEnv": {
+    "JAVA_HOME": "/usr/local/sdkman/candidates/java/current"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current",
+        "java.import.gradle.java.home": "/usr/local/sdkman/candidates/java/current"
+      }
+    }
   }
 }
