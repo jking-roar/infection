@@ -130,6 +130,39 @@ public class InfectionEngineTest {
     }
 
     @Test
+    public void combineAppliesEnergyBiasWhenStatsAreDivergent() {
+        // infectivity diff = |9-1| = 8 and chaos diff = |2-10| = 8, both exceed the close threshold.
+        // With preferEnergy=true the weighted formula becomes (left*2+right)/3 + 1.
+        // infectivity: (9*2+1)/3 + 1 = 6 + 1 = 7   (resilience uses preferEnergy=false: (3*2+9)/3 = 5)
+        // chaos:       (2*2+10)/3 + 1 = 4 + 1 = 5   (no mutation for this pair)
+        Virus left = virus("left-div", "Spark", 9, 3, 2, "AAA-0");
+        Virus right = virus("right-div", "Echo", 1, 9, 10, "BBB-0");
+
+        Virus result = InfectionEngine.combine(left, right);
+
+        assertFalse(result.hasMutation());
+        assertEquals(Infectivity.rate(7), result.getInfectivity());
+        assertEquals(Resilience.of(5), result.getResilience());
+        assertEquals(Chaos.level(5), result.getChaos());
+    }
+
+    @Test
+    public void infectLocalWithMixedFamiliesUsesLastFamilyAsCollapsedFamily() {
+        // When owned viruses span multiple families, collapse assigns the last virus's family.
+        // The collapsed template is named "Hybrid Cluster" but its family field is the last entry's
+        // family rather than a hybrid code. infectLocal then uses that family directly.
+        Virus first = new Virus("mixed-1", "Spark One", "Spark", "Owner",
+            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "G1", "Fixture");
+        Virus second = new Virus("mixed-2", "Echo Two", "Echo", "Owner",
+            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "G2", "Fixture");
+
+        Virus result = InfectionEngine.infectLocal(Arrays.asList(first, second));
+
+        assertEquals("Echo", result.getFamily());
+        assertEquals("Echo Local Mix", result.getName());
+    }
+
+    @Test
     public void infectKeepsFurthestPatientZerosAndResetsKnownDirectFriendToOneDegree() {
         Virus local = new Virus("owned-origin-1", "Local Sample", "Spark", "Owner",
             Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "OWN-O1",
