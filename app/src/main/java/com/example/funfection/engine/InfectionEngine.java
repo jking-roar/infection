@@ -4,7 +4,9 @@ import com.example.funfection.model.Chaos;
 import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
 import com.example.funfection.model.Virus;
+import com.example.funfection.model.VirusOrigin;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -67,7 +69,8 @@ public final class InfectionEngine {
      */
     public static Virus infectLocal(List<Virus> ownedViruses) {
         Virus merged = collapse(ownedViruses, "You");
-        String id = UUID.nameUUIDFromBytes((merged.getId() + "-local").getBytes()).toString();
+        String id = UUID.nameUUIDFromBytes((merged.getId() + "-local")
+            .getBytes(StandardCharsets.UTF_8)).toString();
         String name = merged.getFamily() + " Local Mix";
         String carrier = merged.getCarrier();
         Infectivity infectivityRate = Infectivity.rate(merged.getInfectivity().score());
@@ -75,8 +78,9 @@ public final class InfectionEngine {
         Chaos chaosLevel = Chaos.level(merged.getChaos().score());
         String genome = VirusFactory.buildGenome(id, merged.getFamily(), infectivityRate, resilienceValue, chaosLevel,
                 merged.hasMutation());
+        VirusOrigin origin = VirusOrigin.combinedLocally(merged.getOriginInfo());
         return new Virus(id, name, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
-                merged.hasMutation(), genome, "Combined from local strains", merged.getInfectionCount() + 1);
+            merged.hasMutation(), genome, origin, merged.getInfectionCount() + 1);
     }
 
     /**
@@ -130,14 +134,16 @@ public final class InfectionEngine {
             family = viruses.get(size - 1).getFamily();
         }
 
-        String id = UUID.nameUUIDFromBytes((family + infectivity + resilience + chaos + carrier).getBytes()).toString();
+        String id = UUID.nameUUIDFromBytes((family + infectivity + resilience + chaos + carrier)
+            .getBytes(StandardCharsets.UTF_8)).toString();
         String name = (sameFamily ? family : "Hybrid") + " Cluster";
         Infectivity infectivityRate = Infectivity.rate(infectivity);
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutated);
+        VirusOrigin origin = VirusOrigin.collapsed(viruses);
         return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome,
-                "Collapsed host strain", infectionCount);
+            origin, infectionCount);
     }
 
     /**
@@ -179,14 +185,15 @@ public final class InfectionEngine {
         }
 
         String lineage = left.getId().substring(0, 4) + right.getId().substring(0, 4);
-        String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation).getBytes()).toString();
+        String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation)
+            .getBytes(StandardCharsets.UTF_8)).toString();
         String carrier = left.getCarrier() + " x " + right.getCarrier();
         String name = dominantFamily + (mutation ? " Chimera" : " Remix");
         Infectivity infectivityRate = Infectivity.rate(infectivity);
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, dominantFamily, infectivityRate, resilienceValue, chaosLevel, mutation);
-        String origin = "Infected from " + left.getName() + " and " + right.getName();
+        VirusOrigin origin = VirusOrigin.infectedFrom(left.getName(), left.getOriginInfo(), right.getName(), right.getOriginInfo());
         return new Virus(id, name, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,
                 genome, origin, infectionCount);
     }

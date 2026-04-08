@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListAdapter;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -101,7 +103,34 @@ public class StartActivity extends AppCompatActivity {
         }
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, labels);
         virusList.setAdapter(adapter);
+        resizeVirusListToContent(adapter);
         collectionSummary.setText("Collected viruses: " + viruses.size());
+    }
+
+    private void resizeVirusListToContent(ListAdapter listAdapter) {
+        if (listAdapter == null) {
+            return;
+        }
+
+        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(virusList.getWidth(), View.MeasureSpec.AT_MOST);
+        int totalHeight = 0;
+        View child = null;
+        for (int index = 0; index < listAdapter.getCount(); index++) {
+            child = listAdapter.getView(index, child, virusList);
+            if (child.getLayoutParams() == null) {
+                child.setLayoutParams(new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+            int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+            child.measure(widthMeasureSpec, heightMeasureSpec);
+            totalHeight += child.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams layoutParams = virusList.getLayoutParams();
+        layoutParams.height = totalHeight + (virusList.getDividerHeight() * Math.max(0, listAdapter.getCount() - 1));
+        virusList.setLayoutParams(layoutParams);
+        virusList.requestLayout();
     }
 
     private void infectFriend() {

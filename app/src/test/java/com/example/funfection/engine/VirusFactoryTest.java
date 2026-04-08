@@ -4,10 +4,13 @@ import com.example.funfection.model.Chaos;
 import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
 import com.example.funfection.model.Virus;
+import com.example.funfection.model.VirusOrigin;
 
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -27,6 +30,15 @@ public class VirusFactoryTest {
         assertEquals(first.getName(), second.getName());
         assertEquals(first.getFamily(), second.getFamily());
         assertEquals(first.getGenome(), second.getGenome());
+    }
+
+    @Test
+    public void fromSeedUsesUtf8ForDeterministicUuidDerivation() {
+        String seed = "caf\u00e9-\u0394na";
+
+        Virus virus = VirusFactory.fromSeed("Dana", seed);
+
+        assertEquals(UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).toString(), virus.getId());
     }
 
     @Test
@@ -62,9 +74,22 @@ public class VirusFactoryTest {
     }
 
     @Test
+    public void createRandomFriendVirusUsesFriendFallbackOrigin() {
+        Virus friend = VirusFactory.createRandomFriendVirus();
+
+        assertTrue(friend.getCarrier().contains("[SIMULATED]"));
+        assertEquals("Generated as random friend fallback", friend.getOrigin());
+        assertFalse(friend.getOriginInfo().isRealFriendSource());
+        assertEquals(0, friend.getOriginInfo().getDegreeOfSeparation());
+    }
+
+    @Test
     public void parseInviteCodeIgnoresBlankAndInvalidLines() {
         Virus original = new Virus("virus-1", "Spark:Name", "Spark", "Carrier|One",
-                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123", "Fixture", 7);
+            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123",
+            VirusOrigin.infectedFrom("Local", VirusOrigin.seededInLab(), "Carrier One",
+                VirusOrigin.importedFromInvite(VirusOrigin.randomFriendFallback("Placeholder [SIMULATED]"), "Carrier One")),
+            7);
 
         List<Virus> viruses = VirusFactory.parseInviteCode("\n" + original.toShareCode() + "\ninvalid\n");
 
@@ -73,6 +98,23 @@ public class VirusFactoryTest {
         assertEquals("Carrier/One", viruses.get(0).getCarrier());
         assertEquals("Imported from invite", viruses.get(0).getOrigin());
         assertEquals(7, viruses.get(0).getInfectionCount());
+    }
+
+    @Test
+    public void parseInviteCodePreservesOriginPayloadAndAdvancesDegrees() {
+        Virus shared = new Virus("virus-2", "Shared Sample", "Spark", "Jordan",
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false, "GEN-777",
+                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Jordan"), 1);
+
+        List<Virus> viruses = VirusFactory.parseInviteCode(shared.toShareCode());
+
+        assertEquals(1, viruses.size());
+        assertEquals("Imported from invite", viruses.get(0).getOrigin());
+        assertTrue(viruses.get(0).getOriginInfo().hasDirectSource());
+        assertTrue(viruses.get(0).getOriginInfo().isRealFriendSource());
+        assertEquals(1, viruses.get(0).getOriginInfo().getDegreeOfSeparation());
+        assertEquals(1, viruses.get(0).getOriginInfo().getPatientZeros().size());
+        assertEquals(1, viruses.get(0).getOriginInfo().getPatientZeros().get(0).getDegreeOfSeparation());
     }
 
     @Test
