@@ -37,9 +37,9 @@
     <string name="tab_infect">Infect</string>
     <string name="tab_friends">Friends</string>
     <string name="coming_soon_friends">Coming Soon: Browse your infected network of friends</string>
-    <string name="infect_show_qr_button">Show QR</string>
-    <string name="infect_share_text_button">Share Text</string>
-    <string name="infect_scan_qr_button">Scan QR</string>
+    <string name="infect_view_show_qr_button">Show QR</string>
+    <string name="infect_view_share_text_button">Share Text</string>
+    <string name="infect_view_scan_qr_button">Scan QR</string>
     <string name="infect_select_share_toast">Select at least one virus to share.</string>
     <string name="infect_share_subject">Funfection invite</string>
     <string name="infect_share_chooser">Share virus invite</string>
@@ -58,4 +58,14 @@
     <string name="infect_qr_scan_empty">No QR invite was captured.</string>
     <string name="infect_result_summary">Combined %1$s with %2$s. %3$s emerged in the %4$s family with genome %5$s. Strength %6$d, lineage infections %7$d. %8$s %9$s</string>
     <string name="infect_new_virus_toast">New virus: %1$s</string>
+    <string name="infect_view_title">Infect a Friend</string>
+    <string name="infect_view_instructions">Select viruses to share, then paste a friend\'s invite code or infect with a
+        random strain.
+    </string>
+    <string name="infect_view_list_label">Your strains</string>
+    <string name="infect_view_invite_label">Friend invite code</string>
+    <string name="infect_view_invite_instructions">Paste a virus code or leave blank for a random match</string>
+    <string name="infect_view_infect_button">Infect</string>
+    <string name="infect_view_latest_outbreak_label">Latest outbreak</string>
+    <string name="infect_view_latest_outbreak_missing_text">No infection has been triggered yet.</string>
 </resources>
