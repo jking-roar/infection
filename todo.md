@@ -1,8 +1,9 @@
 # Virus Naming And Combination Assessment Tasks
 
 ## Bugs
-- [ ] unable to scroll the view of collected viruses
-
+- [x] unable to scroll the view of collected viruses
+- [ ] after scanning a QR code to infect using a friend's virus, the view that shows has the code put in the txt area, but the buttons at the bottom to operate on it are not visible.
+  - [ ] verify each view is scrollable.
 
 ## Quick Wins
 
