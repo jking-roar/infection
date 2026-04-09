@@ -17,13 +17,15 @@
   - [x] Append a flag to the friend moniker to indicate it is not a real friend
 
 ## Track the Friend origination as a first class object
-- [ ] flag real or not
-- [ ] flag known degree of separation
-  - [ ] sharing a virus with patient zero of one of your friends with another friend that doesn't know that particular friend should be 2 degrees
-  - [ ] getting infected with a virus that is a combination containing patient zero of a friend you know should be reset to 1 degree of separation
-- [ ] users and friends are identified with uuid
-- [ ] A virus keeps track of up to two known patient zeros and in combination will take the furthest patient zero in the lineage
--  [ ] Ensure Fake friends don't add to degree of separation. Fake friends are known by everyone but not as important as real friends
+- [x] flag real or not
+- [x] flag known degree of separation
+  - [x] sharing a virus with patient zero of one of your friends with another friend that doesn't know that particular friend should be 2 degrees
+  - [x] getting infected with a virus that is a combination containing patient zero of a friend you know should be reset to 1 degree of separation
+- [x] users and friends are identified with uuid
+- [ ] users have a user-name that is configurable but starts out as a random two word combo. 
+- [ ] If a virus's origination is yourself, decorate that with an italics "you"
+- [x] A virus keeps track of up to two known patient zeros and in combination will take the furthest patient zero in the lineage
+- [x] Ensure Fake friends don't add to degree of separation. Fake friends are known by everyone but not as important as real friends
 
 ## Naming Model Decisions
 
