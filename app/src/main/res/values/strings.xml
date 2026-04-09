@@ -68,4 +68,8 @@
     <string name="infect_view_infect_button">Infect</string>
     <string name="infect_view_latest_outbreak_label">Latest outbreak</string>
     <string name="infect_view_latest_outbreak_missing_text">No infection has been triggered yet.</string>
+    <string name="start_virus_code_instructions">Paste a virus code or leave blank for a random match</string>
+    <string name="start_view_virus_code_reminder">Matching strains produce matching offspring. Mutations are rare but
+        possible.
+    </string>
 </resources>
