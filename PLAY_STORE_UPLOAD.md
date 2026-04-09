@@ -11,9 +11,8 @@
 - **File:** `app/keystore/funfection.jks`
 - **Validity:** 10,000 days (27+ years)
 - **Algorithm:** RSA 2048-bit
-- **Store Password:** `funfection123`
 - **Key Alias:** `funfection`
-- **Key Password:** `funfection123`
+- **Credentials:** Stored only in `local.properties` (gitignored)
 
 ### 2. Build Configuration Updated
 The `app/build.gradle` now includes:
@@ -43,8 +42,8 @@ Ran `./gradlew bundleRelease` which:
 ## Important Notes
 
 ⚠️ **Keystore Security:**
-- The keystore file (`app/keystore/funfection.jks`) is currently in the repo with hardcoded passwords in `build.gradle`
-- For production: Move the keystore outside the repo and use environment variables or `local.properties` for sensitive credentials
+- The keystore file (`app/keystore/funfection.jks`) must stay out of version control
+- Signing credentials should be stored in `local.properties` or environment variables
 - Never commit keystores with plaintext passwords to public repos
 
 ✓ **Version Management:**
