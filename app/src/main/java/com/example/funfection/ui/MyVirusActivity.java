@@ -1,11 +1,11 @@
 package com.example.funfection.ui;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
-import android.graphics.Typeface;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.funfection.R;
