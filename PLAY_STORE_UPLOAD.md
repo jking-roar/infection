@@ -31,7 +31,7 @@ Ran `./gradlew bundleRelease` which:
 ## Upload Steps
 
 1. **Go to [Google Play Console](https://play.google.com/console)**
-2. **Select or create an app** with package name `com.example.funfection`
+2. **Select or create an app** with package name `com.kingjoshdavid.funfection`
 3. **Navigate:** Testing → Internal Testing (or Production)
 4. **Click "Create Release"**
 5. **Upload AAB:** Drag `app-release.aab` into the upload area

@@ -69,7 +69,7 @@ Tests:
 Current project settings:
 
 - Module: `app`
-- Namespace/applicationId: `com.example.funfection`
+- Namespace/applicationId: `com.kingjoshdavid.funfection`
 - compileSdk: `36`
 - targetSdk: `36`
 - minSdk: `24`

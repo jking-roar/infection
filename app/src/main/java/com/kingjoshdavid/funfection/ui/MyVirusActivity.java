@@ -15,7 +15,7 @@ import com.kingjoshdavid.funfection.model.Virus;
 
 public class MyVirusActivity extends AppCompatActivity {
 
-    public static final String EXTRA_VIRUS_ID = "com.example.funfection.VIRUS_ID";
+    public static final String EXTRA_VIRUS_ID = "com.kingjoshdavid.funfection.VIRUS_ID";
 
     private TextView virusName;
     private TextView patientZero;
