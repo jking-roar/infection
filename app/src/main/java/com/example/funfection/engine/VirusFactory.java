@@ -1,8 +1,10 @@
 package com.example.funfection.engine;
 
+import com.example.funfection.data.UserProfileRepository;
 import com.example.funfection.model.Chaos;
 import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
+import com.example.funfection.model.UserProfile;
 import com.example.funfection.model.Virus;
 import com.example.funfection.model.VirusOrigin;
 
@@ -100,11 +102,16 @@ public final class VirusFactory {
      * @return deterministic starter strains for a fresh repository
      */
     public static List<Virus> createStarterViruses() {
+        UserProfile userProfile = UserProfileRepository.getCurrentUser();
         List<Virus> viruses = new ArrayList<>();
-        viruses.add(fromSeed("Jerry", "starter-alpha"));
-        viruses.add(fromSeed("Sam", "starter-beta"));
-        viruses.add(fromSeed("Alex", "starter-gamma"));
-        viruses.add(fromSeed("Morgan", "starter-delta"));
+        viruses.add(fromSeed(userProfile.getUserName(), "starter-alpha",
+                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName())));
+        viruses.add(fromSeed(userProfile.getUserName(), "starter-beta",
+                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName())));
+        viruses.add(fromSeed(userProfile.getUserName(), "starter-gamma",
+                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName())));
+        viruses.add(fromSeed(userProfile.getUserName(), "starter-delta",
+                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName())));
         return viruses;
     }
 
@@ -153,7 +160,9 @@ public final class VirusFactory {
     public static Virus createLabVirus(String seedInput) {
         String normalizedSeed = seedInput == null ? "" : seedInput.trim();
         String effectiveSeed = normalizedSeed.isEmpty() ? UUID.randomUUID().toString() : normalizedSeed;
-        return fromSeed(LAB_CARRIER, effectiveSeed);
+        UserProfile userProfile = UserProfileRepository.getCurrentUser();
+        return fromSeed(userProfile.getUserName(), effectiveSeed,
+                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName()));
     }
 
     /**

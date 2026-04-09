@@ -22,10 +22,16 @@
   - [x] sharing a virus with patient zero of one of your friends with another friend that doesn't know that particular friend should be 2 degrees
   - [x] getting infected with a virus that is a combination containing patient zero of a friend you know should be reset to 1 degree of separation
 - [x] users and friends are identified with uuid
-- [ ] users have a user-name that is configurable but starts out as a random two word combo. 
-- [ ] If a virus's origination is yourself, decorate that with an italics "you"
+- [x] users have a user-name that is configurable but starts out as a random two word combo. 
+- [x] If a virus's origination is yourself, decorate that with an italics "you"
 - [x] A virus keeps track of up to two known patient zeros and in combination will take the furthest patient zero in the lineage
 - [x] Ensure Fake friends don't add to degree of separation. Fake friends are known by everyone but not as important as real friends
+
+## Friend View
+List of friends sorted by degrees of separation
+- [ ] Can view friend details
+  - [ ] See what viruses in your collection are from them
+  - [ ] See when you last made contact with your friend with an infection
 
 ## Naming Model Decisions
 
@@ -75,7 +81,7 @@
 - [ ] Define success metrics for lore coherence, interpretability, and determinism before the naming-system redesign begins.
 
 ## UI Updates
-- [ ] tabs on bottom for separate views for differnt task modes
+- [ ] tabs on bottom for separate views for different task modes
   - [ ] view collection
     - [ ] tap virus for context commands; double tap to view virus
   - [ ] create a virus

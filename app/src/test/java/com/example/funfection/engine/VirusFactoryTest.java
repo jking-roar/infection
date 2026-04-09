@@ -1,11 +1,15 @@
 package com.example.funfection.engine;
 
+import com.example.funfection.data.UserProfileRepository;
 import com.example.funfection.model.Chaos;
 import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
+import com.example.funfection.model.UserProfile;
 import com.example.funfection.model.Virus;
 import com.example.funfection.model.VirusOrigin;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -20,6 +24,16 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class VirusFactoryTest {
+
+    @Before
+    public void setUp() {
+        UserProfileRepository.setCurrentUserForTesting(new UserProfile("user-1", "Quiet Otter"));
+    }
+
+    @After
+    public void tearDown() {
+        UserProfileRepository.resetForTesting();
+    }
 
     @Test
     public void fromSeedIsDeterministicForSameInputs() {
@@ -57,8 +71,10 @@ public class VirusFactoryTest {
 
         assertEquals(trimmed.getId(), plain.getId());
         assertEquals(trimmed.getName(), plain.getName());
-        assertEquals("Lab", trimmed.getCarrier());
+        assertEquals("Quiet Otter", trimmed.getCarrier());
         assertEquals("Seeded in lab", trimmed.getOrigin());
+        assertTrue(trimmed.getOriginInfo().hasDirectSource());
+        assertEquals("user-1", trimmed.getOriginInfo().getDirectSource().getId());
     }
 
     @Test
@@ -69,8 +85,8 @@ public class VirusFactoryTest {
         assertNotNull(first.getId());
         assertNotNull(second.getId());
         assertNotEquals(first.getId(), second.getId());
-        assertEquals("Lab", first.getCarrier());
-        assertEquals("Lab", second.getCarrier());
+        assertEquals("Quiet Otter", first.getCarrier());
+        assertEquals("Quiet Otter", second.getCarrier());
     }
 
     @Test

@@ -7,9 +7,11 @@ import android.util.SparseBooleanArray;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.funfection.R;
+import com.example.funfection.data.UserProfileRepository;
 import com.example.funfection.data.VirusRepository;
 import com.example.funfection.engine.InfectionEngine;
 import com.example.funfection.engine.VirusFactory;
+import com.example.funfection.model.UserProfile;
 import com.example.funfection.model.Virus;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -23,6 +25,7 @@ public class StartActivity extends AppCompatActivity {
     private TextView resultSummary;
     private EditText labSeedInput;
     private EditText friendCode;
+    private EditText userNameInput;
     private List<Virus> viruses;
 
     @Override
@@ -35,12 +38,14 @@ public class StartActivity extends AppCompatActivity {
         resultSummary = findViewById(R.id.resultSummary);
         labSeedInput = findViewById(R.id.labSeedInput);
         friendCode = findViewById(R.id.friendCode);
+        userNameInput = findViewById(R.id.userNameInput);
 
         Button createButton = findViewById(R.id.createButton);
         Button infectButton = findViewById(R.id.infectButton);
         Button shareButton = findViewById(R.id.shareButton);
         Button combineLocalButton = findViewById(R.id.combineLocalButton);
         Button viewButton = findViewById(R.id.viewButton);
+        Button saveUserNameButton = findViewById(R.id.saveUserNameButton);
 
         createButton.setOnClickListener(view -> createLabVirus());
 
@@ -51,6 +56,10 @@ public class StartActivity extends AppCompatActivity {
         combineLocalButton.setOnClickListener(view -> combineLocalSelection());
 
         viewButton.setOnClickListener(view -> openSelectedVirus());
+
+        saveUserNameButton.setOnClickListener(view -> updateUserName());
+
+        userNameInput.setText(UserProfileRepository.getCurrentUser().getUserName());
     }
 
     @Override
@@ -67,7 +76,16 @@ public class StartActivity extends AppCompatActivity {
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_multiple_choice, labels);
         virusList.setAdapter(adapter);
-        collectionSummary.setText(getString(R.string.collection_summary_collected_viruses, viruses.size()));
+        UserProfile userProfile = UserProfileRepository.getCurrentUser();
+        collectionSummary.setText(getString(R.string.collection_summary_collected_viruses,
+                userProfile.getUserName(), viruses.size()));
+    }
+
+    private void updateUserName() {
+        UserProfile updated = UserProfileRepository.updateUserName(userNameInput.getText().toString());
+        userNameInput.setText(updated.getUserName());
+        refreshCollection();
+        Toast.makeText(this, getString(R.string.username_saved_toast, updated.getUserName()), Toast.LENGTH_SHORT).show();
     }
 
     private void infectFriend() {

@@ -75,4 +75,14 @@ public class VirusTest {
         assertEquals(lowChaos.getInfectionStrength(), highChaos.getInfectionStrength());
         assertNotEquals(lowChaos.getInfectionRate(), highChaos.getInfectionRate());
     }
+
+    @Test
+    public void getOriginReportUsesYouForViewerSourceId() {
+        Virus virus = new Virus("origin-1", "Seeded", "Spark", "Quiet Otter",
+            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "GEN-555",
+            VirusOrigin.seededByUser("user-1", "Quiet Otter"));
+
+        assertTrue(virus.getOriginReport("user-1").contains("Source: you"));
+        assertTrue(virus.getOriginReport("other-id").contains("Source: Quiet Otter"));
+    }
 }

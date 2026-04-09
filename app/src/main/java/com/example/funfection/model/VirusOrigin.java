@@ -39,6 +39,11 @@ public final class VirusOrigin implements Serializable {
         return new VirusOrigin(Type.LAB, "Seeded in lab", null, Collections.emptyList());
     }
 
+    public static VirusOrigin seededByUser(String userId, String userName) {
+        Source source = Source.real(userId, userName, 0);
+        return new VirusOrigin(Type.LAB, "Seeded in lab", source, Collections.emptyList());
+    }
+
     public static VirusOrigin randomFriendFallback(String moniker) {
         Source source = Source.fake(stableId("fake:" + moniker), moniker);
         return new VirusOrigin(Type.RANDOM_FRIEND, "Generated as random friend fallback", source,
@@ -49,7 +54,14 @@ public final class VirusOrigin implements Serializable {
         VirusOrigin base = sharedOrigin == null ? legacy("Imported from invite") : sharedOrigin;
         Source source;
         if (isLikelyRealFriendCarrier(carrier)) {
-            source = Source.real(stableId("carrier:" + carrier), carrier, 1);
+            if (base.directSource != null
+                    && base.directSource.isRealFriend()
+                    && carrier != null
+                    && carrier.trim().equalsIgnoreCase(base.directSource.getDisplayName())) {
+                source = base.directSource.withDegree(1);
+            } else {
+                source = Source.real(stableId("carrier:" + carrier), carrier, 1);
+            }
         } else if (base.directSource != null) {
             source = base.directSource.withDegree(base.directSource.isRealFriend() ? 1 : 0);
         } else {
@@ -141,9 +153,13 @@ public final class VirusOrigin implements Serializable {
     }
 
     public String describeDetailed() {
+        return describeDetailedForViewer(null);
+    }
+
+    public String describeDetailedForViewer(String viewerId) {
         StringBuilder description = new StringBuilder(summary);
         if (directSource != null) {
-            description.append("\nSource: ").append(directSource.getDisplayName());
+            description.append("\nSource: ").append(viewerAwareName(directSource.getId(), directSource.getDisplayName(), viewerId));
             if (directSource.isRealFriend()) {
                 description.append(" (real friend, ")
                         .append(directSource.getDegreeOfSeparation())
@@ -160,7 +176,7 @@ public final class VirusOrigin implements Serializable {
                 if (index > 0) {
                     description.append(", ");
                 }
-                description.append(patientZero.getDisplayName())
+                description.append(viewerAwareName(patientZero.getId(), patientZero.getDisplayName(), viewerId))
                         .append(" (")
                         .append(patientZero.getDegreeOfSeparation())
                         .append(patientZero.getDegreeOfSeparation() == 1 ? " degree" : " degrees")
@@ -347,6 +363,13 @@ public final class VirusOrigin implements Serializable {
 
     private static String stableId(String value) {
         return UUID.nameUUIDFromBytes(value.getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
+    private static String viewerAwareName(String sourceId, String displayName, String viewerId) {
+        if (viewerId != null && !viewerId.trim().isEmpty() && viewerId.equals(sourceId)) {
+            return "you";
+        }
+        return displayName;
     }
 
     private enum Type {

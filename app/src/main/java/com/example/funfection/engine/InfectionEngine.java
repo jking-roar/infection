@@ -1,5 +1,6 @@
 package com.example.funfection.engine;
 
+import com.example.funfection.data.UserProfileRepository;
 import com.example.funfection.model.Chaos;
 import com.example.funfection.model.Infectivity;
 import com.example.funfection.model.Resilience;
@@ -51,7 +52,8 @@ public final class InfectionEngine {
      * @return newly combined offspring virus
      */
     public static Virus infect(List<Virus> ownedViruses, List<Virus> friendViruses) {
-        Virus ownedTemplate = collapse(ownedViruses, "You");
+        String localUserName = UserProfileRepository.getCurrentUser().getUserName();
+        Virus ownedTemplate = collapse(ownedViruses, localUserName);
         Virus friendTemplate = collapse(friendViruses, "Friend");
         return combine(ownedTemplate, friendTemplate);
     }
@@ -68,7 +70,8 @@ public final class InfectionEngine {
      * @return newly combined local offspring virus
      */
     public static Virus infectLocal(List<Virus> ownedViruses) {
-        Virus merged = collapse(ownedViruses, "You");
+        String localUserName = UserProfileRepository.getCurrentUser().getUserName();
+        Virus merged = collapse(ownedViruses, localUserName);
         String id = UUID.nameUUIDFromBytes((merged.getId() + "-local")
             .getBytes(StandardCharsets.UTF_8)).toString();
         String name = merged.getFamily() + " Local Mix";

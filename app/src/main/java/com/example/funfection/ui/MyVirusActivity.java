@@ -2,9 +2,14 @@ package com.example.funfection.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
+import android.graphics.Typeface;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.funfection.R;
+import com.example.funfection.data.UserProfileRepository;
 import com.example.funfection.data.VirusRepository;
 import com.example.funfection.model.Virus;
 
@@ -52,7 +57,28 @@ public class MyVirusActivity extends AppCompatActivity {
         virusFamily.setText(virus.getFamily());
         virusChaos.setText(Integer.toString(virus.getChaos().score()));
         virusGenome.setText(virus.getGenome());
-        virusOrigin.setText(virus.getOriginReport());
+        String report = virus.getOriginReport(UserProfileRepository.getCurrentUser().getId());
+        virusOrigin.setText(withItalicizedYou(report));
+    }
+
+    private CharSequence withItalicizedYou(String text) {
+        SpannableString styled = new SpannableString(text == null ? "" : text);
+        String value = styled.toString();
+        int start = 0;
+        while (start >= 0 && start < value.length()) {
+            int match = value.indexOf("you", start);
+            if (match < 0) {
+                break;
+            }
+            boolean leftBoundary = match == 0 || !Character.isLetterOrDigit(value.charAt(match - 1));
+            int end = match + 3;
+            boolean rightBoundary = end >= value.length() || !Character.isLetterOrDigit(value.charAt(end));
+            if (leftBoundary && rightBoundary) {
+                styled.setSpan(new StyleSpan(Typeface.ITALIC), match, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            start = end;
+        }
+        return styled;
     }
 
     private Virus resolveVirus(Intent intent) {

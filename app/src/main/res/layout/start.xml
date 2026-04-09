@@ -18,6 +18,36 @@
                         android:textStyle="bold" />
 
                 <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="Your user name"
+                        android:textStyle="bold" />
+
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+
+                        <EditText
+                                android:id="@+id/userNameInput"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="Two-word name"
+                                android:inputType="textPersonName"
+                                android:maxLines="1" />
+
+                        <Button
+                                android:id="@+id/saveUserNameButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="8dp"
+                                android:text="Save" />
+                </LinearLayout>
+
+                <TextView
                         android:id="@+id/collectionSummary"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

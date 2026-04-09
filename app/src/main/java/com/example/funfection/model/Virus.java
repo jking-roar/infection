@@ -217,6 +217,10 @@ public class Virus implements Serializable {
         return origin.describeDetailed();
     }
 
+    public String getOriginReport(String viewerId) {
+        return origin.describeDetailedForViewer(viewerId);
+    }
+
     public int getInfectionCount() {
         return infectionCount;
     }
