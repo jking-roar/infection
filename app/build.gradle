@@ -9,7 +9,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace 'com.example.funfection'
+    namespace 'com.kingjoshdavid.funfection'
     compileSdk 36
 
     defaultConfig {

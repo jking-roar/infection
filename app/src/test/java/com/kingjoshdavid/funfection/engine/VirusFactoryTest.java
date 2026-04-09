@@ -1,0 +1,173 @@
+package com.kingjoshdavid.funfection.engine;
+
+import com.kingjoshdavid.funfection.data.UserProfileRepository;
+import com.kingjoshdavid.funfection.model.Chaos;
+import com.kingjoshdavid.funfection.model.Infectivity;
+import com.kingjoshdavid.funfection.model.Resilience;
+import com.kingjoshdavid.funfection.model.UserProfile;
+import com.kingjoshdavid.funfection.model.Virus;
+import com.kingjoshdavid.funfection.model.VirusOrigin;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+public class VirusFactoryTest {
+
+    @Before
+    public void setUp() {
+        UserProfileRepository.setCurrentUserForTesting(new UserProfile("user-1", "Quiet Otter"));
+    }
+
+    @After
+    public void tearDown() {
+        UserProfileRepository.resetForTesting();
+    }
+
+    @Test
+    public void fromSeedIsDeterministicForSameInputs() {
+        Virus first = VirusFactory.fromSeed("Dana", "shared-seed");
+        Virus second = VirusFactory.fromSeed("Dana", "shared-seed");
+
+        assertEquals(first.getId(), second.getId());
+        assertEquals(first.getName(), second.getName());
+        assertEquals(first.getFamily(), second.getFamily());
+        assertEquals(first.getGenome(), second.getGenome());
+    }
+
+    @Test
+    public void fromSeedUsesUtf8ForDeterministicUuidDerivation() {
+        String seed = "caf\u00e9-\u0394na";
+
+        Virus virus = VirusFactory.fromSeed("Dana", seed);
+
+        assertEquals(UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).toString(), virus.getId());
+    }
+
+    @Test
+    public void fromSeedProducesStatsWithinExpectedBounds() {
+        Virus virus = VirusFactory.fromSeed("Dana", "bounded-seed");
+
+        assertTrue(virus.getInfectivity().score() >= 1 && virus.getInfectivity().score() <= 10);
+        assertTrue(virus.getResilience().score() >= 1 && virus.getResilience().score() <= 10);
+        assertTrue(virus.getChaos().score() >= 1 && virus.getChaos().score() <= 10);
+    }
+
+    @Test
+    public void createLabVirusUsesTrimmedSeedDeterministically() {
+        Virus trimmed = VirusFactory.createLabVirus("  custom-seed  ");
+        Virus plain = VirusFactory.createLabVirus("custom-seed");
+
+        assertEquals(trimmed.getId(), plain.getId());
+        assertEquals(trimmed.getName(), plain.getName());
+        assertEquals("Quiet Otter", trimmed.getCarrier());
+        assertEquals("Seeded in lab", trimmed.getOrigin());
+        assertTrue(trimmed.getOriginInfo().hasDirectSource());
+        assertEquals("user-1", trimmed.getOriginInfo().getDirectSource().getId());
+    }
+
+    @Test
+    public void createLabVirusFallsBackToRandomSeedWhenBlank() {
+        Virus first = VirusFactory.createLabVirus("   ");
+        Virus second = VirusFactory.createLabVirus(null);
+
+        assertNotNull(first.getId());
+        assertNotNull(second.getId());
+        assertNotEquals(first.getId(), second.getId());
+        assertEquals("Quiet Otter", first.getCarrier());
+        assertEquals("Quiet Otter", second.getCarrier());
+    }
+
+    @Test
+    public void createRandomFriendVirusUsesFriendFallbackOrigin() {
+        Virus friend = VirusFactory.createRandomFriendVirus();
+
+        assertTrue(friend.getCarrier().contains("[SIMULATED]"));
+        assertEquals("Generated as random friend fallback", friend.getOrigin());
+        assertFalse(friend.getOriginInfo().isRealFriendSource());
+        assertEquals(0, friend.getOriginInfo().getDegreeOfSeparation());
+    }
+
+    @Test
+    public void parseInviteCodeIgnoresBlankAndInvalidLines() {
+        Virus original = new Virus("virus-1", "Spark:Name", "Spark", "Carrier|One",
+            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123",
+            VirusOrigin.infectedFrom("Local", VirusOrigin.seededInLab(), "Carrier One",
+                VirusOrigin.importedFromInvite(VirusOrigin.randomFriendFallback("Placeholder [SIMULATED]"), "Carrier One")),
+            7);
+
+        List<Virus> viruses = VirusFactory.parseInviteCode("\n" + original.toShareCode() + "\ninvalid\n");
+
+        assertEquals(1, viruses.size());
+        assertEquals("Spark-Name", viruses.get(0).getName());
+        assertEquals("Carrier/One", viruses.get(0).getCarrier());
+        assertEquals("Imported from invite", viruses.get(0).getOrigin());
+        assertEquals(7, viruses.get(0).getInfectionCount());
+    }
+
+    @Test
+    public void parseInviteCodePreservesOriginPayloadAndAdvancesDegrees() {
+        Virus shared = new Virus("virus-2", "Shared Sample", "Spark", "Jordan",
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false, "GEN-777",
+                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Jordan"), 1);
+
+        List<Virus> viruses = VirusFactory.parseInviteCode(shared.toShareCode());
+
+        assertEquals(1, viruses.size());
+        assertEquals("Imported from invite", viruses.get(0).getOrigin());
+        assertTrue(viruses.get(0).getOriginInfo().hasDirectSource());
+        assertTrue(viruses.get(0).getOriginInfo().isRealFriendSource());
+        assertEquals(1, viruses.get(0).getOriginInfo().getDegreeOfSeparation());
+        assertEquals(1, viruses.get(0).getOriginInfo().getPatientZeros().size());
+        assertEquals(1, viruses.get(0).getOriginInfo().getPatientZeros().get(0).getDegreeOfSeparation());
+    }
+
+    @Test
+    public void parseInviteCodeDefaultsLegacyNineFieldCodesToZeroCount() {
+        // A legacy 9-field share code without trailing infectionCount
+        String legacyCode = "virus-L:Spark:4:5:6:1:GEN-123:LegacyName:LegacyCarrier";
+
+        List<Virus> viruses = VirusFactory.parseInviteCode(legacyCode);
+
+        assertEquals(1, viruses.size());
+        assertEquals(0, viruses.get(0).getInfectionCount());
+    }
+
+    @Test
+    public void parseSingleReturnsNullForBrokenInput() {
+        assertNull(VirusFactory.parseSingle("too:few:parts"));
+        assertNull(VirusFactory.parseSingle("id:family:x:2:3:1:genome:name:carrier"));
+    }
+
+    @Test
+    public void createStarterVirusesBuildsDefaultCollection() {
+        List<Virus> viruses = VirusFactory.createStarterViruses();
+
+        assertEquals(4, viruses.size());
+        assertNotNull(viruses.get(0).getId());
+        assertFalse(viruses.get(0).getSummaryLine().isEmpty());
+    }
+
+    @Test
+    public void buildGenomeIncludesMutationMarker() {
+        String stableGenome = VirusFactory.buildGenome("12345678-1234-1234-1234-123456789012", "Spark",
+            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false);
+        String mutatedGenome = VirusFactory.buildGenome("12345678-1234-1234-1234-123456789012", "Spark",
+            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true);
+
+        assertTrue(stableGenome.endsWith("-S"));
+        assertTrue(mutatedGenome.endsWith("-M"));
+        assertTrue(mutatedGenome.startsWith("SPA-123456-456"));
+    }
+}
