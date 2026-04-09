@@ -81,12 +81,12 @@ List of friends sorted by degrees of separation
 - [ ] Define success metrics for lore coherence, interpretability, and determinism before the naming-system redesign begins.
 
 ## UI Updates
-- [ ] tabs on bottom for separate views for different task modes
-  - [ ] view collection
+- [x] tabs on bottom for separate views for different task modes
+  - [x] view collection
     - [ ] tap virus for context commands; double tap to view virus
-  - [ ] create a virus
-  - [ ] combining viruses
-  - [ ] view virus; swipe or button press to go back
+  - [x] create a virus
+  - [x] combining viruses
+  - [x] view virus; swipe or button press to go back
   - [ ] friend view
-  - [ ] infect a friend
+  - [x] infect a friend
     - [ ] qr code or share link or paste infection code
