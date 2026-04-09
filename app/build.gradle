@@ -2,6 +2,12 @@ plugins {
     id 'com.android.application'
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('local.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace 'com.example.funfection'
     compileSdk 36
@@ -14,17 +20,6 @@ android {
         versionName '1.0'
     }
 
-    buildTypes {
-        debug {
-            minifyEnabled false
-        }
-
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
     compileOptions {
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
@@ -33,10 +28,13 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('keystore/funfection.jks')
-            storePassword 'funfection123'
-            keyAlias 'funfection'
-            keyPassword 'funfection123'
+            def storeFilePath = keystoreProperties['KEYSTORE_FILE']
+            if (storeFilePath != null && !storeFilePath.toString().trim().isEmpty()) {
+                storeFile file(storeFilePath)
+                storePassword keystoreProperties['KEYSTORE_STORE_PASSWORD']
+                keyAlias keystoreProperties['KEYSTORE_KEY_ALIAS']
+                keyPassword keystoreProperties['KEYSTORE_KEY_PASSWORD']
+            }
         }
     }
 

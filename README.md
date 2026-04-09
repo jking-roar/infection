@@ -90,6 +90,36 @@ Run unit tests:
 .\gradlew.bat :app:testDebugUnitTest
 ```
 
+## Build a signed bundle for Google Play
+
+The Play Console upload artifact is an Android App Bundle (`.aab`) built from the `release` variant.
+
+1. Ensure your upload keystore exists locally (this repo currently expects it at `app/keystore/funfection.jks`).
+2. Add signing values to `local.properties` (already ignored by git):
+
+```properties
+KEYSTORE_FILE=keystore/funfection.jks
+KEYSTORE_STORE_PASSWORD=your_store_password
+KEYSTORE_KEY_ALIAS=your_key_alias
+KEYSTORE_KEY_PASSWORD=your_key_password
+```
+
+3. Build the signed release bundle:
+
+```powershell
+.\gradlew.bat :app:bundleRelease
+```
+
+4. Upload this file in Google Play Console:
+
+- `app/build/outputs/bundle/release/app-release.aab`
+
+Notes:
+
+- The keystore file (`*.jks`) should not be committed to GitHub.
+- `local.properties` is ignored by git and is the correct place for local signing secrets.
+- Increment `versionCode` in `app/build.gradle` before each new Play upload.
+
 ## Deploy to a physical Android phone
 
 1. On your phone, enable **Developer options** and **USB debugging**.
