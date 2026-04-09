@@ -49,5 +49,16 @@ public class UserProfileRepositoryTest {
         assertEquals(original.getUserName(), updated.getUserName());
         assertNotEquals("", updated.getUserName());
     }
-}
 
+    @Test
+    public void getCurrentUserReloadsFromPreferencesAfterCacheClear() {
+        UserProfile seeded = new UserProfile("persist-id", "Amber Falcon");
+        UserProfileRepository.setCurrentUserForTesting(seeded);
+
+        UserProfileRepository.clearCachedUserForTesting();
+        UserProfile reloaded = UserProfileRepository.getCurrentUser();
+
+        assertEquals(seeded.getId(), reloaded.getId());
+        assertEquals(seeded.getUserName(), reloaded.getUserName());
+    }
+}

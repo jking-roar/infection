@@ -31,6 +31,7 @@ public class StartActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        UserProfileRepository.initialize(getApplicationContext());
         setContentView(R.layout.start);
 
         virusList = findViewById(R.id.virusList);

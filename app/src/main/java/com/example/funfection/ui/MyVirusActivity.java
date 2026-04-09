@@ -30,6 +30,7 @@ public class MyVirusActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        UserProfileRepository.initialize(getApplicationContext());
         setContentView(R.layout.my_virus);
 
         virusName = findViewById(R.id.virusName);
