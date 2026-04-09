@@ -1,5 +1,6 @@
 package com.example.funfection.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public final class VirusOrigin implements Serializable {
     }
 
     public static VirusOrigin collapsed(List<Virus> viruses) {
-        List<PatientZero> lineage = new ArrayList<PatientZero>();
+        List<PatientZero> lineage = new ArrayList<>();
         Source directSource = null;
         if (viruses != null) {
             for (Virus virus : viruses) {
@@ -89,7 +90,7 @@ public final class VirusOrigin implements Serializable {
             source = source.withDegree(1);
         }
 
-        List<PatientZero> lineage = new ArrayList<PatientZero>();
+        List<PatientZero> lineage = new ArrayList<>();
         if (leftOrigin != null) {
             lineage.addAll(leftOrigin.exportLineage());
         }
@@ -223,7 +224,7 @@ public final class VirusOrigin implements Serializable {
 
             int countIndex = 7;
             int patientZeroCount = parsePositiveInt(lines[countIndex]);
-            List<PatientZero> patientZeros = new ArrayList<PatientZero>();
+            List<PatientZero> patientZeros = new ArrayList<>();
             for (int index = 0; index < patientZeroCount; index++) {
                 int lineIndex = countIndex + 1 + index;
                 if (lineIndex >= lines.length) {
@@ -256,7 +257,7 @@ public final class VirusOrigin implements Serializable {
     }
 
     private static List<PatientZero> advanceLineage(List<PatientZero> lineage, Source directSource) {
-        List<PatientZero> advanced = new ArrayList<PatientZero>();
+        List<PatientZero> advanced = new ArrayList<>();
         for (PatientZero patientZero : lineage) {
             if (directSource != null && directSource.isRealFriend()
                     && directSource.getId().equals(patientZero.getId())) {
@@ -276,7 +277,7 @@ public final class VirusOrigin implements Serializable {
             return Collections.emptyList();
         }
 
-        List<PatientZero> deduped = new ArrayList<PatientZero>();
+        List<PatientZero> deduped = new ArrayList<>();
         for (PatientZero candidate : input) {
             if (candidate == null) {
                 continue;
@@ -300,21 +301,18 @@ public final class VirusOrigin implements Serializable {
             }
         }
 
-        Collections.sort(deduped, new Comparator<PatientZero>() {
-            @Override
-            public int compare(PatientZero left, PatientZero right) {
-                int degreeOrder = Integer.compare(right.getDegreeOfSeparation(), left.getDegreeOfSeparation());
-                if (degreeOrder != 0) {
-                    return degreeOrder;
-                }
-                return left.getDisplayName().compareTo(right.getDisplayName());
+        deduped.sort((left, right) -> {
+            int degreeOrder = Integer.compare(right.getDegreeOfSeparation(), left.getDegreeOfSeparation());
+            if (degreeOrder != 0) {
+                return degreeOrder;
             }
+            return left.getDisplayName().compareTo(right.getDisplayName());
         });
 
         if (deduped.size() <= MAX_PATIENT_ZEROS) {
-            return new ArrayList<PatientZero>(deduped);
+            return new ArrayList<>(deduped);
         }
-        return new ArrayList<PatientZero>(deduped.subList(0, MAX_PATIENT_ZEROS));
+        return new ArrayList<>(deduped.subList(0, MAX_PATIENT_ZEROS));
     }
 
     private static Source choosePreferredDirectSource(Source current, Source candidate) {
@@ -367,6 +365,7 @@ public final class VirusOrigin implements Serializable {
 
     public static final class Source implements Serializable {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final String id;
@@ -412,6 +411,7 @@ public final class VirusOrigin implements Serializable {
 
     public static final class PatientZero implements Serializable {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final String id;
@@ -445,3 +445,4 @@ public final class VirusOrigin implements Serializable {
         }
     }
 }
+
