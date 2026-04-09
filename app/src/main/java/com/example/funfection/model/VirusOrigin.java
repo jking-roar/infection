@@ -1,20 +1,18 @@
 package com.example.funfection.model;
 
+import android.annotation.SuppressLint;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Structured provenance metadata describing how a virus reached the current player.
  */
 public final class VirusOrigin implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     private static final int MAX_PATIENT_ZEROS = 2;
     private static final String SHARE_VERSION = "1";
@@ -34,17 +32,17 @@ public final class VirusOrigin implements Serializable {
     }
 
     public static VirusOrigin legacy(String summary) {
-        return new VirusOrigin(Type.LEGACY, summary, null, Collections.<PatientZero>emptyList());
+        return new VirusOrigin(Type.LEGACY, summary, null, Collections.emptyList());
     }
 
     public static VirusOrigin seededInLab() {
-        return new VirusOrigin(Type.LAB, "Seeded in lab", null, Collections.<PatientZero>emptyList());
+        return new VirusOrigin(Type.LAB, "Seeded in lab", null, Collections.emptyList());
     }
 
     public static VirusOrigin randomFriendFallback(String moniker) {
         Source source = Source.fake(stableId("fake:" + moniker), moniker);
         return new VirusOrigin(Type.RANDOM_FRIEND, "Generated as random friend fallback", source,
-                Collections.<PatientZero>emptyList());
+                Collections.emptyList());
     }
 
     public static VirusOrigin importedFromInvite(VirusOrigin sharedOrigin, String carrier) {
@@ -76,7 +74,7 @@ public final class VirusOrigin implements Serializable {
 
     public static VirusOrigin combinedLocally(VirusOrigin mergedOrigin) {
         List<PatientZero> lineage = mergedOrigin == null
-                ? Collections.<PatientZero>emptyList()
+                ? Collections.emptyList()
                 : mergedOrigin.exportLineage();
         return new VirusOrigin(Type.LOCAL_COMBINE, "Combined from local strains", null, lineage);
     }
@@ -134,10 +132,6 @@ public final class VirusOrigin implements Serializable {
         return directSource != null && directSource.isRealFriend();
     }
 
-    public boolean hasKnownDegreeOfSeparation() {
-        return directSource != null && directSource.getDegreeOfSeparation() > 0;
-    }
-
     public int getDegreeOfSeparation() {
         return directSource == null ? 0 : directSource.getDegreeOfSeparation();
     }
@@ -176,6 +170,7 @@ public final class VirusOrigin implements Serializable {
         return description.toString();
     }
 
+    @SuppressLint("NewApi")
     public String toSharePayload() {
         StringBuilder raw = new StringBuilder();
         raw.append(SHARE_VERSION).append('\n');
@@ -202,6 +197,7 @@ public final class VirusOrigin implements Serializable {
                 .encodeToString(raw.toString().getBytes(StandardCharsets.UTF_8));
     }
 
+    @SuppressLint("NewApi")
     public static VirusOrigin fromSharePayload(String payload) {
         if (payload == null || payload.isEmpty()) {
             return null;
