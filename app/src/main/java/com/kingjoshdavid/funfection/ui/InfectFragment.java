@@ -1,5 +1,6 @@
 package com.kingjoshdavid.funfection.ui;
 
+import android.graphics.Bitmap;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
@@ -9,17 +10,24 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.fragment.app.Fragment;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.VirusRepository;
 import com.kingjoshdavid.funfection.engine.InfectionEngine;
 import com.kingjoshdavid.funfection.engine.VirusFactory;
 import com.kingjoshdavid.funfection.model.Virus;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -31,6 +39,25 @@ public class InfectFragment extends Fragment {
     private EditText friendCode;
     private TextView resultSummary;
     private List<Virus> viruses = new ArrayList<>();
+    private ActivityResultLauncher<ScanOptions> qrScanLauncher;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        qrScanLauncher = registerForActivityResult(new ScanContract(), result -> {
+            if (!isAdded()) {
+                return;
+            }
+            String contents = result.getContents();
+            if (contents == null || contents.trim().isEmpty()) {
+                Toast.makeText(requireContext(), R.string.infect_qr_scan_empty, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            friendCode.setText(contents.trim());
+            friendCode.setSelection(friendCode.getText().length());
+            Toast.makeText(requireContext(), R.string.infect_qr_scan_success, Toast.LENGTH_SHORT).show();
+        });
+    }
 
     @Nullable
     @Override
@@ -48,8 +75,12 @@ public class InfectFragment extends Fragment {
         resultSummary = view.findViewById(R.id.resultSummary);
         Button infectButton = view.findViewById(R.id.infectButton);
         Button shareButton = view.findViewById(R.id.shareButton);
+        Button shareTextButton = view.findViewById(R.id.shareTextButton);
+        Button scanQrButton = view.findViewById(R.id.scanQrButton);
         infectButton.setOnClickListener(v -> prepareAndShowPreview());
-        shareButton.setOnClickListener(v -> shareInvite());
+        shareButton.setOnClickListener(v -> showInviteQr());
+        shareTextButton.setOnClickListener(v -> shareInviteText());
+        scanQrButton.setOnClickListener(v -> scanInviteQr());
     }
 
     @Override
@@ -160,39 +191,104 @@ public class InfectFragment extends Fragment {
         String friendLabel = plan.friendViruses.size() + " from your friend";
         String mutationLabel = plan.offspring.hasMutation() ? "Mutation detected." : "Stable transfer.";
         String inviteMode = plan.decodedInvite ? "Invite code decoded." : "Random friend strain used.";
-        resultSummary.setText("Combined " + hostLabel + " with " + friendLabel + ". "
-                + plan.offspring.getName() + " emerged in the " + plan.offspring.getFamily()
-                + " family with genome " + plan.offspring.getGenome()
-                + ". Strength " + plan.offspring.getInfectionStrength()
-                + ", lineage infections " + plan.offspring.getInfectionCount()
-                + ". " + mutationLabel + " " + inviteMode);
-        Toast.makeText(requireContext(), "New virus: " + plan.offspring.getName(), Toast.LENGTH_SHORT).show();
+        resultSummary.setText(getString(R.string.infect_result_summary,
+                hostLabel,
+                friendLabel,
+                plan.offspring.getName(),
+                plan.offspring.getFamily(),
+                plan.offspring.getGenome(),
+                plan.offspring.getInfectionStrength(),
+                plan.offspring.getInfectionCount(),
+                mutationLabel,
+                inviteMode));
+        Toast.makeText(requireContext(), getString(R.string.infect_new_virus_toast, plan.offspring.getName()), Toast.LENGTH_SHORT).show();
     }
 
-    private void shareInvite() {
+    private void showInviteQr() {
+        List<Virus> shared = prepareVirusesForSharing();
+        if (shared == null) {
+            return;
+        }
+        String invitePayload = buildInvitePayload(shared);
+        Bitmap qrBitmap;
+        try {
+            qrBitmap = new BarcodeEncoder().encodeBitmap(invitePayload, BarcodeFormat.QR_CODE, 768, 768);
+        } catch (WriterException error) {
+            Toast.makeText(requireContext(), R.string.infect_qr_generation_failed, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_invite_qr, null, false);
+        ImageView qrImage = dialogView.findViewById(R.id.qrInviteImage);
+        TextView qrSummary = dialogView.findViewById(R.id.qrInviteSummary);
+        qrImage.setImageBitmap(qrBitmap);
+        qrSummary.setText(getString(R.string.infect_qr_dialog_summary, shared.size()));
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.infect_qr_dialog_title)
+                .setView(dialogView)
+                .setNegativeButton(R.string.infect_qr_dialog_close, null)
+                .setPositiveButton(R.string.infect_qr_dialog_share_text,
+                        (dialog, which) -> launchTextShare(buildInviteShareBody(invitePayload)))
+                .show();
+    }
+
+    private void shareInviteText() {
+        List<Virus> shared = prepareVirusesForSharing();
+        if (shared == null) {
+            return;
+        }
+        launchTextShare(buildInviteShareBody(buildInvitePayload(shared)));
+    }
+
+    private void scanInviteQr() {
+        ScanOptions options = new ScanOptions();
+        options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+        options.setPrompt(getString(R.string.infect_qr_scan_prompt));
+        options.setBeepEnabled(false);
+        options.setOrientationLocked(false);
+        qrScanLauncher.launch(options);
+    }
+
+    @Nullable
+    private List<Virus> prepareVirusesForSharing() {
         List<Virus> selected = getSelectedViruses();
         if (selected.isEmpty()) {
-            Toast.makeText(requireContext(), "Select at least one virus to share.", Toast.LENGTH_SHORT).show();
-            return;
+            Toast.makeText(requireContext(), R.string.infect_select_share_toast, Toast.LENGTH_SHORT).show();
+            return null;
         }
 
         List<String> ids = new ArrayList<>();
         for (Virus v : selected) ids.add(v.getId());
         List<Virus> shared = VirusRepository.incrementInfectionCounts(ids);
-        if (shared.isEmpty()) shared = selected;
-        refreshList();
-
-        StringBuilder body = new StringBuilder();
-        body.append("Swap strains with me in Funfection. Paste this invite code into the lab:\n\n");
-        for (Virus v : shared) {
-            body.append(v.toShareCode()).append("\n");
+        if (shared.isEmpty()) {
+            shared = selected;
         }
+        refreshList();
+        return shared;
+    }
 
+    private String buildInvitePayload(List<Virus> shared) {
+        StringBuilder payload = new StringBuilder();
+        for (Virus virus : shared) {
+            if (!payload.isEmpty()) {
+                payload.append("\n");
+            }
+            payload.append(virus.toShareCode());
+        }
+        return payload.toString();
+    }
+
+    private String buildInviteShareBody(String invitePayload) {
+        return getString(R.string.infect_share_body, invitePayload);
+    }
+
+    private void launchTextShare(String body) {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Funfection invite");
-        intent.putExtra(Intent.EXTRA_TEXT, body.toString());
-        startActivity(Intent.createChooser(intent, "Share virus invite"));
+        intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.infect_share_subject));
+        intent.putExtra(Intent.EXTRA_TEXT, body);
+        startActivity(Intent.createChooser(intent, getString(R.string.infect_share_chooser)));
     }
 
     private List<Virus> getSelectedViruses() {

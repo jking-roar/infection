@@ -48,7 +48,7 @@ public class VirusFactoryTest {
 
     @Test
     public void fromSeedUsesUtf8ForDeterministicUuidDerivation() {
-        String seed = "caf\u00e9-\u0394na";
+        String seed = "café-Δna";
 
         Virus virus = VirusFactory.fromSeed("Dana", seed);
 
@@ -131,6 +131,25 @@ public class VirusFactoryTest {
         assertEquals(1, viruses.get(0).getOriginInfo().getDegreeOfSeparation());
         assertEquals(1, viruses.get(0).getOriginInfo().getPatientZeros().size());
         assertEquals(1, viruses.get(0).getOriginInfo().getPatientZeros().get(0).getDegreeOfSeparation());
+    }
+
+    @Test
+    public void parseInviteCodeAcceptsSharedMessageBodyAroundTheCodes() {
+        Virus first = new Virus("virus-qr-1", "Shared One", "Spark", "Jordan",
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false, "GEN-701",
+                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Jordan"), 1);
+        Virus second = new Virus("virus-qr-2", "Shared Two", "Echo", "Taylor",
+                Infectivity.rate(6), Resilience.of(4), Chaos.level(5), true, "GEN-702",
+                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Taylor"), 2);
+
+        String sharedBody = "Swap strains with me in Funfection. Paste this invite code into the lab:\n\n"
+                + first.toShareCode() + "\n" + second.toShareCode();
+
+        List<Virus> viruses = VirusFactory.parseInviteCode(sharedBody);
+
+        assertEquals(2, viruses.size());
+        assertEquals(first.getId(), viruses.get(0).getId());
+        assertEquals(second.getId(), viruses.get(1).getId());
     }
 
     @Test
