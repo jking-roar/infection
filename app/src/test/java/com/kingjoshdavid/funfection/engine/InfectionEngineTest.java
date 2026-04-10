@@ -45,8 +45,8 @@ public class InfectionEngineTest {
         assertEquals(Infectivity.rate(9), result.getInfectivity());
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(10), result.getChaos());
-        // infectionCount = left(2) + right(3) + 1 committed event = 6
-        assertEquals(6, result.getInfectionCount());
+        // Newly created strains start at one committed infection (the creator).
+        assertEquals(1, result.getInfectionCount());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class InfectionEngineTest {
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(8), result.getChaos());
         assertEquals("Tester x Tester", result.getCarrier());
-        // infectionCount = left(0) + right(0) + 1 committed event = 1
+        // Newly created strains start at one committed infection (the creator).
         assertEquals(1, result.getInfectionCount());
     }
 
@@ -115,8 +115,8 @@ public class InfectionEngineTest {
         assertEquals(Infectivity.rate(6), result.getInfectivity());
         assertEquals(Resilience.of(6), result.getResilience());
         assertEquals(Chaos.level(6), result.getChaos());
-        // sum(parent counts) + one committed combine action
-        assertEquals(7, result.getInfectionCount());
+        // Local combine also creates a new strain starting at one.
+        assertEquals(1, result.getInfectionCount());
     }
 
     @Test
@@ -126,6 +126,16 @@ public class InfectionEngineTest {
         assertEquals("Combined from local strains", result.getOrigin());
         assertTrue(result.getName().endsWith(" Local Mix"));
         assertTrue(result.getGenome().length() > 0);
+        assertEquals(1, result.getInfectionCount());
+    }
+
+    @Test
+    public void combineResetsOffspringCountToOneEvenWhenParentsHaveLargeCounts() {
+        Virus left = virus("left-count-1", "Spark", 6, 6, 6, "AAA-0", 17);
+        Virus right = virus("right-count-1", "Echo", 6, 6, 6, "BBB-0", 5);
+
+        Virus result = InfectionEngine.combine(left, right);
+
         assertEquals(1, result.getInfectionCount());
     }
 

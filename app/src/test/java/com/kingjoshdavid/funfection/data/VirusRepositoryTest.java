@@ -1,5 +1,6 @@
 package com.kingjoshdavid.funfection.data;
 
+import com.kingjoshdavid.funfection.engine.InfectionEngine;
 import com.kingjoshdavid.funfection.model.Chaos;
 import com.kingjoshdavid.funfection.model.Infectivity;
 import com.kingjoshdavid.funfection.model.Resilience;
@@ -16,6 +17,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class VirusRepositoryTest {
 
@@ -39,6 +41,9 @@ public class VirusRepositoryTest {
 
         assertEquals(4, first.size());
         assertEquals(first.size(), second.size());
+        for (Virus virus : first) {
+            assertTrue(virus.getInfectionCount() >= 1 && virus.getInfectionCount() <= 20);
+        }
     }
 
     @Test
@@ -116,6 +121,38 @@ public class VirusRepositoryTest {
             if (vv.getId().equals("rep-1")) count++;
         }
         assertEquals(1, count);
+    }
+
+    @Test
+    public void localCombineKeepsSourceCountsAndCreatesOffspringAtOne() {
+        Virus first = new Virus("cmb-1", "First", "Spark", "Tester",
+            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "GEN-C1", "Fixture", 17);
+        Virus second = new Virus("cmb-2", "Second", "Echo", "Tester",
+            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "GEN-C2", "Fixture", 5);
+        VirusRepository.addVirus(first);
+        VirusRepository.addVirus(second);
+
+        Virus offspring = InfectionEngine.infectLocal(Arrays.asList(first, second));
+        VirusRepository.addVirus(offspring);
+
+        assertEquals(17, VirusRepository.getVirusById("cmb-1").getInfectionCount());
+        assertEquals(5, VirusRepository.getVirusById("cmb-2").getInfectionCount());
+        assertEquals(1, VirusRepository.getVirusById(offspring.getId()).getInfectionCount());
+    }
+
+    @Test
+    public void incrementInfectionCountsOnlyIncrementsSelectedVirusesByOne() {
+        Virus selected = new Virus("share-1", "Selected", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-S1", "Fixture", 9);
+        Virus notSelected = new Virus("share-2", "Not Selected", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-S2", "Fixture", 4);
+        VirusRepository.addVirus(selected);
+        VirusRepository.addVirus(notSelected);
+
+        VirusRepository.incrementInfectionCounts(Arrays.asList("share-1"));
+
+        assertEquals(10, VirusRepository.getVirusById("share-1").getInfectionCount());
+        assertEquals(4, VirusRepository.getVirusById("share-2").getInfectionCount());
     }
 
     private void clearRepository() throws Exception {

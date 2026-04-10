@@ -57,6 +57,8 @@ List of friends sorted by degrees of separation
 - [ ] Revisit collapse behavior for mixed selections so family is not chosen purely by last item in list order unless that rule is intentional.
 - [ ] Revisit collapse carrier selection so mixed templates are not always attributed to the first selected carrier unless that is a deliberate design choice.
 - [ ] Decide whether offspring names should preserve parent identity instead of collapsing to `family + Remix/Chimera`.
+- [ ] Decide policy for infection counts when infected by a friend's virus: preserve shared lineage totals, combine all parent totals, or reset new offspring to only the local creator count.
+- [ ] Decide starter-virus baseline infection counts: keep new-player starters at `0/1`, set a high fixed lore baseline, or seed a deterministic random range such as `1..20`.
 
 ## Naming Refactor
 

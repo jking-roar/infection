@@ -171,11 +171,19 @@ public class VirusFactoryTest {
 
     @Test
     public void createStarterVirusesBuildsDefaultCollection() {
-        List<Virus> viruses = VirusFactory.createStarterViruses();
+        List<Virus> first = VirusFactory.createStarterViruses();
+        List<Virus> second = VirusFactory.createStarterViruses();
 
-        assertEquals(4, viruses.size());
-        assertNotNull(viruses.get(0).getId());
-        assertFalse(viruses.get(0).getSummaryLine().isEmpty());
+        assertEquals(4, first.size());
+        assertNotNull(first.get(0).getId());
+        assertFalse(first.get(0).getSummaryLine().isEmpty());
+
+        for (int i = 0; i < first.size(); i++) {
+            int firstCount = first.get(i).getInfectionCount();
+            int secondCount = second.get(i).getInfectionCount();
+            assertTrue(firstCount >= 1 && firstCount <= 20);
+            assertEquals(firstCount, secondCount);
+        }
     }
 
     @Test

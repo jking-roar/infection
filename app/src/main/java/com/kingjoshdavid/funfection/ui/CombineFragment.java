@@ -105,9 +105,6 @@ public class CombineFragment extends Fragment {
     }
 
     private void executeCombine(List<Virus> sources, Virus offspring) {
-        List<String> ids = new ArrayList<>();
-        for (Virus v : sources) ids.add(v.getId());
-        VirusRepository.incrementInfectionCounts(ids);
         VirusRepository.addVirus(offspring);
         refreshList();
         resultSummary.setText("Combined " + sources.size() + " strain(s). "

@@ -22,8 +22,8 @@ import java.util.UUID;
  * <p>Second, the two templates are merged into an offspring whose genome and mutation state
  * are derived from both parents.</p>
  *
- * <p>Committed infection counts are also carried through those templates so new offspring can
- * inherit a combined lineage infection total.</p>
+ * <p>Committed infection counts stay attached to existing strains only. Newly created offspring
+ * start at one committed infection (the player creating that new strain).</p>
  *
  * <p>The engine interprets virus strings in two ways:</p>
  * <p>Invite-code strings are parsed earlier by {@link VirusFactory} into {@link Virus} values.</p>
@@ -63,8 +63,7 @@ public final class InfectionEngine {
      *
      * <p>This bypasses invite-code parsing and friend/random fallback behavior. The selected
      * strains are collapsed into one local template, then emitted as a local-only offspring.
-     * Infection count inherits the collapsed lineage count and increments once for the committed
-     * local combine action.</p>
+     * Newly created strains always start at one committed infection (the creator).</p>
      *
      * @param ownedViruses selected local viruses to combine
      * @return newly combined local offspring virus
@@ -83,7 +82,7 @@ public final class InfectionEngine {
                 merged.hasMutation());
         VirusOrigin origin = VirusOrigin.combinedLocally(merged.getOriginInfo());
         return new Virus(id, name, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
-            merged.hasMutation(), genome, origin, merged.getInfectionCount() + 1);
+            merged.hasMutation(), genome, origin, 1);
     }
 
     /**
@@ -161,7 +160,7 @@ public final class InfectionEngine {
      * <p>{@code infectivity = mergeStat(left.infectivity, right.infectivity, true)}</p>
      * <p>{@code resilience = mergeStat(left.resilience, right.resilience, false)}</p>
      * <p>{@code chaos = mergeStat(left.chaos, right.chaos, true)}</p>
-     * <p>{@code infectionCount = left.infectionCount + right.infectionCount + 1}</p>
+      * <p>{@code infectionCount = 1}</p>
      *
      * <p>If mutation occurs:</p>
      * <p>{@code infectivity = clamp(infectivity + 1)}</p>
@@ -179,7 +178,7 @@ public final class InfectionEngine {
         int infectivity = mergeStat(left.getInfectivity().score(), right.getInfectivity().score(), true);
         int resilience = mergeStat(left.getResilience().score(), right.getResilience().score(), false);
         int chaos = mergeStat(left.getChaos().score(), right.getChaos().score(), true);
-        int infectionCount = left.getInfectionCount() + right.getInfectionCount() + 1;
+        int infectionCount = 1;
         boolean mutation = shouldMutate(left, right);
 
         if (mutation) {

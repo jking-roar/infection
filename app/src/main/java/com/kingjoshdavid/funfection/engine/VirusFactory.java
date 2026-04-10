@@ -36,6 +36,8 @@ public final class VirusFactory {
 
     private static final String LAB_CARRIER = "Lab";
     private static final String SIMULATED_FRIEND_FLAG = "[SIMULATED]";
+    private static final int STARTER_MIN_INFECTIONS = 1;
+    private static final int STARTER_MAX_INFECTIONS = 20;
     private static final String[] MAD_SCIENTIST_NAMES = {
             "Professor Tesla",
             "Doctor Curie",
@@ -97,22 +99,30 @@ public final class VirusFactory {
      * Creates the initial set of lab-owned viruses.
      *
      * <p>Each starter virus is derived from a stable text seed so the same carrier and
-     * seed string always produce the same family, stats, mutation flag, and genome.</p>
+     * seed string always produce the same family, stats, mutation flag, genome, and
+     * non-zero starter infection count.</p>
      *
      * @return deterministic starter strains for a fresh repository
      */
     public static List<Virus> createStarterViruses() {
         UserProfile userProfile = UserProfileRepository.getCurrentUser();
         List<Virus> viruses = new ArrayList<>();
-        viruses.add(fromSeed(userProfile.getUserName(), "starter-alpha",
-                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName())));
-        viruses.add(fromSeed(userProfile.getUserName(), "starter-beta",
-                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName())));
-        viruses.add(fromSeed(userProfile.getUserName(), "starter-gamma",
-                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName())));
-        viruses.add(fromSeed(userProfile.getUserName(), "starter-delta",
-                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName())));
+        viruses.add(createStarterVirus(userProfile, "starter-alpha"));
+        viruses.add(createStarterVirus(userProfile, "starter-beta"));
+        viruses.add(createStarterVirus(userProfile, "starter-gamma"));
+        viruses.add(createStarterVirus(userProfile, "starter-delta"));
         return viruses;
+    }
+
+    private static Virus createStarterVirus(UserProfile userProfile, String seed) {
+        Virus starter = fromSeed(userProfile.getUserName(), seed,
+                VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName()));
+        return starter.withInfectionCount(starterInfectionCount(seed));
+    }
+
+    private static int starterInfectionCount(String seed) {
+        Random random = new Random(("starter-infection-count:" + seed).hashCode());
+        return STARTER_MIN_INFECTIONS + random.nextInt(STARTER_MAX_INFECTIONS - STARTER_MIN_INFECTIONS + 1);
     }
 
     /**
