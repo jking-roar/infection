@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Combine Strains"
+        android:text="@string/combine_page_header"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Select two or more strains to fuse into offspring." />
+        android:text="@string/combine_selection_instructions" />
 
     <ListView
         android:id="@+id/virusList"
@@ -38,7 +38,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Latest combination"
+        android:text="@string/combine_latest_label"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -47,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="No combination run yet." />
+        android:text="@string/combine_result_info_none" />
 
 </LinearLayout>
 

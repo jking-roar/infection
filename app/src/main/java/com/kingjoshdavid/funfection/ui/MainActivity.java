@@ -3,9 +3,9 @@ package com.kingjoshdavid.funfection.ui;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,10 +38,10 @@ public class MainActivity extends AppCompatActivity {
 
     private Fragment createFragmentForId(int id) {
         if (id == R.id.tab_collection) return new CollectionFragment();
-        if (id == R.id.tab_create)     return new CreateVirusFragment();
-        if (id == R.id.tab_combine)    return new CombineFragment();
-        if (id == R.id.tab_infect)     return new InfectFragment();
-        if (id == R.id.tab_friends)    return new FriendsFragment();
+        if (id == R.id.tab_create) return new CreateVirusFragment();
+        if (id == R.id.tab_combine) return new CombineFragment();
+        if (id == R.id.tab_infect) return new InfectFragment();
+        if (id == R.id.tab_friends) return new FriendsFragment();
         return null;
     }
 }

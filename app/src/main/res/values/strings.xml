@@ -72,4 +72,13 @@
     <string name="start_view_virus_code_reminder">Matching strains produce matching offspring. Mutations are rare but
         possible.
     </string>
+    <string name="collection_name_label">Your Name</string>
+    <string name="collection_name_hint">Tell others who you are</string>
+    <string name="collection_name_save_button">Save</string>
+    <string name="collection_virus_list_label">Your viruses</string>
+    <string name="collection_view_virus_button">View Selected Virus</string>
+    <string name="combine_page_header">Combine Strains</string>
+    <string name="combine_selection_instructions">Select two or more strains to fuse into offspring.</string>
+    <string name="combine_latest_label">Latest combination</string>
+    <string name="combine_result_info_none">No combination run yet.</string>
 </resources>
