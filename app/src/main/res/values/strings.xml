@@ -84,4 +84,8 @@
     <string name="create_page_header">Create a Lab Virus</string>
     <string name="create_latest_creation_label">Latest creation</string>
     <string name="create_latest_creation_info_none">No virus created yet.</string>
+    <string name="virus_page_header">Virus</string>
+    <string name="carrier_label">Carrier</string>
+    <string name="virus_infection_strength_label">Infection Strength</string>
+    <string name="virus_backtolab_button">Back to lab</string>
 </resources>
