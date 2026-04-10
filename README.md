@@ -14,10 +14,10 @@ Infect your friends - with fun.
 
 ## App screens
 
-- `StartActivity` (`app/src/main/java/com/example/funfection/ui/StartActivity.java`)
-  - Main lab screen for selecting strains, pasting invite codes, infecting, and sharing.
-  - Backed by layout: `app/src/main/res/layout/start.xml`.
-- `MyVirusActivity` (`app/src/main/java/com/example/funfection/ui/MyVirusActivity.java`)
+- `MainActivity` (`app/src/main/java/com/kingjoshdavid/funfection/ui/MainActivity.java`)
+  - Hosts the main flow (combine, infect, create, collection/friends tabs) via fragments.
+  - Backed by layout: `app/src/main/res/layout/activity_main.xml` and fragment layouts under `app/src/main/res/layout/`.
+- `MyVirusActivity` (`app/src/main/java/com/kingjoshdavid/funfection/ui/MyVirusActivity.java`)
   - Details screen for one virus (name, stats, genome, family, origin).
   - Backed by layout: `app/src/main/res/layout/my_virus.xml`.
 
@@ -30,9 +30,9 @@ Top-level:
 - `build.gradle`, `settings.gradle`, `gradle.properties` - project-level Gradle config.
 - `README.md`, `TODO.md` - project docs.
 
-Inside `app/src/main/java/com/example/funfection/`:
+Inside `app/src/main/java/com/kingjoshdavid/funfection/`:
 
-- `ui/` - Activities and user-flow orchestration.
+- `ui/` - Activities, fragments, and user-flow orchestration.
 - `engine/` - Strain generation, invite parsing, and combination logic.
 - `model/` - Core domain types (`Virus`, stat value objects, infection rate mapping).
 - `data/` - In-memory repository (`VirusRepository`).
@@ -40,19 +40,19 @@ Inside `app/src/main/java/com/example/funfection/`:
 Inside `app/src/main/`:
 
 - `AndroidManifest.xml` - app entry points and activity registration.
-- `res/layout/` - XML layouts (`start.xml`, `my_virus.xml`).
+- `res/layout/` - XML layouts (`activity_main.xml`, fragment layouts, `my_virus.xml`).
 - `res/values/` - strings, colors, themes.
 
 Tests:
 
-- `app/src/test/java/com/example/funfection/`
+- `app/src/test/java/com/kingjoshdavid/funfection/`
   - `engine/` tests for infection/combination behavior.
   - `model/` tests for value objects and mapping behavior.
   - `data/` tests for repository behavior.
 
 ## How to navigate the code quickly
 
-- UI behavior: start in `ui/` (`StartActivity`, `MyVirusActivity`).
+- UI behavior: start in `ui/` (`MainActivity`, `MyVirusActivity`).
 - Infection rules: go to `engine/InfectionEngine.java` and related factory classes.
 - Virus fields and score semantics: inspect `model/`.
 - Seed data and collection state: inspect `data/VirusRepository.java`.
@@ -73,8 +73,20 @@ Current project settings:
 - compileSdk: `36`
 - targetSdk: `36`
 - minSdk: `24`
-- Android Gradle Plugin: `8.5.2`
-- Gradle wrapper: `8.7`
+- Android Gradle Plugin: `8.12.3`
+- Gradle wrapper: `8.14.4`
+
+## Preflight checks (recommended)
+
+From the repository root (`C:\code\github\infection`) on Windows PowerShell:
+
+```powershell
+.\gradlew.bat -v
+adb version
+adb devices
+```
+
+Also verify `local.properties` has a valid SDK path (`sdk.dir=...`).
 
 ## Build locally
 
@@ -114,6 +126,12 @@ KEYSTORE_KEY_PASSWORD=your_key_password
 
 - `app/build/outputs/bundle/release/app-release.aab`
 
+5. (Recommended) Confirm the file exists before upload:
+
+```powershell
+Get-Item .\app\build\outputs\bundle\release\app-release.aab | Select-Object FullName, Length, LastWriteTime
+```
+
 Notes:
 
 - The keystore file (`*.jks`) should not be committed to GitHub.
@@ -138,6 +156,13 @@ adb devices
 adb -s <device-id> install -r .\app\build\outputs\apk\debug\app-debug.apk
 ```
 
+If install fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, uninstall the existing package first and retry:
+
+```powershell
+adb -s <device-id> uninstall com.kingjoshdavid.funfection
+.\gradlew.bat :app:installDebug
+```
+
 You can also run from Android Studio:
 
 - Open the project.
@@ -151,7 +176,7 @@ You can also run from Android Studio:
 - Virus display names and families are intentionally separate: the name is flavor text for a specific strain, while the family is the lineage label used by combine logic and UI grouping.
 - Genome strings are display-oriented fingerprints used for deterministic mutation behavior and flavor text; they are not treated as a parseable source of truth for stats.
 - Package-level docs are available in:
-  - `app/src/main/java/com/example/funfection/ui/README.md`
-  - `app/src/main/java/com/example/funfection/engine/README.md`
-  - `app/src/main/java/com/example/funfection/model/README.md`
-  - `app/src/main/java/com/example/funfection/data/README.md`
+  - `app/src/main/java/com/kingjoshdavid/funfection/ui/README.md`
+  - `app/src/main/java/com/kingjoshdavid/funfection/engine/README.md`
+  - `app/src/main/java/com/kingjoshdavid/funfection/model/README.md`
+  - `app/src/main/java/com/kingjoshdavid/funfection/data/README.md`
