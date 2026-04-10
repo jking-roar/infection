@@ -11,6 +11,8 @@
 - [x] Add a dedicated fallback friend generator or origin override so random friend strains do not use `Seeded in lab` provenance.
 - [x] Decide whether genomes should remain display-only fingerprints or move to a parseable format; if parseable, zero-pad or delimit stat segments.
 - [x] Document the current distinction between display name and family so the code and UX are explicit about the existing model.
+- [ ] When creating a virus, add a button to scan a bar code or qr code for the data as a seed.
+  - [ ] Call the feature "Find a wild Virus" with hints that you can find them in the world around you, and that they are different from the viruses you create in the lab.
 
 ## Random Fake Friend Generator
 - [x] Random friend generator should include a list of Mad Scientist-like names. like "Professor X" or "the Gutter man" or "Charlie Brown"

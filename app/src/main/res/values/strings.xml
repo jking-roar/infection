@@ -21,9 +21,9 @@
     <string name="infection_preview_stats">Transmission profile: infectivity %1$d, resilience %2$d, chaos %3$d, rate %4$s.</string>
     <string name="infection_preview_carrier_chain">Carrier chain: %1$s.</string>
     <string name="infection_preview_seed_item">• %1$s — %2$s | genome %3$s | rate %4$s | strength %5$d | infections %6$d</string>
+    <string name="create_virus_button">Create Virus</string>
     <string name="lab_seed_title">Create a lab virus</string>
     <string name="lab_seed_hint">Enter a seed or leave blank for a random virus</string>
-    <string name="create_virus_button">Create Virus</string>
     <string name="create_virus_toast">New virus created: %1$s</string>
     <string name="create_virus_seed_manual">Seed used: %1$s.</string>
     <string name="create_virus_seed_random">Seed used: random.</string>
@@ -81,4 +81,7 @@
     <string name="combine_selection_instructions">Select two or more strains to fuse into offspring.</string>
     <string name="combine_latest_label">Latest combination</string>
     <string name="combine_result_info_none">No combination run yet.</string>
+    <string name="create_page_header">Create a Lab Virus</string>
+    <string name="create_latest_creation_label">Latest creation</string>
+    <string name="create_latest_creation_info_none">No virus created yet.</string>
 </resources>
