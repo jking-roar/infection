@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+    android:orientation="vertical"
+    android:paddingStart="@dimen/page_horizontal_padding"
+    android:paddingTop="@dimen/page_top_padding"
+    android:paddingEnd="@dimen/page_horizontal_padding"
+    android:paddingBottom="@dimen/page_bottom_padding">
 
         <TextView
             android:layout_width="wrap_content"
@@ -16,11 +14,11 @@
             android:text="@string/collection_name_label"
             android:textStyle="bold" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:orientation="horizontal">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/userNameInput"
@@ -32,37 +30,37 @@
                 android:inputType="textPersonName"
                 android:maxLines="1" />
 
-            <Button
-                android:id="@+id/saveUserNameButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/collection_name_save_button" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/collectionSummary"
+        <Button
+            android:id="@+id/saveUserNameButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/collection_virus_list_label"
-            android:textSize="16sp" />
-
-        <ListView
-            android:id="@+id/virusList"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/virus_list_height"
-            android:layout_marginTop="8dp"
-            android:choiceMode="multipleChoice"
-            android:nestedScrollingEnabled="true" />
-
-        <Button
-            android:id="@+id/viewButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/collection_view_virus_button" />
-
+            android:layout_marginStart="@dimen/page_spacing_small"
+            android:text="@string/collection_name_save_button" />
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+
+    <TextView
+        android:id="@+id/collectionSummary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_medium"
+        android:text="@string/collection_virus_list_label"
+        android:textSize="16sp" />
+
+    <ListView
+        android:id="@+id/virusList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:layout_weight="1"
+        android:choiceMode="multipleChoice"
+        android:overScrollMode="ifContentScrolls" />
+
+    <Button
+        android:id="@+id/viewButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_medium"
+        android:text="@string/collection_view_virus_button" />
+
+</LinearLayout>
 

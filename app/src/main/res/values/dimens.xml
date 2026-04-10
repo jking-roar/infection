@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="virus_list_height">200dp</dimen>
+    <dimen name="page_horizontal_padding">20dp</dimen>
+    <dimen name="page_top_padding">24dp</dimen>
+    <dimen name="page_bottom_padding">20dp</dimen>
+    <dimen name="page_spacing_small">8dp</dimen>
+    <dimen name="page_spacing_medium">12dp</dimen>
+    <dimen name="page_spacing_large">16dp</dimen>
 </resources>
