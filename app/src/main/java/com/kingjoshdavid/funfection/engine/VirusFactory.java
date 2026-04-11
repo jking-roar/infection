@@ -2,6 +2,7 @@ package com.kingjoshdavid.funfection.engine;
 
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.model.*;
+import com.kingjoshdavid.funfection.model.MadScientist;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -27,12 +28,12 @@ public final class VirusFactory {
 
     private static final String SIMULATED_FRIEND_FLAG = "[SIMULATED]";
     private static final int STARTER_GENERATION = 1;
-    private static final String[] MAD_SCIENTIST_NAMES = {
-            "Professor Tesla",
-            "Doctor Curie",
-            "Doc Brown",
-            "Professor Xavier",
-            "The Gutter Man"
+    private static final MadScientist[] MAD_SCIENTISTS = {
+            new MadScientist("Professor", "Tesla"),
+            new MadScientist("Doctor", "Curie"),
+            new MadScientist("Doc", "Brown"),
+            new MadScientist("Professor", "Xavier"),
+            new MadScientist("The", "Gutter Man")
     };
 
     private static final String[] FAMILIES = {
@@ -247,8 +248,8 @@ public final class VirusFactory {
      */
     public static Virus createRandomFriendVirus() {
         Random random = new Random();
-        String alias = MAD_SCIENTIST_NAMES[Math.abs(random.nextInt()) % MAD_SCIENTIST_NAMES.length];
-        String guestName = alias + " " + SIMULATED_FRIEND_FLAG;
+        MadScientist scientist = MAD_SCIENTISTS[Math.abs(random.nextInt()) % MAD_SCIENTISTS.length];
+        String guestName = scientist.getDisplayName() + " " + SIMULATED_FRIEND_FLAG;
         String seed = guestName.toLowerCase(Locale.US) + ":" + UUID.randomUUID().toString();
         return fromSeed(guestName, seed, VirusOrigin.randomFriendFallback(guestName));
     }

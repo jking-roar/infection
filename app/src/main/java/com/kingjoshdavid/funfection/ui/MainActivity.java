@@ -65,10 +65,10 @@ public class MainActivity extends AppCompatActivity {
         if (pinnedVirusId == null || pinnedVirusId.trim().isEmpty()) {
             return;
         }
+        // Show the collection view with the combine panel pre-opened for this virus.
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.nav_host_fragment, CombineFragment.newPinnedInstance(pinnedVirusId))
-                .addToBackStack(null)
+                .replace(R.id.nav_host_fragment, CollectionFragment.newCombineInstance(pinnedVirusId))
                 .commit();
         intent.removeExtra(EXTRA_OPEN_COMBINE_VIRUS_ID);
     }

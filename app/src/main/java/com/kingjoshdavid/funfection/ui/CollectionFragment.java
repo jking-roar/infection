@@ -7,9 +7,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
@@ -20,15 +23,31 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.data.VirusRepository;
+import com.kingjoshdavid.funfection.engine.InfectionEngine;
 import com.kingjoshdavid.funfection.engine.VirusFactory;
 import com.kingjoshdavid.funfection.model.UserProfile;
 import com.kingjoshdavid.funfection.model.Virus;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CollectionFragment extends Fragment {
 
+    public static final String ARG_PENDING_COMBINE_VIRUS_ID =
+            "com.kingjoshdavid.funfection.PENDING_COMBINE_VIRUS_ID";
+
+    /** Creates a CollectionFragment that will immediately open the combine panel for the given virus. */
+    public static CollectionFragment newCombineInstance(String virusId) {
+        CollectionFragment f = new CollectionFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PENDING_COMBINE_VIRUS_ID, virusId);
+        f.setArguments(args);
+        return f;
+    }
+
+    // Collection views
     private ListView virusList;
     private TextView collectionSummary;
     private EditText userNameInput;
@@ -36,6 +55,16 @@ public class CollectionFragment extends Fragment {
     private LabVirusListAdapter virusAdapter;
     private EditText pendingCreateSeedInput;
     private ActivityResultLauncher<ScanOptions> createSeedScanLauncher;
+
+    // Combine panel
+    private DrawerLayout combineDrawerLayout;
+    private CombineSelectorAdapter combineSelectorAdapter;
+    private final Set<String> selectedPartnerIds = new HashSet<>();
+    private String pinnedCombineVirusId;
+    private TextView pinnedVirusNameView;
+    private TextView pinnedVirusMetaView;
+    private TextView combineSelectorSummaryView;
+    private String pendingOpenCombineVirusId;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,6 +96,7 @@ public class CollectionFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // --- Collection views ---
         virusList = view.findViewById(R.id.virusList);
         collectionSummary = view.findViewById(R.id.collectionSummary);
         userNameInput = view.findViewById(R.id.userNameInput);
@@ -113,13 +143,81 @@ public class CollectionFragment extends Fragment {
         });
 
         createVirusButton.setOnClickListener(v -> promptCreateVirus());
+
+        // --- Combine panel (DrawerLayout) ---
+        combineDrawerLayout = view.findViewById(R.id.combineDrawerLayout);
+        pinnedVirusNameView = view.findViewById(R.id.pinnedVirusName);
+        pinnedVirusMetaView = view.findViewById(R.id.pinnedVirusMeta);
+        combineSelectorSummaryView = view.findViewById(R.id.combineSelectorSummary);
+        ListView selectorList = view.findViewById(R.id.combineSelectorList);
+        Button combineActionButton = view.findViewById(R.id.combineActionButton);
+
+        // Prevent swipe-to-open; only allow programmatic opening.
+        combineDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+
+        combineSelectorAdapter = new CombineSelectorAdapter(requireContext(), selectedPartnerIds);
+        selectorList.setAdapter(combineSelectorAdapter);
+        selectorList.setOnItemClickListener((parent, itemView, position, id) -> onPartnerVirusTapped(position));
+
+        combineActionButton.setOnClickListener(v -> executeCombine());
+
+        combineDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+                // Re-lock so swipe cannot reopen it.
+                combineDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+                pinnedCombineVirusId = null;
+                selectedPartnerIds.clear();
+                updateCombineSelectorSummary();
+            }
+        });
+
+        // Intercept the back button: close the drawer first if it is open.
+        requireActivity().getOnBackPressedDispatcher().addCallback(
+                getViewLifecycleOwner(),
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        if (combineDrawerLayout != null
+                                && combineDrawerLayout.isDrawerOpen(GravityCompat.END)) {
+                            combineDrawerLayout.closeDrawer(GravityCompat.END);
+                        } else {
+                            setEnabled(false);
+                            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+                            setEnabled(true);
+                        }
+                    }
+                });
+
+        // Consume any pending combine virus ID passed via arguments (from MyVirusActivity flow).
+        Bundle args = getArguments();
+        if (args != null) {
+            pendingOpenCombineVirusId = args.getString(ARG_PENDING_COMBINE_VIRUS_ID);
+            if (pendingOpenCombineVirusId != null) {
+                args.remove(ARG_PENDING_COMBINE_VIRUS_ID);
+            }
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
         refreshCollection();
+
+        // Open the combine panel if we have a pending virus ID (e.g. from MyVirusActivity).
+        if (pendingOpenCombineVirusId != null) {
+            final String virusId = pendingOpenCombineVirusId;
+            pendingOpenCombineVirusId = null;
+            Virus pendingVirus = VirusRepository.getVirusById(virusId);
+            if (pendingVirus != null && combineDrawerLayout != null) {
+                combineDrawerLayout.post(() -> openCombine(pendingVirus));
+            }
+        }
     }
+
+    // -------------------------------------------------------------------------
+    // Collection helpers
+    // -------------------------------------------------------------------------
 
     private void refreshCollection() {
         viruses = VirusRepository.getViruses();
@@ -216,14 +314,6 @@ public class CollectionFragment extends Fragment {
                 Toast.LENGTH_SHORT).show();
     }
 
-    private void openCombine(Virus virus) {
-        requireActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.nav_host_fragment, CombineFragment.newPinnedInstance(virus.getId()))
-                .addToBackStack(null)
-                .commit();
-    }
-
     private void promptCreateVirus() {
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_create_virus, null, false);
@@ -258,5 +348,106 @@ public class CollectionFragment extends Fragment {
         refreshCollection();
         openVirusDetails(createdVirus);
     }
-}
 
+    // -------------------------------------------------------------------------
+    // Combine panel
+    // -------------------------------------------------------------------------
+
+    /** Opens the combine drawer with the given virus pinned as the left-hand strain. */
+    private void openCombine(Virus virus) {
+        if (virus == null || combineDrawerLayout == null) {
+            return;
+        }
+        pinnedCombineVirusId = virus.getId();
+        selectedPartnerIds.clear();
+
+        pinnedVirusNameView.setText(virus.getName());
+        pinnedVirusMetaView.setText(virus.getFamily() + " | " + virus.getGenome());
+
+        refreshCombinePartnerList();
+
+        // Unlock so the user can swipe it closed after it opens.
+        combineDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.END);
+        combineDrawerLayout.openDrawer(GravityCompat.END);
+    }
+
+    /** Rebuilds the partner-virus list in the selector (excludes the pinned virus). */
+    private void refreshCombinePartnerList() {
+        List<Virus> allViruses = VirusRepository.getViruses();
+        List<Virus> partnerViruses = new ArrayList<>();
+        for (Virus v : allViruses) {
+            if (!v.getId().equals(pinnedCombineVirusId)) {
+                partnerViruses.add(v);
+            }
+        }
+        // No pinned ID in the adapter – pinned virus is shown in its own dedicated row above.
+        combineSelectorAdapter.setViruses(partnerViruses, null);
+        updateCombineSelectorSummary();
+    }
+
+    private void onPartnerVirusTapped(int position) {
+        if (position < 0 || position >= combineSelectorAdapter.getCount()) {
+            return;
+        }
+        Virus tapped = combineSelectorAdapter.getItem(position);
+        if (selectedPartnerIds.contains(tapped.getId())) {
+            selectedPartnerIds.remove(tapped.getId());
+        } else {
+            selectedPartnerIds.add(tapped.getId());
+        }
+        combineSelectorAdapter.notifyDataSetChanged();
+        updateCombineSelectorSummary();
+    }
+
+    private void updateCombineSelectorSummary() {
+        if (combineSelectorSummaryView == null) {
+            return;
+        }
+        int count = selectedPartnerIds.size();
+        if (count == 0) {
+            combineSelectorSummaryView.setText(R.string.combine_selector_none_selected);
+        } else {
+            combineSelectorSummaryView.setText(getString(R.string.combine_selector_selected_count, count));
+        }
+    }
+
+    /**
+     * Immediately combines the pinned virus with any selected partners,
+     * adds the result to the repository, closes the drawer, and opens
+     * the new virus in {@link MyVirusActivity}.
+     */
+    private void executeCombine() {
+        if (pinnedCombineVirusId == null) {
+            return;
+        }
+        Virus pinned = VirusRepository.getVirusById(pinnedCombineVirusId);
+        if (pinned == null) {
+            return;
+        }
+
+        List<Virus> toMerge = new ArrayList<>();
+        toMerge.add(pinned);
+        List<Virus> allViruses = VirusRepository.getViruses();
+        for (Virus v : allViruses) {
+            if (!v.getId().equals(pinnedCombineVirusId) && selectedPartnerIds.contains(v.getId())) {
+                toMerge.add(v);
+            }
+        }
+
+        if (toMerge.size() < 2) {
+            Toast.makeText(requireContext(), R.string.combine_need_partner, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Virus offspring = InfectionEngine.infectLocal(toMerge);
+        VirusRepository.addVirus(offspring);
+
+        // Reset state, close drawer, then open the new strain.
+        pinnedCombineVirusId = null;
+        selectedPartnerIds.clear();
+        combineDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+        combineDrawerLayout.closeDrawer(GravityCompat.END);
+
+        openVirusDetails(offspring);
+    }
+}

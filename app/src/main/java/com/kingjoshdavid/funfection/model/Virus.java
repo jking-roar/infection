@@ -18,8 +18,14 @@ public class Virus implements Serializable {
     /**
      * Stable identifier used for repository lookups and intent extras.
      *
-     * <p>This is not user-facing and does not need to be globally unique. It only needs to be unique within the player's collection and consistent across app sessions. The engine does not
-     * consume or recognize this field, so it can be generated in any way that meets those requirements. For example, a simple UUID or a hash of the strain's stat profile and origin metadata could work. The key requirement is that the same strain should always have the same ID when reconstructed from the player's collection, so that sharing and combining logic can reliably identify and match strains.</p>
+     * <p>
+     * This is not user-facing and does not need to be globally unique. It only needs to be unique within the
+     * player's collection and consistent across app sessions. The engine does not consume or recognize this field, so
+     * it can be generated in any way that meets those requirements. For example, a simple UUID or a hash of the
+     * strain's stat profile and origin metadata could work. The key requirement is that the same strain should always
+     * have the same ID when reconstructed from the player's collection, so that sharing and combining logic can
+     * reliably identify and match strains.
+     * </p>
      */
     private final String id;
 
@@ -34,10 +40,10 @@ public class Virus implements Serializable {
     private final String suffix;
 
     /**
-        * Family label grouping related strains, such as starter and offspring lineages.
-        *
-        * <p>The engine combines and compares families as lineage metadata separate from the
-        * display name. UI copy should treat name and family as two distinct fields.</p>
+     * Family label grouping related strains, such as starter and offspring lineages.
+     *
+     * <p>The engine combines and compares families as lineage metadata separate from the
+     * display name. UI copy should treat name and family as two distinct fields.</p>
      */
     private final String family;
 
@@ -76,10 +82,10 @@ public class Virus implements Serializable {
     private final boolean mutation;
 
     /**
-        * Compact genome signature used to describe and deterministically combine strains.
-        *
-        * <p>This stays a display-oriented fingerprint used for deterministic seeding and flavor
-        * text. It is not the source of truth for reconstructing the stat model.</p>
+     * Compact genome signature used to describe and deterministically combine strains.
+     *
+     * <p>This stays a display-oriented fingerprint used for deterministic seeding and flavor
+     * text. It is not the source of truth for reconstructing the stat model.</p>
      */
     private final String genome;
 
@@ -104,16 +110,16 @@ public class Virus implements Serializable {
     /**
      * Creates a virus strain with its identity, stat profile, and provenance metadata.
      *
-     * @param id stable identifier used for lookups and sharing inside the app
-     * @param name display name shown in lists and detail views
-     * @param family lineage label used when grouping or combining strains
-     * @param carrier fictional host label for flavor text and detail screens
+     * @param id          stable identifier used for lookups and sharing inside the app
+     * @param name        display name shown in lists and detail views
+     * @param family      lineage label used when grouping or combining strains
+     * @param carrier     fictional host label for flavor text and detail screens
      * @param infectivity spread strength score for the strain (engine-normalized to {@code 1..10})
-     * @param resilience resistance and survivability score for the strain (engine-normalized to {@code 1..10})
-     * @param chaos instability score used in outbreak and mutation behavior (engine-normalized to {@code 1..10})
-     * @param mutation true when this strain resulted from a mutation event
-     * @param genome compact genome signature used in deterministic combination logic
-     * @param origin description of how the strain entered the player's collection
+     * @param resilience  resistance and survivability score for the strain (engine-normalized to {@code 1..10})
+     * @param chaos       instability score used in outbreak and mutation behavior (engine-normalized to {@code 1..10})
+     * @param mutation    true when this strain resulted from a mutation event
+     * @param genome      compact genome signature used in deterministic combination logic
+     * @param origin      description of how the strain entered the player's collection
      */
     public Virus(String id,
                  String name,
@@ -125,7 +131,7 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  String origin) {
-            this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
+        this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
                 infectivity, resilience, chaos, mutation, genome, VirusOrigin.legacy(origin), 1);
     }
 
@@ -140,7 +146,7 @@ public class Virus implements Serializable {
                  String genome,
                  String origin,
                  int generation) {
-            this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
+        this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
                 infectivity, resilience, chaos, mutation, genome, VirusOrigin.legacy(origin), generation);
     }
 
@@ -154,7 +160,7 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  VirusOrigin origin) {
-            this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
+        this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
                 infectivity, resilience, chaos, mutation, genome, origin, 1);
     }
 
@@ -170,7 +176,7 @@ public class Virus implements Serializable {
                  VirusOrigin origin,
                  int generation) {
         this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
-            infectivity, resilience, chaos, mutation, genome, origin, generation);
+                infectivity, resilience, chaos, mutation, genome, origin, generation);
     }
 
     public Virus(String id,
@@ -185,7 +191,7 @@ public class Virus implements Serializable {
                  String genome,
                  String origin) {
         this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
-            VirusOrigin.legacy(origin), 1);
+                VirusOrigin.legacy(origin), 1);
     }
 
     public Virus(String id,
@@ -201,7 +207,7 @@ public class Virus implements Serializable {
                  String origin,
                  int generation) {
         this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
-            VirusOrigin.legacy(origin), generation);
+                VirusOrigin.legacy(origin), generation);
     }
 
     public Virus(String id,
@@ -231,7 +237,7 @@ public class Virus implements Serializable {
                  VirusOrigin origin,
                  int generation) {
         this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
-            origin, generation, null);
+                origin, generation, null);
     }
 
     public Virus(String id,
@@ -366,7 +372,7 @@ public class Virus implements Serializable {
      * Serializes this virus into the share-code format consumed by the engine.
      *
      * <p>Field order:</p>
-    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier:generation[:originPayload]}</p>
+     * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier:generation[:originPayload]}</p>
      *
      * <p>Serialization math and encoding:</p>
      * <p>{@code infectivity = infectivity.score()}</p>
@@ -383,8 +389,8 @@ public class Virus implements Serializable {
      */
     public String toShareCode() {
         return id + ":" + family + ":" + infectivity.score() + ":" + resilience.score() + ":" + chaos.score() + ":"
-            + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(getName()) + ":" + sanitize(carrier)
-            + ":" + generation + ":" + origin.toSharePayload();
+                + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(getName()) + ":" + sanitize(carrier)
+                + ":" + generation + ":" + origin.toSharePayload();
     }
 
     /**

@@ -122,6 +122,8 @@
     <string name="combine_selector_badge_selected">Selected</string>
     <string name="combine_latest_label">Latest combination</string>
     <string name="combine_result_info_none">No combination run yet.</string>
+    <string name="combine_action_button">Combine</string>
+    <string name="combine_need_partner">Select at least one partner strain to combine.</string>
     <string name="create_page_header">Create a Lab Virus</string>
     <string name="create_latest_creation_label">Latest creation</string>
     <string name="create_latest_creation_info_none">No virus created yet.</string>
