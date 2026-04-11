@@ -123,3 +123,41 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Engine rule changes for mutation/infection math.
 - Share-code format changes.
 - Non-essential visual redesign outside the Lab/details refactor scope.
+
+---
+
+## Verification Results (verified 2026-04-11)
+
+All task definitions of done were verified against the production codebase. All 55 unit tests pass (0 failures, 0 errors).
+
+| Task | Status | Evidence |
+|------|--------|----------|
+| Task 1 – Navigation and terminology alignment | ✅ Complete | `bottom_nav_menu.xml` has 3 tabs (Lab, Infect, Friends). `tab_collection` string = "Lab". `MainActivity` routes only those 3 tabs. Screen copies use "lab strains" / "Lab Strain Details". |
+| Task 2a – Lab action menu | ✅ Complete | `LabVirusListAdapter` wires all 5 actions (details, share text, share QR, purge, combine) via `VirusActionPanelBinder`. `CollectionFragment` handles every callback. |
+| Task 2b – Refinement of refactor | ✅ Complete | `item_lab_virus.xml` contains no `CheckBox`. Tap on row header toggles an expand/collapse action panel; no dropdown/selection model. |
+| Task 3 – Combine-from-Lab (MVP) | ✅ Complete | `CombineFragment.newPinnedInstance()` fixes left side. `movePinnedVirusToTop()` places pinned strain first. Back button calls `popBackStack()`. Commit only happens inside `executeCombine()` after user confirms. |
+| Task 4 – Create-from-Lab | ✅ Complete | `createVirusButton` (bottom of Lab) triggers `promptCreateVirus()` → `createFromLab()` which creates, persists, and immediately opens details. |
+| Task 5a – Details screen parity (MVP) | ✅ Complete | `MyVirusActivity` uses `VirusActionPanelBinder` with share text, share QR, purge (with irreversible confirmation), combine (navigates back to Lab's `CombineFragment`), and Back to Lab (`finish()`). |
+| Task 5b – Details/Lab action UI unification | ✅ Complete | `include_virus_actions.xml` is the shared layout. `VirusActionPanelBinder` is the shared binding component used by both `LabVirusListAdapter` and `MyVirusActivity`. Lab uses the list-item expand model (not a popup/dropdown). |
+| Task 6 – Repository and regression tests | ✅ Complete | `VirusRepository` exposes `purgeVirusById`, `getPurgeStatus`, `removeVirusById`. `VirusRepositoryTest` covers purge blocking, missing ID, ordering, and combine generation. 55 total unit tests, 0 failures. |
+| Task 7 – Enhanced combine UX | ✅ Complete | `ENABLE_ENHANCED_COMBINE_SELECTOR = true` ships the enhanced slide-out selector. `CombineSelectorAdapter` shows Pinned/Selected badges. MVP fallback branches preserved in `else` blocks. |
+| Task 8 – Force portrait orientation | ✅ Complete | `AndroidManifest.xml` sets `android:screenOrientation="portrait"` on both `MainActivity` and `MyVirusActivity`. QR scanner uses `setOrientationLocked(true)`. |
+
+---
+
+## Follow-up Checklist
+
+These items are not blocking any current task but represent cleanup and polish debt identified during verification.
+
+### Cleanup – Dead code removal
+- [ ] Delete `CreateVirusFragment.java` — the class has no nav entry and is not referenced anywhere outside its own file.
+- [ ] Delete `fragment_create_virus.xml` — only referenced by `CreateVirusFragment` which is itself dead.
+- [ ] Remove unused string resources `tab_create` and `tab_combine` from `strings.xml` — they are defined but not referenced in any layout, menu, or Java source.
+
+### Cleanup – Feature-flag simplification
+- [ ] Remove the `ENABLE_ENHANCED_COMBINE_SELECTOR` boolean flag from `CombineFragment` now that Task 7 has shipped and the enhanced path is the only intended path. Inline the `true` branch and delete the dead `else`/MVP fallback code blocks.
+
+### Docs alignment
+- [ ] Update `AGENTS.md` line 16 to remove the reference to `VirusRepository.incrementInfectionCounts(...)` — this method does not exist; `InfectFragment.executeInfection()` calls only `VirusRepository.addVirus()`.
+
+
