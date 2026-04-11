@@ -1,4 +1,4 @@
-# AGENTS Guide for `infection`
+# AGENTS Guide for funfection app
 
 ## Big picture (read this first)
 - Single-module Android app (`:app`) with Java-only source under `app/src/main/java/com/kingjoshdavid/funfection`.
