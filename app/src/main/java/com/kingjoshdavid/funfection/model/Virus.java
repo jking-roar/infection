@@ -94,12 +94,12 @@ public class Virus implements Serializable {
     private final String productionContext;
 
     /**
-     * Number of committed infection actions this strain lineage has participated in.
+     * Lineage generation depth for this strain.
      *
-     * <p>This count only changes after a share or combine action is committed. Preview flows do
-     * not modify it. Offspring strains inherit a combined count from their parent templates.</p>
+     * <p>Starter and seeded strains begin at generation {@code 1}. Any new offspring should be
+     * assigned as {@code max(parentGenerations) + 1}.</p>
      */
-    private final int infectionCount;
+    private final int generation;
 
     /**
      * Creates a virus strain with its identity, stat profile, and provenance metadata.
@@ -126,7 +126,7 @@ public class Virus implements Serializable {
                  String genome,
                  String origin) {
             this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
-                infectivity, resilience, chaos, mutation, genome, VirusOrigin.legacy(origin), 0);
+                infectivity, resilience, chaos, mutation, genome, VirusOrigin.legacy(origin), 1);
     }
 
     public Virus(String id,
@@ -139,9 +139,9 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  String origin,
-                 int infectionCount) {
+                 int generation) {
             this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
-                infectivity, resilience, chaos, mutation, genome, VirusOrigin.legacy(origin), infectionCount);
+                infectivity, resilience, chaos, mutation, genome, VirusOrigin.legacy(origin), generation);
     }
 
     public Virus(String id,
@@ -155,7 +155,7 @@ public class Virus implements Serializable {
                  String genome,
                  VirusOrigin origin) {
             this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
-                infectivity, resilience, chaos, mutation, genome, origin, 0);
+                infectivity, resilience, chaos, mutation, genome, origin, 1);
     }
 
     public Virus(String id,
@@ -168,9 +168,9 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  VirusOrigin origin,
-                 int infectionCount) {
+                 int generation) {
         this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
-            infectivity, resilience, chaos, mutation, genome, origin, infectionCount);
+            infectivity, resilience, chaos, mutation, genome, origin, generation);
     }
 
     public Virus(String id,
@@ -185,7 +185,7 @@ public class Virus implements Serializable {
                  String genome,
                  String origin) {
         this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
-            VirusOrigin.legacy(origin), 0);
+            VirusOrigin.legacy(origin), 1);
     }
 
     public Virus(String id,
@@ -199,9 +199,9 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  String origin,
-                 int infectionCount) {
+                 int generation) {
         this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
-            VirusOrigin.legacy(origin), infectionCount);
+            VirusOrigin.legacy(origin), generation);
     }
 
     public Virus(String id,
@@ -215,7 +215,7 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  VirusOrigin origin) {
-        this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin, 0);
+        this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin, 1);
     }
 
     public Virus(String id,
@@ -229,9 +229,9 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  VirusOrigin origin,
-                 int infectionCount) {
+                 int generation) {
         this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
-            origin, infectionCount, null);
+            origin, generation, null);
     }
 
     public Virus(String id,
@@ -245,11 +245,11 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  VirusOrigin origin,
-                 int infectionCount,
+                 int generation,
                  String productionContext) {
         this.id = id;
         this.prefix = normalizeNamePart(prefix, "Unknown");
-        this.suffix = normalizeNamePart(suffix, "Entity");
+        this.suffix = normalizeNamePart(suffix, "");
         this.family = family;
         this.carrier = carrier;
         this.infectivity = infectivity;
@@ -258,7 +258,7 @@ public class Virus implements Serializable {
         this.mutation = mutation;
         this.genome = genome;
         this.origin = origin == null ? VirusOrigin.legacy("Unknown origin") : origin;
-        this.infectionCount = Math.max(0, infectionCount);
+        this.generation = Math.max(1, generation);
         this.productionContext = normalizeOptionalMetadata(productionContext);
     }
 
@@ -322,8 +322,8 @@ public class Virus implements Serializable {
         return origin.describeDetailedForViewer(viewerId);
     }
 
-    public int getInfectionCount() {
-        return infectionCount;
+    public int getGeneration() {
+        return generation;
     }
 
     /**
@@ -366,7 +366,7 @@ public class Virus implements Serializable {
      * Serializes this virus into the share-code format consumed by the engine.
      *
      * <p>Field order:</p>
-    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier:infectionCount[:originPayload]}</p>
+    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier:generation[:originPayload]}</p>
      *
      * <p>Serialization math and encoding:</p>
      * <p>{@code infectivity = infectivity.score()}</p>
@@ -376,15 +376,15 @@ public class Virus implements Serializable {
      *
      * <p>The mutation slot uses {@code 1} for mutated strains and {@code 0} for stable strains.
      * The name and carrier fields are sanitized to remove reserved separators before they are
-     * appended, and the trailing infection-count field carries the committed lineage infection
-     * total. Older invite codes without the trailing count still parse correctly.</p>
+     * appended, and the trailing generation field carries lineage depth.
+     * Older invite codes without the trailing generation still parse correctly.</p>
      *
      * @return one-line share code representing this virus
      */
     public String toShareCode() {
         return id + ":" + family + ":" + infectivity.score() + ":" + resilience.score() + ":" + chaos.score() + ":"
             + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(getName()) + ":" + sanitize(carrier)
-            + ":" + infectionCount + ":" + origin.toSharePayload();
+            + ":" + generation + ":" + origin.toSharePayload();
     }
 
     /**
@@ -399,27 +399,22 @@ public class Virus implements Serializable {
     public String getSummaryLine() {
         String mutationLabel = mutation ? "Mutated" : "Stable";
         return getName() + "  |  " + family + "  |  " + mutationLabel + "  |  Rate " + getInfectionRate()
-                + "  |  Infections " + infectionCount;
+                + "  |  Generation " + generation;
     }
 
     /**
-     * Returns a copy of this strain with a replaced infection count.
+     * Returns a copy of this strain with a replaced generation.
      *
-     * @param updatedInfectionCount new committed infection count for the strain
-     * @return copied virus preserving all non-count fields
+     * @param updatedGeneration new lineage generation depth for the strain
+     * @return copied virus preserving all non-generation fields
      */
-    public Virus withInfectionCount(int updatedInfectionCount) {
+    public Virus withGeneration(int updatedGeneration) {
         return new Virus(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
-                updatedInfectionCount, productionContext);
+                updatedGeneration, productionContext);
     }
 
-    /**
-     * Returns a copy of this strain with its committed infection count incremented by one.
-     *
-     * @return copied virus with infection count increased by one
-     */
-    public Virus incrementInfectionCount() {
-        return withInfectionCount(infectionCount + 1);
+    public Virus incrementGeneration() {
+        return withGeneration(generation + 1);
     }
 
     /**

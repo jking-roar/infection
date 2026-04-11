@@ -53,7 +53,7 @@ public class MyVirusActivity extends AppCompatActivity {
         virusName.setText(virus.getName());
         patientZero.setText(virus.getCarrier());
         infectedPopulation.setText(Integer.toString(virus.getInfectionStrength()));
-        infectionCount.setText(Integer.toString(virus.getInfectionCount()));
+        infectionCount.setText(Integer.toString(virus.getGeneration()));
         infectionRate.setText(virus.getInfectionRate().toString());
         virusFamily.setText(virus.getFamily());
         virusChaos.setText(Integer.toString(virus.getChaos().score()));

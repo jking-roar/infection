@@ -31,7 +31,7 @@ public class VirusTest {
 
         assertTrue(summary.contains("Mutated"));
         assertTrue(summary.contains("Rate OUTBREAK"));
-        assertTrue(summary.contains("Infections 4"));
+        assertTrue(summary.contains("Generation 4"));
     }
 
     @Test
@@ -51,15 +51,15 @@ public class VirusTest {
     }
 
     @Test
-    public void incrementInfectionCountReturnsCopiedVirusWithIncrementedCount() {
+    public void incrementGenerationReturnsCopiedVirusWithIncrementedGeneration() {
         Virus original = new Virus("virus-5", "Stable", "Name", "Spark", "Carrier",
             Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-111",
             VirusOrigin.legacy("Fixture"), 2, "Cluster");
 
-        Virus incremented = original.incrementInfectionCount();
+        Virus incremented = original.incrementGeneration();
 
-        assertEquals(2, original.getInfectionCount());
-        assertEquals(3, incremented.getInfectionCount());
+        assertEquals(2, original.getGeneration());
+        assertEquals(3, incremented.getGeneration());
         assertEquals(original.getId(), incremented.getId());
         assertEquals("Cluster", incremented.getProductionContext());
     }

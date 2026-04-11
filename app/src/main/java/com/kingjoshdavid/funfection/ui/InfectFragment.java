@@ -176,14 +176,11 @@ public class InfectFragment extends Fragment {
             msg.append("\n").append(getString(R.string.infection_preview_seed_item,
                     v.getName(), v.getFamily(), v.getGenome(),
                     v.getInfectionRate().toString(),
-                    v.getInfectionStrength(), v.getInfectionCount()));
+                    v.getInfectionStrength(), v.getGeneration()));
         }
     }
 
     private void executeInfection(InfectionPlan plan) {
-        List<String> ids = new ArrayList<>();
-        for (Virus v : plan.myViruses) ids.add(v.getId());
-        VirusRepository.incrementInfectionCounts(ids);
         VirusRepository.addVirus(plan.offspring);
         refreshList();
 
@@ -198,7 +195,7 @@ public class InfectFragment extends Fragment {
                 plan.offspring.getFamily(),
                 plan.offspring.getGenome(),
                 plan.offspring.getInfectionStrength(),
-                plan.offspring.getInfectionCount(),
+                plan.offspring.getGeneration(),
                 mutationLabel,
                 inviteMode));
         Toast.makeText(requireContext(), getString(R.string.infect_new_virus_toast, plan.offspring.getName()), Toast.LENGTH_SHORT).show();
@@ -258,14 +255,7 @@ public class InfectFragment extends Fragment {
             return null;
         }
 
-        List<String> ids = new ArrayList<>();
-        for (Virus v : selected) ids.add(v.getId());
-        List<Virus> shared = VirusRepository.incrementInfectionCounts(ids);
-        if (shared.isEmpty()) {
-            shared = selected;
-        }
-        refreshList();
-        return shared;
+        return selected;
     }
 
     private String buildInvitePayload(List<Virus> shared) {

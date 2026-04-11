@@ -45,8 +45,7 @@ public class InfectionEngineTest {
         assertEquals(Infectivity.rate(9), result.getInfectivity());
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(10), result.getChaos());
-        // Newly created strains start at one committed infection (the creator).
-        assertEquals(1, result.getInfectionCount());
+        assertEquals(4, result.getGeneration());
     }
 
     @Test
@@ -63,8 +62,7 @@ public class InfectionEngineTest {
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(8), result.getChaos());
         assertEquals("Tester x Tester", result.getCarrier());
-        // Newly created strains start at one committed infection (the creator).
-        assertEquals(1, result.getInfectionCount());
+        assertEquals(2, result.getGeneration());
     }
 
     @Test
@@ -148,8 +146,7 @@ public class InfectionEngineTest {
         assertEquals(Infectivity.rate(6), result.getInfectivity());
         assertEquals(Resilience.of(6), result.getResilience());
         assertEquals(Chaos.level(6), result.getChaos());
-        // Local combine also creates a new strain starting at one.
-        assertEquals(1, result.getInfectionCount());
+        assertEquals(5, result.getGeneration());
     }
 
     @Test
@@ -160,17 +157,17 @@ public class InfectionEngineTest {
         assertFalse(result.getName().trim().isEmpty());
         assertEquals("Local Mix", result.getProductionContext());
         assertFalse(result.getGenome().isEmpty());
-        assertEquals(1, result.getInfectionCount());
+        assertEquals(2, result.getGeneration());
     }
 
     @Test
-    public void combineResetsOffspringCountToOneEvenWhenParentsHaveLargeCounts() {
+    public void combineUsesMaxParentGenerationPlusOne() {
         Virus left = virus("left-count-1", "Spark", 6, 6, 6, "AAA-0", 17);
         Virus right = virus("right-count-1", "Echo", 6, 6, 6, "BBB-0", 5);
 
         Virus result = InfectionEngine.combine(left, right);
 
-        assertEquals(1, result.getInfectionCount());
+        assertEquals(18, result.getGeneration());
     }
 
     @Test

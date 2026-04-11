@@ -14,7 +14,7 @@
 - [ ] When creating a virus, add a button to scan a bar code or qr code for the data as a seed.
   - [ ] Call the feature "Find a wild Virus" with hints that you can find them in the world around you, and that they are different from the viruses you create in the lab.
 - [ ] With a friend infection code or QR code, add a button to simply import the virus rather than combining it.
-- [ ] Modify semantics of "Infection count" to "Generation" that will always be the maximum generation of the parents plus one.
+- [x] Modify semantics of "Infection count" to "Generation" that will always be the maximum generation of the parents plus one.
   - This will make it easier to track lineage and avoid confusion about whether infection count is local or global.
   - It also makes it more intuitive that starter viruses are generation 1, and that each combination creates a new generation.
 

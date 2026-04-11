@@ -93,7 +93,7 @@ public class CombineFragment extends Fragment {
             sb.append(getString(R.string.infection_preview_seed_item,
                     v.getName(), v.getFamily(), v.getGenome(),
                     v.getInfectionRate().toString(),
-                    v.getInfectionStrength(), v.getInfectionCount())).append("\n");
+                    v.getInfectionStrength(), v.getGeneration())).append("\n");
         }
         sb.append("\n").append(getString(R.string.infection_preview_local_only)).append("\n\n");
         sb.append(getString(R.string.infection_preview_possibilities_heading)).append("\n");
@@ -111,7 +111,7 @@ public class CombineFragment extends Fragment {
                 + offspring.getName() + " emerged in the " + offspring.getFamily()
                 + " family with genome " + offspring.getGenome()
                 + ". Strength " + offspring.getInfectionStrength()
-                + ", lineage infections " + offspring.getInfectionCount() + ".");
+                + ", lineage generation " + offspring.getGeneration() + ".");
         Toast.makeText(requireContext(), "New virus: " + offspring.getName(), Toast.LENGTH_SHORT).show();
     }
 

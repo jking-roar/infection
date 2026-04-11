@@ -22,8 +22,8 @@ import java.util.UUID;
  * <p>Second, the two templates are merged into an offspring whose genome and mutation state
  * are derived from both parents.</p>
  *
- * <p>Committed infection counts stay attached to existing strains only. Newly created offspring
- * start at one committed infection (the player creating that new strain).</p>
+ * <p>Lineage generations start at one for seeded strains. New offspring generations are derived as
+ * {@code max(parentGenerations) + 1}.</p>
  *
  * <p>The engine interprets virus strings in two ways:</p>
  * <p>Invite-code strings are parsed earlier by {@link VirusFactory} into {@link Virus} values.</p>
@@ -63,7 +63,7 @@ public final class InfectionEngine {
      *
      * <p>This bypasses invite-code parsing and friend/random fallback behavior. The selected
      * strains are collapsed into one local template, then emitted as a local-only offspring.
-     * Newly created strains always start at one committed infection (the creator).</p>
+     * Offspring generation is computed as the collapsed template generation plus one.</p>
      *
      * @param ownedViruses selected local viruses to combine
      * @return newly combined local offspring virus
@@ -82,8 +82,9 @@ public final class InfectionEngine {
         String genome = VirusFactory.buildGenome(id, merged.getFamily(), infectivityRate, resilienceValue, chaosLevel,
                 merged.hasMutation());
         VirusOrigin origin = VirusOrigin.combinedLocally(merged.getOriginInfo());
+        int generation = merged.getGeneration() + 1;
         return new Virus(id, prefix, suffix, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
-            merged.hasMutation(), genome, origin, 1, "Local Mix");
+            merged.hasMutation(), genome, origin, generation, "Local Mix");
     }
 
     /**
@@ -112,7 +113,7 @@ public final class InfectionEngine {
         int infectivity = 0;
         int resilience = 0;
         int chaos = 0;
-        int infectionCount = 0;
+        int maxGeneration = 1;
         String family = viruses.get(0).getFamily();
         String carrier = viruses.get(0).getCarrier();
         boolean sameFamily = true;
@@ -122,7 +123,7 @@ public final class InfectionEngine {
             infectivity += virus.getInfectivity().score();
             resilience += virus.getResilience().score();
             chaos += virus.getChaos().score();
-            infectionCount += virus.getInfectionCount();
+            maxGeneration = Math.max(maxGeneration, virus.getGeneration());
             mutated = mutated || virus.hasMutation();
             if (!family.equals(virus.getFamily())) {
                 sameFamily = false;
@@ -148,7 +149,7 @@ public final class InfectionEngine {
         String genome = VirusFactory.buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutated);
         VirusOrigin origin = VirusOrigin.collapsed(viruses);
         return new Virus(id, prefix, suffix, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome,
-            origin, infectionCount, productionContext);
+            origin, maxGeneration, productionContext);
     }
 
     /**
@@ -163,9 +164,9 @@ public final class InfectionEngine {
      * <p>{@code infectivity = mergeStat(left.infectivity, right.infectivity, true)}</p>
      * <p>{@code resilience = mergeStat(left.resilience, right.resilience, false)}</p>
      * <p>{@code chaos = mergeStat(left.chaos, right.chaos, true)}</p>
-     * <p>{@code prefix = parent with lower infectionCount (tie -> left)}</p>
-     * <p>{@code suffix = parent with higher infectionCount (tie -> right)}</p>
-      * <p>{@code infectionCount = 1}</p>
+     * <p>{@code prefix = parent with lower generation (tie -> left)}</p>
+     * <p>{@code suffix = parent with higher generation (tie -> right)}</p>
+      * <p>{@code generation = max(left.generation, right.generation) + 1}</p>
      *
      * <p>If mutation occurs:</p>
      * <p>{@code infectivity = clamp(infectivity + 1)}</p>
@@ -183,7 +184,7 @@ public final class InfectionEngine {
         int infectivity = mergeStat(left.getInfectivity().score(), right.getInfectivity().score(), true);
         int resilience = mergeStat(left.getResilience().score(), right.getResilience().score(), false);
         int chaos = mergeStat(left.getChaos().score(), right.getChaos().score(), true);
-        int infectionCount = 1;
+        int generation = Math.max(left.getGeneration(), right.getGeneration()) + 1;
         boolean mutation = shouldMutate(left, right);
 
         if (mutation) {
@@ -203,22 +204,22 @@ public final class InfectionEngine {
         String genome = VirusFactory.buildGenome(id, dominantFamily, infectivityRate, resilienceValue, chaosLevel, mutation);
         VirusOrigin origin = VirusOrigin.infectedFrom(left.getName(), left.getOriginInfo(), right.getName(), right.getOriginInfo());
         return new Virus(id, prefix, suffix, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,
-                genome, origin, infectionCount);
+                genome, origin, generation);
     }
 
     private static String chooseLowerInfectionPrefix(Virus left, Virus right) {
-        return left.getInfectionCount() <= right.getInfectionCount() ? left.getPrefix() : right.getPrefix();
+        return left.getGeneration() <= right.getGeneration() ? left.getPrefix() : right.getPrefix();
     }
 
     private static String chooseHigherInfectionSuffix(Virus left, Virus right) {
-        return left.getInfectionCount() > right.getInfectionCount() ? left.getSuffix() : right.getSuffix();
+        return left.getGeneration() > right.getGeneration() ? left.getSuffix() : right.getSuffix();
     }
 
     private static String chooseLowerInfectionPrefix(List<Virus> viruses) {
         Virus chosen = viruses.get(0);
         for (int i = 1; i < viruses.size(); i++) {
             Virus candidate = viruses.get(i);
-            if (candidate.getInfectionCount() < chosen.getInfectionCount()) {
+            if (candidate.getGeneration() < chosen.getGeneration()) {
                 chosen = candidate;
             }
         }
@@ -229,7 +230,7 @@ public final class InfectionEngine {
         Virus chosen = viruses.get(0);
         for (int i = 1; i < viruses.size(); i++) {
             Virus candidate = viruses.get(i);
-            if (candidate.getInfectionCount() >= chosen.getInfectionCount()) {
+            if (candidate.getGeneration() >= chosen.getGeneration()) {
                 chosen = candidate;
             }
         }

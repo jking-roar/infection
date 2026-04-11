@@ -20,7 +20,7 @@
     <string name="infection_preview_mutation_stable">Mutation outlook: this pairing is projected to remain a stable transfer.</string>
     <string name="infection_preview_stats">Transmission profile: infectivity %1$d, resilience %2$d, chaos %3$d, rate %4$s.</string>
     <string name="infection_preview_carrier_chain">Carrier chain: %1$s.</string>
-    <string name="infection_preview_seed_item">• %1$s — %2$s | genome %3$s | rate %4$s | strength %5$d | infections %6$d</string>
+    <string name="infection_preview_seed_item">• %1$s — %2$s | genome %3$s | rate %4$s | strength %5$d | generation %6$d</string>
     <string name="create_virus_button">Create Virus</string>
     <string name="lab_seed_title">Create a lab virus</string>
     <string name="lab_seed_hint">Enter a seed or leave blank for a random virus</string>
@@ -56,7 +56,7 @@
     <string name="infect_qr_scan_prompt">Scan a Funfection invite QR</string>
     <string name="infect_qr_scan_success">Invite QR loaded. Review it or infect immediately.</string>
     <string name="infect_qr_scan_empty">No QR invite was captured.</string>
-    <string name="infect_result_summary">Combined %1$s with %2$s. %3$s emerged in the %4$s family with genome %5$s. Strength %6$d, lineage infections %7$d. %8$s %9$s</string>
+    <string name="infect_result_summary">Combined %1$s with %2$s. %3$s emerged in the %4$s family with genome %5$s. Strength %6$d, lineage generation %7$d. %8$s %9$s</string>
     <string name="infect_new_virus_toast">New virus: %1$s</string>
     <string name="infect_view_title">Infect a Friend</string>
     <string name="infect_view_instructions">Select viruses to share, then paste a friend\'s invite code or infect with a
@@ -88,5 +88,6 @@
     <string name="virus_production_context_line">Production context: %1$s</string>
     <string name="carrier_label">Carrier</string>
     <string name="virus_infection_strength_label">Infection Strength</string>
-    <string name="virus_backtolab_button">Back to lab</string>
+    <string name="virus_generation_label">Generation</string>
+    <string name="virus_back_to_lab_button">Back to lab</string>
 </resources>

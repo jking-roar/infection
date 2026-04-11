@@ -21,7 +21,7 @@ import java.util.UUID;
  * <p>This class defines the two main string formats used by the engine:</p>
  *
  * <p>Invite code layout:</p>
- * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount]}</p>
+ * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:generation]}</p>
  *
  * <p>Genome layout:</p>
  * <p>{@code FAM-ABC123-xyz-M}</p>
@@ -35,8 +35,7 @@ import java.util.UUID;
 public final class VirusFactory {
 
     private static final String SIMULATED_FRIEND_FLAG = "[SIMULATED]";
-    private static final int STARTER_MIN_INFECTIONS = 1;
-    private static final int STARTER_MAX_INFECTIONS = 20;
+    private static final int STARTER_GENERATION = 1;
     private static final String[] MAD_SCIENTIST_NAMES = {
             "Professor Tesla",
             "Doctor Curie",
@@ -98,8 +97,8 @@ public final class VirusFactory {
      * Creates the initial set of lab-owned viruses.
      *
      * <p>Each starter virus is derived from a stable text seed so the same carrier and
-     * seed string always produce the same family, stats, mutation flag, genome, and
-     * non-zero starter infection count.</p>
+      * seed string always produce the same family, stats, mutation flag, genome, and
+      * generation baseline.</p>
      *
      * @return deterministic starter strains for a fresh repository
      */
@@ -116,12 +115,7 @@ public final class VirusFactory {
     private static Virus createStarterVirus(UserProfile userProfile, String seed) {
         Virus starter = fromSeed(userProfile.getUserName(), seed,
                 VirusOrigin.seededByUser(userProfile.getId(), userProfile.getUserName()));
-        return starter.withInfectionCount(starterInfectionCount(seed));
-    }
-
-    private static int starterInfectionCount(String seed) {
-        Random random = new Random(("starter-infection-count:" + seed).hashCode());
-        return STARTER_MIN_INFECTIONS + random.nextInt(STARTER_MAX_INFECTIONS - STARTER_MIN_INFECTIONS + 1);
+        return starter.withGeneration(STARTER_GENERATION);
     }
 
     /**
@@ -180,7 +174,7 @@ public final class VirusFactory {
      * <p>Each non-empty line is expected to use the serialized share-code format from
       * {@code Virus.toShareCode()}:</p>
       *
-    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount[:originPayload]]}</p>
+    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:generation[:originPayload]]}</p>
      *
      * <p>Malformed rows are ignored so a partially valid invite block can still import the
      * entries that parse cleanly.</p>
@@ -207,11 +201,11 @@ public final class VirusFactory {
      * Parses a single serialized invite-code row.
      *
       * <p>The expected field order is:</p>
-    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:infectionCount[:originPayload]]}</p>
+    * <p>{@code id:family:infectivity:resilience:chaos:mutation:genome:name:carrier[:generation[:originPayload]]}</p>
      *
-      * <p>The mutation field uses {@code 1} for mutated strains and {@code 0} for stable
-      * strains. The optional trailing infection-count field preserves committed lineage usage
-      * across sharing. When it is absent, legacy invite codes default to {@code 0}. The genome
+       * <p>The mutation field uses {@code 1} for mutated strains and {@code 0} for stable
+       * strains. The optional trailing generation field preserves lineage depth across sharing.
+       * When it is absent, legacy invite codes default to {@code 1}. The genome
       * token is trusted as imported metadata rather than recomputed during parsing, which
       * preserves the sender's exact shared fingerprint.</p>
      *
@@ -236,7 +230,7 @@ public final class VirusFactory {
             String genome = pieces[6];
             String name = pieces[7];
             String carrier = pieces[8];
-            int infectionCount = pieces.length > 9 ? Math.max(0, Integer.parseInt(pieces[9])) : 0;
+            int generation = pieces.length > 9 ? Math.max(1, Integer.parseInt(pieces[9])) : 1;
             VirusOrigin sharedOrigin = pieces.length > 10 ? VirusOrigin.fromSharePayload(pieces[10]) : null;
             VirusOrigin importedOrigin = VirusOrigin.importedFromInvite(sharedOrigin, carrier);
             return new Virus(id, name, family, carrier,
@@ -246,7 +240,7 @@ public final class VirusFactory {
                     mutation,
                     genome,
                     importedOrigin,
-                    infectionCount);
+                    generation);
         } catch (NumberFormatException error) {
             return null;
         }

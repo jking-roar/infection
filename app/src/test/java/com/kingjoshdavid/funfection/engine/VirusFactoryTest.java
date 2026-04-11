@@ -113,7 +113,7 @@ public class VirusFactoryTest {
         assertEquals("Spark-Name", viruses.get(0).getName());
         assertEquals("Carrier/One", viruses.get(0).getCarrier());
         assertEquals("Imported from invite", viruses.get(0).getOrigin());
-        assertEquals(7, viruses.get(0).getInfectionCount());
+        assertEquals(7, viruses.get(0).getGeneration());
     }
 
     @Test
@@ -153,14 +153,14 @@ public class VirusFactoryTest {
     }
 
     @Test
-    public void parseInviteCodeDefaultsLegacyNineFieldCodesToZeroCount() {
-        // A legacy 9-field share code without trailing infectionCount
+    public void parseInviteCodeDefaultsLegacyNineFieldCodesToGenerationOne() {
+        // A legacy 9-field share code without trailing generation
         String legacyCode = "virus-L:Spark:4:5:6:1:GEN-123:LegacyName:LegacyCarrier";
 
         List<Virus> viruses = VirusFactory.parseInviteCode(legacyCode);
 
         assertEquals(1, viruses.size());
-        assertEquals(0, viruses.get(0).getInfectionCount());
+        assertEquals(1, viruses.get(0).getGeneration());
     }
 
     @Test
@@ -179,10 +179,10 @@ public class VirusFactoryTest {
         assertFalse(first.get(0).getSummaryLine().isEmpty());
 
         for (int i = 0; i < first.size(); i++) {
-            int firstCount = first.get(i).getInfectionCount();
-            int secondCount = second.get(i).getInfectionCount();
-            assertTrue(firstCount >= 1 && firstCount <= 20);
-            assertEquals(firstCount, secondCount);
+            int firstGeneration = first.get(i).getGeneration();
+            int secondGeneration = second.get(i).getGeneration();
+            assertEquals(1, firstGeneration);
+            assertEquals(firstGeneration, secondGeneration);
         }
     }
 

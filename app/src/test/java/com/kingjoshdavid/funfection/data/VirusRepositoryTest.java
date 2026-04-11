@@ -42,7 +42,7 @@ public class VirusRepositoryTest {
         assertEquals(4, first.size());
         assertEquals(first.size(), second.size());
         for (Virus virus : first) {
-            assertTrue(virus.getInfectionCount() >= 1 && virus.getInfectionCount() <= 20);
+            assertEquals(1, virus.getGeneration());
         }
     }
 
@@ -84,37 +84,15 @@ public class VirusRepositoryTest {
     }
 
     @Test
-    public void incrementInfectionCountsIncreasesCountForMatchedIds() {
-        Virus v = new Virus("inc-1", "Inc", "Spark", "Tester",
-            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-I", "Fixture");
-        VirusRepository.addVirus(v);
-
-        VirusRepository.incrementInfectionCounts(Arrays.asList("inc-1"));
-
-        assertEquals(1, VirusRepository.getVirusById("inc-1").getInfectionCount());
-    }
-
-    @Test
-    public void incrementInfectionCountsIgnoresMissingIds() {
-        Virus v = new Virus("safe-1", "Safe", "Spark", "Tester",
-            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-S", "Fixture");
-        VirusRepository.addVirus(v);
-
-        VirusRepository.incrementInfectionCounts(Arrays.asList("not-here"));
-
-        assertEquals(0, VirusRepository.getVirusById("safe-1").getInfectionCount());
-    }
-
-    @Test
     public void replaceVirusUpdatesExistingEntryById() {
         Virus original = new Virus("rep-1", "Rep", "Spark", "Tester",
             Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-R", "Fixture");
         VirusRepository.addVirus(original);
 
-        Virus updated = original.incrementInfectionCount();
+        Virus updated = original.incrementGeneration();
         VirusRepository.replaceVirus(updated);
 
-        assertEquals(1, VirusRepository.getVirusById("rep-1").getInfectionCount());
+        assertEquals(2, VirusRepository.getVirusById("rep-1").getGeneration());
         // should not have added a duplicate
         long count = 0;
         for (Virus vv : VirusRepository.getViruses()) {
@@ -124,7 +102,7 @@ public class VirusRepositoryTest {
     }
 
     @Test
-    public void localCombineKeepsSourceCountsAndCreatesOffspringAtOne() {
+    public void localCombineKeepsSourceGenerationsAndCreatesOffspringAtNextGeneration() {
         Virus first = new Virus("cmb-1", "First", "Spark", "Tester",
             Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "GEN-C1", "Fixture", 17);
         Virus second = new Virus("cmb-2", "Second", "Echo", "Tester",
@@ -135,24 +113,9 @@ public class VirusRepositoryTest {
         Virus offspring = InfectionEngine.infectLocal(Arrays.asList(first, second));
         VirusRepository.addVirus(offspring);
 
-        assertEquals(17, VirusRepository.getVirusById("cmb-1").getInfectionCount());
-        assertEquals(5, VirusRepository.getVirusById("cmb-2").getInfectionCount());
-        assertEquals(1, VirusRepository.getVirusById(offspring.getId()).getInfectionCount());
-    }
-
-    @Test
-    public void incrementInfectionCountsOnlyIncrementsSelectedVirusesByOne() {
-        Virus selected = new Virus("share-1", "Selected", "Spark", "Tester",
-            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-S1", "Fixture", 9);
-        Virus notSelected = new Virus("share-2", "Not Selected", "Spark", "Tester",
-            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-S2", "Fixture", 4);
-        VirusRepository.addVirus(selected);
-        VirusRepository.addVirus(notSelected);
-
-        VirusRepository.incrementInfectionCounts(Arrays.asList("share-1"));
-
-        assertEquals(10, VirusRepository.getVirusById("share-1").getInfectionCount());
-        assertEquals(4, VirusRepository.getVirusById("share-2").getInfectionCount());
+        assertEquals(17, VirusRepository.getVirusById("cmb-1").getGeneration());
+        assertEquals(5, VirusRepository.getVirusById("cmb-2").getGeneration());
+        assertEquals(18, VirusRepository.getVirusById(offspring.getId()).getGeneration());
     }
 
     private void clearRepository() throws Exception {
