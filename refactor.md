@@ -1,92 +1,92 @@
 # UI Refactor Plan: Collection -> Lab
 
 ## Goal
-Turn the current Collection-first flow into a Lab-first flow where users can manage a virus directly from one place.
+Move to a Lab-first experience where users can manage strains from one place, while reducing duplicate UI flows.
+
+## Confirmed Decisions
+- Rename `Collection` to `Lab` in all user-facing copy.
+- `Clean` action name is `Purge Strain`.
+- `Purge Strain` is destructive and should include a confirmation warning (irreversible).
+- Eliminate tabs with duplicate functionality (Create/Combine should no longer be primary standalone flows).
+- Share text and share QR continue using current share payload format.
+
+## Open Questions
+- What exact interaction should ship first for combine selection?
+  - Proposed MVP: standard dialog with fixed left strain and selectable right-side strains.
+  - Proposed enhanced UX: slide-out panel with left-side multiselect view, fixed first strain (disabled), and visual linking of selected right-side strains.
+- Should enhanced combine UX ship in the same release or a follow-up release after MVP?
 
 ## Scope
-- Rename Collection to Lab in user-facing UI copy.
-- Tapping a virus in Lab opens commands for that virus:
+- Rename Collection to Lab in UI copy and navigation labels.
+- Tapping a virus in Lab opens a per-virus command menu:
   - View details
-  - Share (with sub-optiosn):
-    - via text
-    - via QR code
-  - Clean action (rename to an in-universe term; suggested: `Purge Strain`)
-  - Combine (selected virus is always left side; user chooses right-side virus(es) in a dialog)
+  - Share via text
+  - Share via QR code
+  - Purge Strain
+  - Combine (tapped virus is always left side)
 - Add a bottom `Create Virus` action in Lab:
   - Prompt for inspiration/seed
-  - Create the virus
-  - Open details for the newly created virus
-- Update details view to include the same commands as Lab (except View), plus `Back to Lab`.
-
-## Assumptions to Confirm
-- `Clean` means removing the virus from local repository state.
-- Existing `Create` tab remains for now (Lab create is primary; no tab removal in this refactor).
-- Share text and share QR reuse the existing share payload format without modification.
+  - Create and save virus
+  - Open details for the new virus
+- Update details view to include Lab-equivalent commands (except View), plus `Back to Lab`.
 
 ## Sequential Tasks
 
-### Task 1 - Planning and naming decisions
-- Finalize terminology: `Lab`, and clean action label (`Purge Strain` or `Contain Strain`).
-  - Answer: 'Purge Strain'
-    - Warn that this is forever.
-- Confirm whether the existing Create tab stays unchanged during this pass.
-  - Answer: No, eliminate tabs with duplicate functionality.  
-- Lock UX behavior for combine and creation dialogs.
-  - Question: what does this mean? clarify with author.
+### Task 1 - Navigation and terminology alignment
+- Update bottom nav and labels from `Collection` to `Lab`.
+- Remove or redirect duplicate navigation entries for standalone Create/Combine flows.
+- Update screen titles and supporting copy to match Lab-first wording.
 
-### Task 2 - Lab naming and screen copy
-- Update bottom-nav/tab label from Collection to Lab.
-- Update Collection screen title/labels to Lab terminology.
-
-### Task 3 - Lab virus action menu
+### Task 2 - Lab action menu
 - Replace current tap behavior with a per-virus action menu/dialog.
-- Implement handlers:
+- Implement handlers for:
   - View details
-  - Share (with sub-options):
-    - text
-    - QR
-  - Combine (as left-side fixed input)
-  - Clean/remove
-
-### Task 4 - Combine-from-Lab flow
-- On `Combine`, open right-side selection dialog (single or multi-select per existing combine rules).
-  - I like a right-side selection dialog, but as a slide out that will list the selcted virus and the left side will transform into a multiselect with the first selected virus (left side) greyed out and unselectable.
-    - Selected viruses on the left side will be added as indented items under the fixed virus, with a line connecting them to show they are combined.
-- Call local combine logic with tapped virus fixed as left side.
-- Persist offspring and refresh Lab list.
-
-### Task 5 - Create-from-Lab flow
-- Add bottom `Create Virus` CTA to Lab.
-- Prompt for inspiration/seed.
-- Create and save virus.
-- Navigate directly to its details screen.
-
-### Task 6 - Details screen parity
-- Add actions in details view:
   - Share text
   - Share QR
-  - Clean/remove
+  - Purge Strain (with irreversible confirmation)
+  - Combine (left-side fixed to tapped strain)
+
+### Task 3 - Combine-from-Lab (MVP)
+- Implement right-side selection dialog for combine.
+- Keep tapped virus fixed as left-side input.
+- Commit combine via existing local combine logic.
+- Persist offspring and refresh Lab list.
+
+### Task 4 - Create-from-Lab
+- Add bottom `Create Virus` CTA in Lab.
+- Prompt for inspiration/seed.
+- Create virus, persist it, and open details immediately.
+
+### Task 5 - Details screen parity
+- Add detail-screen actions:
+  - Share text
+  - Share QR
+  - Purge Strain
   - Combine
   - Back to Lab
-- Ensure details actions follow the same behavior/rules as Lab actions.
+- Keep behavior and side effects consistent with Lab actions.
 
-### Task 7 - Repository and tests
-- Add repository support for clean/remove if missing.
-- Add/adjust unit tests for:
-  - Remove behavior
-  - Add ordering (newest first)
-  - Combine and create side effects where testable
-- Run smoke checks across tabs (Lab/Create/Combine/Infect/Friends) for regressions.
+### Task 6 - Repository and regression tests
+- Add repository support for purge/remove if missing.
+- Add/adjust unit tests for remove behavior and ordering (newest first).
+- Run regression smoke checks across remaining tabs and updated Lab flows.
+
+### Task 7 - Enhanced combine UX (optional follow-up)
+- Implement slide-out combine selector with richer visual selection model.
+- Preserve MVP combine behavior as fallback.
+- Ship only if complexity/risk is acceptable for target release.
 
 ## Acceptance Criteria
-- UI consistently says `Lab` instead of `Collection`.
-- Tapping a Lab virus shows all expected actions.
-- Combine from Lab fixes tapped virus as left side and lets user choose right side before commit.
-- Bottom `Create Virus` in Lab prompts for seed and opens new virus details after creation.
-- Details screen includes action parity with Lab and a working `Back to Lab` button.
+- UI consistently uses `Lab` instead of `Collection`.
+- Virus tap in Lab shows all required actions.
+- `Purge Strain` requires confirmation and removes the virus when confirmed.
+- Combine from Lab fixes left side and allows right-side selection before commit.
+- `Create Virus` in Lab prompts for seed and opens new virus details.
+- Details view includes action parity plus `Back to Lab`.
 - Share payload format remains compatible with current invite/share parsing.
+- Duplicate standalone Create/Combine paths are removed or intentionally redirected.
 
-## Out of Scope (This Refactor)
+## Out of Scope
 - Engine rule changes for mutation/infection math.
 - Share-code format changes.
-- Full redesign of Create/Combine/Infect tabs beyond regression-safe alignment.
+- Non-essential visual redesign outside the Lab/details refactor scope.
