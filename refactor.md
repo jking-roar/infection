@@ -101,7 +101,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Preserve MVP combine behavior as fallback.
 - Ship only if complexity/risk is acceptable for target release.
 
-### Task 8 - force portrait orientation
+### Completed Task 8 - force portrait orientation
 - Definition of Done: app is locked to portrait orientation on all screens, and landscape orientation is disabled.
 - Update app configuration to lock orientation to portrait.
 - Test on various devices to ensure landscape orientation is disabled and portrait orientation is enforced.

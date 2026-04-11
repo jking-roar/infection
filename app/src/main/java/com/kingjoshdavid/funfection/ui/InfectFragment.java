@@ -243,7 +243,7 @@ public class InfectFragment extends Fragment {
         options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
         options.setPrompt(getString(R.string.infect_qr_scan_prompt));
         options.setBeepEnabled(false);
-        options.setOrientationLocked(false);
+        options.setOrientationLocked(true);
         qrScanLauncher.launch(options);
     }
 
