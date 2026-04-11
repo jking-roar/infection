@@ -24,9 +24,30 @@ import java.util.List;
 
 public class CombineFragment extends Fragment {
 
+    public static final String ARG_FIXED_VIRUS_ID = "com.kingjoshdavid.funfection.FIXED_VIRUS_ID";
+
     private ListView virusList;
+    private TextView instructionsView;
     private TextView resultSummary;
     private List<Virus> viruses = new ArrayList<>();
+    private String fixedVirusId;
+
+    public static CombineFragment newPinnedInstance(String virusId) {
+        CombineFragment fragment = new CombineFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_FIXED_VIRUS_ID, virusId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null) {
+            fixedVirusId = args.getString(ARG_FIXED_VIRUS_ID);
+        }
+    }
 
     @Nullable
     @Override
@@ -40,9 +61,32 @@ public class CombineFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         virusList = view.findViewById(R.id.virusList);
+        instructionsView = view.findViewById(R.id.combineInstructions);
         resultSummary = view.findViewById(R.id.resultSummary);
         Button combineButton = view.findViewById(R.id.combineButton);
+        virusList.setOnItemClickListener((parent, itemView, position, id) -> {
+            Virus fixedVirus = getFixedVirus();
+            if (fixedVirus == null || position < 0 || position >= viruses.size()) {
+                return;
+            }
+            Virus tappedVirus = viruses.get(position);
+            if (fixedVirus.getId().equals(tappedVirus.getId()) && !virusList.isItemChecked(position)) {
+                virusList.setItemChecked(position, true);
+                Toast.makeText(requireContext(),
+                        getString(R.string.combine_pinned_locked, fixedVirus.getName()),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
         combineButton.setOnClickListener(v -> confirmCombine());
+
+        if (savedInstanceState == null) {
+            Virus fixedVirus = getFixedVirus();
+            if (fixedVirus != null) {
+                Toast.makeText(requireContext(),
+                        getString(R.string.combine_pinned_opened_toast, fixedVirus.getName()),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
@@ -62,6 +106,16 @@ public class CombineFragment extends Fragment {
                 android.R.layout.simple_list_item_multiple_choice,
                 labels);
         virusList.setAdapter(adapter);
+        Virus fixedVirus = getFixedVirus();
+        if (fixedVirus != null) {
+            instructionsView.setText(getString(R.string.combine_pinned_selection_instructions, fixedVirus.getName()));
+            int fixedIndex = findVirusIndex(fixedVirus.getId());
+            if (fixedIndex >= 0) {
+                virusList.setItemChecked(fixedIndex, true);
+            }
+        } else {
+            instructionsView.setText(R.string.combine_selection_instructions);
+        }
     }
 
     private void confirmCombine() {
@@ -117,11 +171,43 @@ public class CombineFragment extends Fragment {
 
     private List<Virus> getSelectedViruses() {
         List<Virus> selected = new ArrayList<>();
+        Virus fixedVirus = getFixedVirus();
+        if (fixedVirus != null) {
+            selected.add(fixedVirus);
+        }
         SparseBooleanArray checked = virusList.getCheckedItemPositions();
         for (int i = 0; i < virusList.getCount(); i++) {
-            if (checked.get(i)) selected.add(viruses.get(i));
+            if (!checked.get(i)) {
+                continue;
+            }
+            Virus virus = viruses.get(i);
+            if (fixedVirus != null && fixedVirus.getId().equals(virus.getId())) {
+                continue;
+            }
+            selected.add(virus);
         }
         return selected;
+    }
+
+    @Nullable
+    private Virus getFixedVirus() {
+        if (fixedVirusId == null || fixedVirusId.trim().isEmpty()) {
+            return null;
+        }
+        Virus fixedVirus = VirusRepository.getVirusById(fixedVirusId);
+        if (fixedVirus == null) {
+            fixedVirusId = null;
+        }
+        return fixedVirus;
+    }
+
+    private int findVirusIndex(String virusId) {
+        for (int index = 0; index < viruses.size(); index++) {
+            if (viruses.get(index).getId().equals(virusId)) {
+                return index;
+            }
+        }
+        return -1;
     }
 }
 

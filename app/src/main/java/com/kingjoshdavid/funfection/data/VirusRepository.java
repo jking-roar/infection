@@ -51,6 +51,17 @@ public final class VirusRepository {
         COLLECTION.add(0, virus);
     }
 
+    public static boolean removeVirusById(String id) {
+        ensureSeeded();
+        for (int index = 0; index < COLLECTION.size(); index++) {
+            if (COLLECTION.get(index).getId().equals(id)) {
+                COLLECTION.remove(index);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static List<Virus> pickByIds(List<String> ids) {
         ensureSeeded();
         if (ids == null || ids.isEmpty()) {

@@ -102,6 +102,34 @@ public class VirusRepositoryTest {
     }
 
     @Test
+    public void removeVirusByIdRemovesMatchingEntryAndPreservesRemainingOrder() {
+        Virus first = new Virus("rm-1", "First", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-R1", "Fixture");
+        Virus second = new Virus("rm-2", "Second", "Echo", "Tester",
+            Infectivity.rate(2), Resilience.of(2), Chaos.level(2), false, "GEN-R2", "Fixture");
+        Virus third = new Virus("rm-3", "Third", "Nova", "Tester",
+            Infectivity.rate(3), Resilience.of(3), Chaos.level(3), false, "GEN-R3", "Fixture");
+        VirusRepository.addVirus(first);
+        VirusRepository.addVirus(second);
+        VirusRepository.addVirus(third);
+
+        assertTrue(VirusRepository.removeVirusById("rm-2"));
+
+        List<Virus> remaining = VirusRepository.getViruses();
+        assertEquals("rm-3", remaining.get(0).getId());
+        assertEquals("rm-1", remaining.get(1).getId());
+        assertNull(VirusRepository.getVirusById("rm-2"));
+    }
+
+    @Test
+    public void removeVirusByIdReturnsFalseWhenVirusIsMissing() {
+        VirusRepository.ensureSeeded();
+
+        assertTrue(VirusRepository.getViruses().size() > 0);
+        org.junit.Assert.assertFalse(VirusRepository.removeVirusById("missing-id"));
+    }
+
+    @Test
     public void localCombineKeepsSourceGenerationsAndCreatesOffspringAtNextGeneration() {
         Virus first = new Virus("cmb-1", "First", "Spark", "Tester",
             Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "GEN-C1", "Fixture", 17);
