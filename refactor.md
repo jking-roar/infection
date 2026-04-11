@@ -33,11 +33,13 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 ## Sequential Tasks
 
 ### Task 1 - Navigation and terminology alignment
+- Definition of Done: all user-facing `Collection` labels are updated to `Lab`, and duplicate Create/Combine nav entries are removed or explicitly redirected.
 - Update bottom nav and labels from `Collection` to `Lab`.
 - Remove or redirect duplicate navigation entries for standalone Create/Combine flows.
 - Update screen titles and supporting copy to match Lab-first wording.
 
 ### Task 2 - Lab action menu
+- Definition of Done: tapping any Lab virus opens a command menu with working actions for details, share text, share QR, purge, and combine.
 - Replace current tap behavior with a per-virus action menu/dialog.
 - Implement handlers for:
   - View details
@@ -47,17 +49,20 @@ Move to a Lab-first experience where users can manage strains from one place, wh
   - Combine (left-side fixed to tapped strain)
 
 ### Task 3 - Combine-from-Lab (MVP)
+- Definition of Done: combine flow supports fixed left-side strain, selectable right-side strains, successful offspring creation, and list refresh on commit.
 - Implement right-side selection dialog for combine.
 - Keep tapped virus fixed as left-side input.
 - Commit combine via existing local combine logic.
 - Persist offspring and refresh Lab list.
 
 ### Task 4 - Create-from-Lab
+- Definition of Done: Lab `Create Virus` prompt creates and persists a strain, then opens that strain's details screen.
 - Add bottom `Create Virus` CTA in Lab.
 - Prompt for inspiration/seed.
 - Create virus, persist it, and open details immediately.
 
 ### Task 5 - Details screen parity
+- Definition of Done: details screen provides share text, share QR, purge, combine, and back-to-lab actions with behavior matching Lab.
 - Add detail-screen actions:
   - Share text
   - Share QR
@@ -67,11 +72,13 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Keep behavior and side effects consistent with Lab actions.
 
 ### Task 6 - Repository and regression tests
+- Definition of Done: remove/purge behavior is repository-backed, covered by unit tests, and Lab-related smoke checks pass without regressions.
 - Add repository support for purge/remove if missing.
 - Add/adjust unit tests for remove behavior and ordering (newest first).
 - Run regression smoke checks across remaining tabs and updated Lab flows.
 
 ### Task 7 - Enhanced combine UX (optional follow-up)
+- Definition of Done: enhanced slide-out combine UI is implemented behind an explicit ship/no-ship decision with MVP fallback preserved.
 - Implement slide-out combine selector with richer visual selection model.
 - Preserve MVP combine behavior as fallback.
 - Ship only if complexity/risk is acceptable for target release.
