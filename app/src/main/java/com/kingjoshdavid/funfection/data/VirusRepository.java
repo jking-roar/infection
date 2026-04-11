@@ -9,7 +9,7 @@ import java.util.List;
 
 public final class VirusRepository {
 
-    private static final List<Virus> COLLECTION = new ArrayList<Virus>();
+    private static final List<Virus> COLLECTION = new ArrayList<>();
 
     private VirusRepository() {
     }
@@ -22,7 +22,7 @@ public final class VirusRepository {
 
     public static List<Virus> getViruses() {
         ensureSeeded();
-        return new ArrayList<Virus>(COLLECTION);
+        return new ArrayList<>(COLLECTION);
     }
 
     public static Virus getVirusById(String id) {
@@ -67,7 +67,7 @@ public final class VirusRepository {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
-        List<Virus> matches = new ArrayList<Virus>();
+        List<Virus> matches = new ArrayList<>();
         for (String id : ids) {
             Virus virus = getVirusById(id);
             if (virus != null) {

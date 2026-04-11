@@ -125,7 +125,7 @@ public class VirusRepositoryTest {
     public void removeVirusByIdReturnsFalseWhenVirusIsMissing() {
         VirusRepository.ensureSeeded();
 
-        assertTrue(VirusRepository.getViruses().size() > 0);
+        assertTrue(!VirusRepository.getViruses().isEmpty());
         org.junit.Assert.assertFalse(VirusRepository.removeVirusById("missing-id"));
     }
 
@@ -150,6 +150,7 @@ public class VirusRepositoryTest {
         Field collectionField = VirusRepository.class.getDeclaredField("COLLECTION");
         collectionField.setAccessible(true);
         List<?> collection = (List<?>) collectionField.get(null);
+        //noinspection DataFlowIssue
         collection.clear();
     }
 }
