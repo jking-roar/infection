@@ -32,7 +32,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 
 ## Sequential Tasks
 
-### Task 1 - Navigation and terminology alignment
+### Completed Task 1 - Navigation and terminology alignment
 - Definition of Done: all user-facing `Collection` labels are updated to `Lab`, and duplicate Create/Combine nav entries are removed or explicitly redirected.
 - Update bottom nav and labels from `Collection` to `Lab`.
 - Remove or redirect duplicate navigation entries for standalone Create/Combine flows.

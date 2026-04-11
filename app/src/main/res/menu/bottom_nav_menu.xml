@@ -1,8 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/tab_collection" android:icon="@drawable/ic_tab_collection" android:title="@string/tab_collection" />
-    <item android:id="@+id/tab_create"     android:icon="@drawable/ic_tab_create"     android:title="@string/tab_create" />
-    <item android:id="@+id/tab_combine"    android:icon="@drawable/ic_tab_combine"    android:title="@string/tab_combine" />
     <item android:id="@+id/tab_infect"     android:icon="@drawable/ic_tab_infect"     android:title="@string/tab_infect" />
     <item android:id="@+id/tab_friends"    android:icon="@drawable/ic_tab_friends"    android:title="@string/tab_friends" />
 </menu>

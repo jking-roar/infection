@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
+import org.jetbrains.annotations.NotNull;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,9 +23,8 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment fragment = createFragmentForId(item.getItemId());
-            if (fragment != null) {
-                showFragment(fragment);
-            }
+            showFragment(fragment);
+
             return true;
         });
     }
@@ -36,13 +36,12 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
+    @NotNull
     private Fragment createFragmentForId(int id) {
         if (id == R.id.tab_collection) return new CollectionFragment();
-        if (id == R.id.tab_create) return new CreateVirusFragment();
-        if (id == R.id.tab_combine) return new CombineFragment();
         if (id == R.id.tab_infect) return new InfectFragment();
         if (id == R.id.tab_friends) return new FriendsFragment();
-        return null;
+        return new CollectionFragment();
     }
 }
 

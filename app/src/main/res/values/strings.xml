@@ -29,9 +29,9 @@
     <string name="create_virus_seed_random">Seed used: random.</string>
     <string name="create_virus_summary">Created %1$s in the %2$s family with genome %3$s. %4$s</string>
     <string name="combine_local_button">Combine Selected</string>
-    <string name="collection_summary_collected_viruses">%1$s\'s collected viruses: %2$d</string>
+    <string name="collection_summary_collected_viruses">%1$s\'s lab strains: %2$d</string>
     <string name="username_saved_toast">Saved user name: %1$s</string>
-    <string name="tab_collection">Collection</string>
+    <string name="tab_collection">Lab</string>
     <string name="tab_create">Create</string>
     <string name="tab_combine">Combine</string>
     <string name="tab_infect">Infect</string>
@@ -75,8 +75,8 @@
     <string name="collection_name_label">Your Name</string>
     <string name="collection_name_hint">Tell others who you are</string>
     <string name="collection_name_save_button">Save</string>
-    <string name="collection_virus_list_label">Your viruses</string>
-    <string name="collection_view_virus_button">View Selected Virus</string>
+    <string name="collection_virus_list_label">Your lab strains</string>
+    <string name="collection_view_virus_button">View Selected Strain</string>
     <string name="combine_page_header">Combine Strains</string>
     <string name="combine_selection_instructions">Select two or more strains to fuse into offspring.</string>
     <string name="combine_latest_label">Latest combination</string>
@@ -89,5 +89,5 @@
     <string name="carrier_label">Carrier</string>
     <string name="virus_infection_strength_label">Infection Strength</string>
     <string name="virus_generation_label">Generation</string>
-    <string name="virus_back_to_lab_button">Back to lab</string>
+    <string name="virus_back_to_lab_button">Back to Lab</string>
 </resources>
