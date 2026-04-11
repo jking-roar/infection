@@ -94,4 +94,4 @@ List of friends sorted by degrees of separation
   - [x] view virus; swipe or button press to go back
   - [ ] friend view
   - [x] infect a friend
-    - [ ] qr code or share link or paste infection code
+    - [x] qr code or share link or paste infection code
