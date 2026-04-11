@@ -1,5 +1,6 @@
 package com.kingjoshdavid.funfection.model;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -11,20 +12,26 @@ import java.io.Serializable;
  */
 public class Virus implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
      * Stable identifier used for repository lookups and intent extras.
+     *
+     * <p>This is not user-facing and does not need to be globally unique. It only needs to be unique within the player's collection and consistent across app sessions. The engine does not
+     * consume or recognize this field, so it can be generated in any way that meets those requirements. For example, a simple UUID or a hash of the strain's stat profile and origin metadata could work. The key requirement is that the same strain should always have the same ID when reconstructed from the player's collection, so that sharing and combining logic can reliably identify and match strains.</p>
      */
     private final String id;
 
     /**
-        * Display name shown to the player for this strain.
-        *
-        * <p>This is presentation-facing flavor text, not the canonical lineage key. Multiple
-        * strains can share a family while having different display names.</p>
+     * First token of the display name shown to the player for this strain.
      */
-    private final String name;
+    private final String prefix;
+
+    /**
+     * Second token of the display name shown to the player for this strain.
+     */
+    private final String suffix;
 
     /**
         * Family label grouping related strains, such as starter and offspring lineages.
@@ -82,6 +89,11 @@ public class Virus implements Serializable {
     private final VirusOrigin origin;
 
     /**
+     * Optional production context label (for example: Local Mix, Hybrid, or Cluster).
+     */
+    private final String productionContext;
+
+    /**
      * Number of committed infection actions this strain lineage has participated in.
      *
      * <p>This count only changes after a share or combine action is committed. Preview flows do
@@ -113,8 +125,8 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  String origin) {
-            this(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome,
-                VirusOrigin.legacy(origin), 0);
+            this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
+                infectivity, resilience, chaos, mutation, genome, VirusOrigin.legacy(origin), 0);
     }
 
     public Virus(String id,
@@ -128,11 +140,11 @@ public class Virus implements Serializable {
                  String genome,
                  String origin,
                  int infectionCount) {
-            this(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome,
-                VirusOrigin.legacy(origin), infectionCount);
-            }
+            this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
+                infectivity, resilience, chaos, mutation, genome, VirusOrigin.legacy(origin), infectionCount);
+    }
 
-            public Virus(String id,
+    public Virus(String id,
                  String name,
                  String family,
                  String carrier,
@@ -142,10 +154,11 @@ public class Virus implements Serializable {
                  boolean mutation,
                  String genome,
                  VirusOrigin origin) {
-            this(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome, origin, 0);
-            }
+            this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
+                infectivity, resilience, chaos, mutation, genome, origin, 0);
+    }
 
-            public Virus(String id,
+    public Virus(String id,
                  String name,
                  String family,
                  String carrier,
@@ -156,8 +169,87 @@ public class Virus implements Serializable {
                  String genome,
                  VirusOrigin origin,
                  int infectionCount) {
+        this(id, prefixFromDisplayName(name), suffixFromDisplayName(name), family, carrier,
+            infectivity, resilience, chaos, mutation, genome, origin, infectionCount);
+    }
+
+    public Virus(String id,
+                 String prefix,
+                 String suffix,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 String origin) {
+        this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
+            VirusOrigin.legacy(origin), 0);
+    }
+
+    public Virus(String id,
+                 String prefix,
+                 String suffix,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 String origin,
+                 int infectionCount) {
+        this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
+            VirusOrigin.legacy(origin), infectionCount);
+    }
+
+    public Virus(String id,
+                 String prefix,
+                 String suffix,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 VirusOrigin origin) {
+        this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin, 0);
+    }
+
+    public Virus(String id,
+                 String prefix,
+                 String suffix,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 VirusOrigin origin,
+                 int infectionCount) {
+        this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
+            origin, infectionCount, null);
+    }
+
+    public Virus(String id,
+                 String prefix,
+                 String suffix,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 VirusOrigin origin,
+                 int infectionCount,
+                 String productionContext) {
         this.id = id;
-        this.name = name;
+        this.prefix = normalizeNamePart(prefix, "Unknown");
+        this.suffix = normalizeNamePart(suffix, "Entity");
         this.family = family;
         this.carrier = carrier;
         this.infectivity = infectivity;
@@ -167,6 +259,7 @@ public class Virus implements Serializable {
         this.genome = genome;
         this.origin = origin == null ? VirusOrigin.legacy("Unknown origin") : origin;
         this.infectionCount = Math.max(0, infectionCount);
+        this.productionContext = normalizeOptionalMetadata(productionContext);
     }
 
     public String getId() {
@@ -174,7 +267,15 @@ public class Virus implements Serializable {
     }
 
     public String getName() {
-        return name;
+        return (prefix + " " + suffix).trim();
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public String getSuffix() {
+        return suffix;
     }
 
     public String getFamily() {
@@ -211,6 +312,10 @@ public class Virus implements Serializable {
 
     public VirusOrigin getOriginInfo() {
         return origin;
+    }
+
+    public String getProductionContext() {
+        return productionContext;
     }
 
     public String getOriginReport() {
@@ -282,7 +387,7 @@ public class Virus implements Serializable {
      */
     public String toShareCode() {
         return id + ":" + family + ":" + infectivity.score() + ":" + resilience.score() + ":" + chaos.score() + ":"
-            + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(name) + ":" + sanitize(carrier)
+            + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(getName()) + ":" + sanitize(carrier)
             + ":" + infectionCount + ":" + origin.toSharePayload();
     }
 
@@ -297,7 +402,7 @@ public class Virus implements Serializable {
      */
     public String getSummaryLine() {
         String mutationLabel = mutation ? "Mutated" : "Stable";
-        return name + "  |  " + family + "  |  " + mutationLabel + "  |  Rate " + getInfectionRate()
+        return getName() + "  |  " + family + "  |  " + mutationLabel + "  |  Rate " + getInfectionRate()
                 + "  |  Infections " + infectionCount;
     }
 
@@ -308,8 +413,8 @@ public class Virus implements Serializable {
      * @return copied virus preserving all non-count fields
      */
     public Virus withInfectionCount(int updatedInfectionCount) {
-        return new Virus(id, name, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
-                updatedInfectionCount);
+        return new Virus(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
+                updatedInfectionCount, productionContext);
     }
 
     /**
@@ -332,6 +437,41 @@ public class Virus implements Serializable {
      * @return sanitized text safe to embed inside a share-code row
      */
     private String sanitize(String value) {
-        return value.replace(':', '-').replace('|', '/');
+        return (value == null ? "" : value).replace(':', '-').replace('|', '/');
+    }
+
+    private static String[] splitDisplayName(String name) {
+        String normalized = (name == null ? "" : name.trim()).replaceAll("\\s+", " ");
+        if (normalized.isEmpty()) {
+            return new String[]{"Unknown", "Strain"};
+        }
+        int separator = normalized.indexOf(' ');
+        if (separator < 0) {
+            return new String[]{normalized, ""};
+        }
+        String prefix = normalized.substring(0, separator);
+        String suffix = normalized.substring(separator + 1).trim();
+        if (suffix.isEmpty()) {
+            suffix = "Strain";
+        }
+        return new String[]{prefix, suffix};
+    }
+
+    private static String prefixFromDisplayName(String name) {
+        return splitDisplayName(name)[0];
+    }
+
+    private static String suffixFromDisplayName(String name) {
+        return splitDisplayName(name)[1];
+    }
+
+    private static String normalizeNamePart(String value, String fallback) {
+        String normalized = value == null ? "" : value.trim().replaceAll("\\s+", " ");
+        return normalized.isEmpty() ? fallback : normalized;
+    }
+
+    private static String normalizeOptionalMetadata(String value) {
+        String normalized = value == null ? "" : value.trim().replaceAll("\\s+", " ");
+        return normalized.isEmpty() ? null : normalized;
     }
 }

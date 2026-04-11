@@ -41,7 +41,7 @@ public class InfectionEngineTest {
         Virus result = InfectionEngine.combine(left, right);
 
         assertTrue(result.hasMutation());
-        assertEquals("Spark Chimera", result.getName());
+        assertEquals("Spark Sample", result.getName());
         assertEquals(Infectivity.rate(9), result.getInfectivity());
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(10), result.getChaos());
@@ -58,7 +58,7 @@ public class InfectionEngineTest {
 
         assertFalse(result.hasMutation());
         assertEquals("Spark", result.getFamily());
-        assertEquals("Spark Remix", result.getName());
+        assertEquals("Spark Sample", result.getName());
         assertEquals(Infectivity.rate(8), result.getInfectivity());
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(8), result.getChaos());
@@ -75,7 +75,7 @@ public class InfectionEngineTest {
         Virus result = InfectionEngine.combine(left, right);
 
         assertEquals("Spho", result.getFamily());
-        assertTrue(result.getName().startsWith("Spho "));
+        assertEquals("Spark Sample", result.getName());
         assertEquals("Infected from Spark Sample and Echo Sample", result.getOrigin());
     }
 
@@ -83,8 +83,40 @@ public class InfectionEngineTest {
     public void infectFallsBackToSeededStrainsWhenListsAreEmpty() {
         Virus result = InfectionEngine.infect(Collections.<Virus>emptyList(), Collections.<Virus>emptyList());
 
-        assertTrue(result.getName().endsWith("Remix") || result.getName().endsWith("Chimera"));
+        assertFalse(result.getName().trim().isEmpty());
         assertTrue(result.getGenome().length() > 0);
+    }
+
+    @Test
+    public void combineUsesLowerInfectionPrefixAndHigherInfectionSuffix() {
+        Virus left = new Virus("rule-left", "Alpha", "LeftTail", "Spark", "Tester",
+            Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "RL-1",
+            VirusOrigin.seededInLab(), 1);
+        Virus right = new Virus("rule-right", "Omega", "RightTail", "Spark", "Tester",
+            Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "RR-1",
+            VirusOrigin.seededInLab(), 5);
+
+        Virus result = InfectionEngine.combine(left, right);
+
+        assertEquals("Alpha", result.getPrefix());
+        assertEquals("RightTail", result.getSuffix());
+        assertEquals("Alpha RightTail", result.getName());
+    }
+
+    @Test
+    public void combineTieUsesLeftPrefixAndRightSuffix() {
+        Virus left = new Virus("tie-left", "LeftPrefix", "LeftTail", "Spark", "Tester",
+            Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "TL-1",
+            VirusOrigin.seededInLab(), 4);
+        Virus right = new Virus("tie-right", "RightPrefix", "RightTail", "Spark", "Tester",
+            Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "TR-1",
+            VirusOrigin.seededInLab(), 4);
+
+        Virus result = InfectionEngine.combine(left, right);
+
+        assertEquals("LeftPrefix", result.getPrefix());
+        assertEquals("RightTail", result.getSuffix());
+        assertEquals("LeftPrefix RightTail", result.getName());
     }
 
     @Test
@@ -99,7 +131,7 @@ public class InfectionEngineTest {
 
         assertEquals("Spark", result.getFamily());
         assertTrue(result.getName().startsWith("Spark "));
-        assertTrue(result.getOrigin().contains("Spark Cluster"));
+        assertTrue(result.getOrigin().contains("Spark Two"));
     }
 
     @Test
@@ -110,7 +142,8 @@ public class InfectionEngineTest {
         Virus result = InfectionEngine.infectLocal(Arrays.asList(first, second));
 
         assertEquals("Spark", result.getFamily());
-        assertEquals("Spark Local Mix", result.getName());
+        assertEquals("Spark Sample", result.getName());
+        assertEquals("Local Mix", result.getProductionContext());
         assertEquals("Combined from local strains", result.getOrigin());
         assertEquals(Infectivity.rate(6), result.getInfectivity());
         assertEquals(Resilience.of(6), result.getResilience());
@@ -124,7 +157,8 @@ public class InfectionEngineTest {
         Virus result = InfectionEngine.infectLocal(Collections.<Virus>emptyList());
 
         assertEquals("Combined from local strains", result.getOrigin());
-        assertTrue(result.getName().endsWith(" Local Mix"));
+        assertFalse(result.getName().trim().isEmpty());
+        assertEquals("Local Mix", result.getProductionContext());
         assertTrue(result.getGenome().length() > 0);
         assertEquals(1, result.getInfectionCount());
     }
@@ -169,7 +203,8 @@ public class InfectionEngineTest {
         Virus result = InfectionEngine.infectLocal(Arrays.asList(first, second));
 
         assertEquals("Echo", result.getFamily());
-        assertEquals("Echo Local Mix", result.getName());
+        assertEquals("Spark Two", result.getName());
+        assertEquals("Local Mix", result.getProductionContext());
     }
 
     @Test
@@ -191,7 +226,7 @@ public class InfectionEngineTest {
 
         Virus result = InfectionEngine.infect(Collections.singletonList(local), Collections.singletonList(friend));
 
-        assertEquals("Infected from Spark Cluster and Spark Cluster", result.getOrigin());
+        assertEquals("Infected from Local Sample and Friend Sample", result.getOrigin());
         assertTrue(result.getOriginInfo().hasDirectSource());
         assertEquals(1, result.getOriginInfo().getDegreeOfSeparation());
         assertEquals("Near Friend", result.getOriginInfo().getDirectSource().getDisplayName());

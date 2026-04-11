@@ -52,14 +52,16 @@ public class VirusTest {
 
     @Test
     public void incrementInfectionCountReturnsCopiedVirusWithIncrementedCount() {
-        Virus original = new Virus("virus-5", "Stable", "Spark", "Carrier",
-            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-111", "Fixture", 2);
+        Virus original = new Virus("virus-5", "Stable", "Name", "Spark", "Carrier",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-111",
+            VirusOrigin.legacy("Fixture"), 2, "Cluster");
 
         Virus incremented = original.incrementInfectionCount();
 
         assertEquals(2, original.getInfectionCount());
         assertEquals(3, incremented.getInfectionCount());
         assertEquals(original.getId(), incremented.getId());
+        assertEquals("Cluster", incremented.getProductionContext());
     }
 
     @Test

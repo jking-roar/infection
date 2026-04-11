@@ -144,8 +144,8 @@ public final class VirusFactory {
         Random random = new Random(seed.hashCode());
         String id = UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).toString();
         String family = FAMILIES[random.nextInt(FAMILIES.length)];
-        String name = PREFIXES[random.nextInt(PREFIXES.length)] + " "
-                + SUFFIXES[random.nextInt(SUFFIXES.length)];
+        String prefix = PREFIXES[random.nextInt(PREFIXES.length)];
+        String suffix = SUFFIXES[random.nextInt(SUFFIXES.length)];
         int infectivity = 1 + (random.nextInt(10));
         int resilience = 1 + (random.nextInt(10));
         int chaos = 1 + (random.nextInt(10));
@@ -154,7 +154,7 @@ public final class VirusFactory {
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutation);
-        return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, origin);
+        return new Virus(id, prefix, suffix, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, origin);
     }
 
     /**

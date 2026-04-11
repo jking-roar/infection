@@ -73,7 +73,8 @@ public final class InfectionEngine {
         Virus merged = collapse(ownedViruses, localUserName);
         String id = UUID.nameUUIDFromBytes((merged.getId() + "-local")
             .getBytes(StandardCharsets.UTF_8)).toString();
-        String name = merged.getFamily() + " Local Mix";
+        String prefix = merged.getPrefix();
+        String suffix = merged.getSuffix();
         String carrier = merged.getCarrier();
         Infectivity infectivityRate = Infectivity.rate(merged.getInfectivity().score());
         Resilience resilienceValue = Resilience.of(merged.getResilience().score());
@@ -81,8 +82,8 @@ public final class InfectionEngine {
         String genome = VirusFactory.buildGenome(id, merged.getFamily(), infectivityRate, resilienceValue, chaosLevel,
                 merged.hasMutation());
         VirusOrigin origin = VirusOrigin.combinedLocally(merged.getOriginInfo());
-        return new Virus(id, name, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
-            merged.hasMutation(), genome, origin, 1);
+        return new Virus(id, prefix, suffix, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
+            merged.hasMutation(), genome, origin, 1, "Local Mix");
     }
 
     /**
@@ -138,14 +139,16 @@ public final class InfectionEngine {
 
         String id = UUID.nameUUIDFromBytes((family + infectivity + resilience + chaos + carrier)
             .getBytes(StandardCharsets.UTF_8)).toString();
-        String name = (sameFamily ? family : "Hybrid") + " Cluster";
+        String prefix = chooseLowerInfectionPrefix(viruses);
+        String suffix = chooseHigherInfectionSuffix(viruses);
+        String productionContext = sameFamily ? "Cluster" : "Hybrid";
         Infectivity infectivityRate = Infectivity.rate(infectivity);
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutated);
         VirusOrigin origin = VirusOrigin.collapsed(viruses);
-        return new Virus(id, name, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome,
-            origin, infectionCount);
+        return new Virus(id, prefix, suffix, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome,
+            origin, infectionCount, productionContext);
     }
 
     /**
@@ -160,6 +163,8 @@ public final class InfectionEngine {
      * <p>{@code infectivity = mergeStat(left.infectivity, right.infectivity, true)}</p>
      * <p>{@code resilience = mergeStat(left.resilience, right.resilience, false)}</p>
      * <p>{@code chaos = mergeStat(left.chaos, right.chaos, true)}</p>
+     * <p>{@code prefix = parent with lower infectionCount (tie -> left)}</p>
+     * <p>{@code suffix = parent with higher infectionCount (tie -> right)}</p>
       * <p>{@code infectionCount = 1}</p>
      *
      * <p>If mutation occurs:</p>
@@ -190,14 +195,45 @@ public final class InfectionEngine {
         String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation)
             .getBytes(StandardCharsets.UTF_8)).toString();
         String carrier = left.getCarrier() + " x " + right.getCarrier();
-        String name = dominantFamily + (mutation ? " Chimera" : " Remix");
+        String prefix = chooseLowerInfectionPrefix(left, right);
+        String suffix = chooseHigherInfectionSuffix(left, right);
         Infectivity infectivityRate = Infectivity.rate(infectivity);
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, dominantFamily, infectivityRate, resilienceValue, chaosLevel, mutation);
         VirusOrigin origin = VirusOrigin.infectedFrom(left.getName(), left.getOriginInfo(), right.getName(), right.getOriginInfo());
-        return new Virus(id, name, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,
+        return new Virus(id, prefix, suffix, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,
                 genome, origin, infectionCount);
+    }
+
+    private static String chooseLowerInfectionPrefix(Virus left, Virus right) {
+        return left.getInfectionCount() <= right.getInfectionCount() ? left.getPrefix() : right.getPrefix();
+    }
+
+    private static String chooseHigherInfectionSuffix(Virus left, Virus right) {
+        return left.getInfectionCount() > right.getInfectionCount() ? left.getSuffix() : right.getSuffix();
+    }
+
+    private static String chooseLowerInfectionPrefix(List<Virus> viruses) {
+        Virus chosen = viruses.get(0);
+        for (int i = 1; i < viruses.size(); i++) {
+            Virus candidate = viruses.get(i);
+            if (candidate.getInfectionCount() < chosen.getInfectionCount()) {
+                chosen = candidate;
+            }
+        }
+        return chosen.getPrefix();
+    }
+
+    private static String chooseHigherInfectionSuffix(List<Virus> viruses) {
+        Virus chosen = viruses.get(0);
+        for (int i = 1; i < viruses.size(); i++) {
+            Virus candidate = viruses.get(i);
+            if (candidate.getInfectionCount() >= chosen.getInfectionCount()) {
+                chosen = candidate;
+            }
+        }
+        return chosen.getSuffix();
     }
 
     /**

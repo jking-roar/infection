@@ -58,8 +58,22 @@ public class MyVirusActivity extends AppCompatActivity {
         virusFamily.setText(virus.getFamily());
         virusChaos.setText(Integer.toString(virus.getChaos().score()));
         virusGenome.setText(virus.getGenome());
-        String report = virus.getOriginReport(UserProfileRepository.getCurrentUser().getId());
+        String report = formatOriginReportWithProductionContext(virus,
+                UserProfileRepository.getCurrentUser().getId());
         virusOrigin.setText(withItalicizedYou(report));
+    }
+
+    private String formatOriginReportWithProductionContext(Virus virus, String viewerId) {
+        String report = virus.getOriginReport(viewerId);
+        String productionContext = virus.getProductionContext();
+        if (productionContext == null || productionContext.trim().isEmpty()) {
+            return report;
+        }
+        String contextLine = getString(R.string.virus_production_context_line, productionContext);
+        if (report == null || report.trim().isEmpty()) {
+            return contextLine;
+        }
+        return contextLine + "\n" + report;
     }
 
     private CharSequence withItalicizedYou(String text) {
