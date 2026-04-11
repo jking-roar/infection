@@ -31,6 +31,7 @@
 - Install on device/emulator: `./gradlew.bat :app:installDebug`
 - Build signed bundle: `./gradlew.bat :app:bundleRelease` (requires signing keys in `local.properties`, see `README.md` and `PLAY_STORE_UPLOAD.md`).
 - SDK/stack from repo config: AGP `8.12.3`, Gradle `8.14.4`, Java 17, `compileSdk/targetSdk 36`, `minSdk 24` (`app/build.gradle`).
+- Deploy (the debug apk by default) to attached devices if there are any unless requested not to.
 
 ## External integrations
 - QR generation/scanning in infect flow uses `com.journeyapps:zxing-android-embedded` + `com.google.zxing:core` and camera permission (`AndroidManifest.xml`).
