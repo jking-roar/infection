@@ -78,7 +78,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
   - Back to Lab
 - Keep behavior and side effects consistent with Lab actions (same share payloads, same purge rules, same combine entry behavior).
 
-### Task 5b - Details/Lab action UI unification (follow-up)
+### Completed Task 5b - Details/Lab action UI unification (follow-up)
 - Definition of Done: details actions are presented in a dialog-like treatment, and the action UI is shared between details and Lab.
 - Update details page presentation to feel dialog-like so action buttons are not confused with main navigation.
 - Refactor a reusable action view/component that can be used by both details and Lab.
@@ -100,6 +100,12 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Implement slide-out combine selector with richer visual selection model.
 - Preserve MVP combine behavior as fallback.
 - Ship only if complexity/risk is acceptable for target release.
+
+### Task 8 - force portrait orientation
+- Definition of Done: app is locked to portrait orientation on all screens, and landscape orientation is disabled.
+- Update app configuration to lock orientation to portrait.
+- Test on various devices to ensure landscape orientation is disabled and portrait orientation is enforced.
+- Verify QR scanning is in portrait mode and functions correctly.
 
 ## Acceptance Criteria
 - UI consistently uses `Lab` instead of `Collection`.

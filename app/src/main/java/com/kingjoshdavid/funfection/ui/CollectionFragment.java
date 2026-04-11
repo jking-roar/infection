@@ -7,7 +7,6 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -32,16 +31,11 @@ import java.util.List;
 
 public class CollectionFragment extends Fragment {
 
-    private static final int ACTION_VIEW_DETAILS = 0;
-    private static final int ACTION_SHARE_TEXT = 1;
-    private static final int ACTION_SHARE_QR = 2;
-    private static final int ACTION_PURGE = 3;
-    private static final int ACTION_COMBINE = 4;
-
     private ListView virusList;
     private TextView collectionSummary;
     private EditText userNameInput;
     private List<Virus> viruses = new ArrayList<>();
+    private LabVirusListAdapter virusAdapter;
 
     @Nullable
     @Override
@@ -62,11 +56,33 @@ public class CollectionFragment extends Fragment {
         Button createVirusButton = view.findViewById(R.id.createVirusButton);
 
         userNameInput.setText(UserProfileRepository.getCurrentUser().getUserName());
-        virusList.setOnItemClickListener((parent, itemView, position, id) -> {
-            if (position >= 0 && position < viruses.size()) {
-                showVirusActions(viruses.get(position));
+        virusAdapter = new LabVirusListAdapter(requireContext(), new LabVirusListAdapter.Callbacks() {
+            @Override
+            public void onViewDetails(Virus virus) {
+                openVirusDetails(virus);
+            }
+
+            @Override
+            public void onShareText(Virus virus) {
+                shareVirusText(virus);
+            }
+
+            @Override
+            public void onShareQr(Virus virus) {
+                showVirusQr(virus);
+            }
+
+            @Override
+            public void onPurge(Virus virus) {
+                confirmPurge(virus);
+            }
+
+            @Override
+            public void onCombine(Virus virus) {
+                openCombine(virus);
             }
         });
+        virusList.setAdapter(virusAdapter);
 
         saveUserNameButton.setOnClickListener(v -> {
             UserProfile updated = UserProfileRepository.updateUserName(
@@ -89,57 +105,14 @@ public class CollectionFragment extends Fragment {
 
     private void refreshCollection() {
         viruses = VirusRepository.getViruses();
-        List<String> labels = new ArrayList<>();
-        for (Virus virus : viruses) {
-            labels.add(virus.getSummaryLine());
+        if (virusAdapter != null) {
+            virusAdapter.setViruses(viruses);
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_list_item_1,
-                labels);
-        virusList.setAdapter(adapter);
         UserProfile userProfile = UserProfileRepository.getCurrentUser();
         collectionSummary.setText(getString(
                 R.string.collection_summary_collected_viruses,
                 userProfile.getUserName(),
                 viruses.size()));
-    }
-
-    private void showVirusActions(Virus virus) {
-        String[] actions = new String[] {
-                getString(R.string.lab_action_view_details),
-                getString(R.string.lab_action_share_text),
-                getString(R.string.lab_action_share_qr),
-                getString(R.string.lab_action_purge),
-                getString(R.string.lab_action_combine)
-        };
-
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(getString(R.string.lab_action_menu_title, virus.getName()))
-                .setItems(actions, (dialog, which) -> handleVirusAction(which, virus))
-                .show();
-    }
-
-    private void handleVirusAction(int actionIndex, Virus virus) {
-        if (actionIndex == ACTION_VIEW_DETAILS) {
-            openVirusDetails(virus);
-            return;
-        }
-        if (actionIndex == ACTION_SHARE_TEXT) {
-            shareVirusText(virus);
-            return;
-        }
-        if (actionIndex == ACTION_SHARE_QR) {
-            showVirusQr(virus);
-            return;
-        }
-        if (actionIndex == ACTION_PURGE) {
-            confirmPurge(virus);
-            return;
-        }
-        if (actionIndex == ACTION_COMBINE) {
-            openCombine(virus);
-        }
     }
 
     private void openVirusDetails(Virus virus) {
@@ -189,7 +162,8 @@ public class CollectionFragment extends Fragment {
         startActivity(Intent.createChooser(intent, getString(R.string.infect_share_chooser)));
     }
 
-    private void confirmPurge(Virus virus) {VirusRepository.PurgeResult status = VirusRepository.getPurgeStatus(virus.getId());
+    private void confirmPurge(Virus virus) {
+        VirusRepository.PurgeResult status = VirusRepository.getPurgeStatus(virus.getId());
         if (status == VirusRepository.PurgeResult.BLOCKED_LAST) {
             Toast.makeText(requireContext(), R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
             return;

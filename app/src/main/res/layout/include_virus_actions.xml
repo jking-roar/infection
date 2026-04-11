@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/virusActionPanel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/page_spacing_medium"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/virusActionPanelTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/virus_actions_heading"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/virusActionViewDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:minHeight="48dp"
+        android:text="@string/lab_action_view_details" />
+
+    <Button
+        android:id="@+id/virusActionShareText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:minHeight="48dp"
+        android:text="@string/lab_action_share_text" />
+
+    <Button
+        android:id="@+id/virusActionShareQr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:minHeight="48dp"
+        android:text="@string/lab_action_share_qr" />
+
+    <Button
+        android:id="@+id/virusActionPurge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:minHeight="48dp"
+        android:text="@string/lab_action_purge" />
+
+    <Button
+        android:id="@+id/virusActionCombine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:minHeight="48dp"
+        android:text="@string/lab_action_combine" />
+
+    <Button
+        android:id="@+id/virusActionBackToLab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:minHeight="48dp"
+        android:text="@string/virus_back_to_lab_button" />
+</LinearLayout>
+

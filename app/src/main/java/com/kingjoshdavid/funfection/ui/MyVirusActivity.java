@@ -8,7 +8,6 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -56,17 +55,38 @@ public class MyVirusActivity extends AppCompatActivity {
         displayedVirus = resolveVirus(getIntent());
         showVirusInformation(displayedVirus);
 
-        Button shareTextButton = findViewById(R.id.virusActionShareText);
-        Button shareQrButton = findViewById(R.id.virusActionShareQr);
-        Button purgeButton = findViewById(R.id.virusActionPurge);
-        Button combineButton = findViewById(R.id.virusActionCombine);
-        Button backToLabButton = findViewById(R.id.virusActionBackToLab);
+        VirusActionPanelBinder.bind(findViewById(R.id.virusActionPanel), false, true,
+                new VirusActionPanelBinder.Callbacks() {
+                    @Override
+                    public void onViewDetails() {
+                        // Not used on the details screen.
+                    }
 
-        shareTextButton.setOnClickListener(v -> shareVirusText());
-        shareQrButton.setOnClickListener(v -> showVirusQr());
-        purgeButton.setOnClickListener(v -> confirmPurge());
-        combineButton.setOnClickListener(v -> openCombine());
-        backToLabButton.setOnClickListener(v -> finish());
+                    @Override
+                    public void onShareText() {
+                        shareVirusText();
+                    }
+
+                    @Override
+                    public void onShareQr() {
+                        showVirusQr();
+                    }
+
+                    @Override
+                    public void onPurge() {
+                        confirmPurge();
+                    }
+
+                    @Override
+                    public void onCombine() {
+                        openCombine();
+                    }
+
+                    @Override
+                    public void onBackToLab() {
+                        finish();
+                    }
+                });
     }
 
     private void showVirusInformation(Virus virus) {

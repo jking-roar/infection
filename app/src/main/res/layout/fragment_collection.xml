@@ -55,6 +55,8 @@
         android:layout_marginTop="@dimen/page_spacing_small"
         android:layout_weight="1"
         android:choiceMode="none"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="@dimen/page_spacing_small"
         android:overScrollMode="ifContentScrolls" />
 
     <Button

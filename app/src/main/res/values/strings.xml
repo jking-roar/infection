@@ -82,6 +82,8 @@
     <string name="lab_action_share_qr">Share via QR code</string>
     <string name="lab_action_purge">Purge Strain</string>
     <string name="lab_action_combine">Combine</string>
+    <string name="lab_action_show_actions">Show actions</string>
+    <string name="lab_action_hide_actions">Hide actions</string>
     <string name="lab_purge_title">Purge Strain?</string>
     <string name="lab_purge_message">This will permanently purge %1$s from your lab. This action is irreversible.</string>
     <string name="lab_purge_confirm">Purge Strain</string>
@@ -98,10 +100,16 @@
     <string name="create_page_header">Create a Lab Virus</string>
     <string name="create_latest_creation_label">Latest creation</string>
     <string name="create_latest_creation_info_none">No virus created yet.</string>
-    <string name="virus_page_header">Virus</string>
+    <string name="virus_page_header">Lab Strain Details</string>
+    <string name="virus_actions_heading">Strain actions</string>
     <string name="virus_production_context_line">Production context: %1$s</string>
     <string name="carrier_label">Carrier</string>
     <string name="virus_infection_strength_label">Infection Strength</string>
     <string name="virus_generation_label">Generation</string>
+    <string name="virus_infection_rate_label">Funfection Rate</string>
+    <string name="virus_family_label">Family</string>
+    <string name="virus_chaos_label">Chaos</string>
+    <string name="virus_genome_label">Genome</string>
+    <string name="virus_origin_label">Origin</string>
     <string name="virus_back_to_lab_button">Back to Lab</string>
 </resources>

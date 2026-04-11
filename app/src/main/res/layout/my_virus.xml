@@ -1,191 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        tools:ignore="HardcodedText"
->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
     <LinearLayout
-            android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="@dimen/page_horizontal_padding">
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:layout_marginTop="@dimen/page_spacing_medium"
+            android:layout_marginBottom="@dimen/page_spacing_medium"
+            app:cardCornerRadius="@dimen/surface_card_corner_radius"
+            app:cardElevation="@dimen/surface_card_elevation">
 
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:text="@string/virus_page_header"
-        />
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="32sp"
-                android:id="@+id/virusName"
-                android:textStyle="bold"
-                android:hint="Sam the Virus"
-                android:textAlignment="textEnd"
-                android:layout_gravity="end"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_gravity="start"
-                android:text="@string/carrier_label"
-        />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:hint="Mystery"
-                android:textAlignment="textEnd"
-                android:id="@+id/patientZero" android:layout_gravity="end"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:text="@string/virus_infection_strength_label"
-        />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="30sp"
-                android:hint="115"
-                android:id="@+id/infectionPopulation" android:layout_gravity="end"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:text="@string/virus_generation_label"
-        />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="30sp"
-                android:hint="17"
-                android:id="@+id/infectionCount" android:layout_gravity="end"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:text="Funfection Rate"
-        />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="30sp"
-                android:hint="HIGH"
-                android:id="@+id/infectionRate" android:layout_gravity="end"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_gravity="start"
-                android:text="Family"
-        />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:hint="Walters"
-                android:id="@+id/virusFamily"
-                android:layout_gravity="end"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_gravity="start"
-                android:text="Chaos"
-        />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="22sp"
-                android:hint="3"
-                android:id="@+id/virusChaos"
-                android:layout_gravity="end"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_gravity="start"
-                android:text="Genome"
-        />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="ABC-1234-uwiwlen"
-                android:id="@+id/virusGenome"
-                android:textSize="18sp"
-                android:textAlignment="textEnd"
-                android:layout_gravity="end"/>
-
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_gravity="start"
-                android:text="Origin"
-        />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="Your neighbor down the road and the strange lady with a lot of cats"
-                android:id="@+id/virusOrigin"
-                android:textSize="18sp"
-                android:layout_gravity="end"
-                android:textAlignment="textEnd"
-        />
-
-
-        <Button
-                android:id="@+id/virusActionShareText"
-                android:layout_height="wrap_content"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_gravity="end"
-                android:layout_marginTop="14dp"
-                android:text="@string/lab_action_share_text" />
-
-        <Button
-                android:id="@+id/virusActionShareQr"
                 android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_gravity="end"
-                android:layout_marginTop="8dp"
-                android:text="@string/lab_action_share_qr" />
+                android:orientation="vertical"
+                android:padding="@dimen/page_spacing_large">
 
-        <Button
-                android:id="@+id/virusActionPurge"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_gravity="end"
-                android:layout_marginTop="8dp"
-                android:text="@string/lab_action_purge" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/virus_page_header"
+                    android:textStyle="bold" />
 
-        <Button
-                android:id="@+id/virusActionCombine"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_gravity="end"
-                android:layout_marginTop="8dp"
-                android:text="@string/lab_action_combine" />
+                <TextView
+                    android:id="@+id/virusName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="@dimen/page_spacing_small"
+                    android:textAlignment="textEnd"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
 
-        <Button
-                android:id="@+id/virusActionBackToLab"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent"
-                android:layout_gravity="end"
-                android:layout_marginTop="8dp"
-                android:text="@string/virus_back_to_lab_button" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_large"
+                    android:text="@string/carrier_label" />
+
+                <TextView
+                    android:id="@+id/patientZero"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textAlignment="textEnd"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_medium"
+                    android:text="@string/virus_infection_strength_label" />
+
+                <TextView
+                    android:id="@+id/infectionPopulation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_medium"
+                    android:text="@string/virus_generation_label" />
+
+                <TextView
+                    android:id="@+id/infectionCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_medium"
+                    android:text="@string/virus_infection_rate_label" />
+
+                <TextView
+                    android:id="@+id/infectionRate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_large"
+                    android:text="@string/virus_family_label" />
+
+                <TextView
+                    android:id="@+id/virusFamily"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_large"
+                    android:text="@string/virus_chaos_label" />
+
+                <TextView
+                    android:id="@+id/virusChaos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_large"
+                    android:text="@string/virus_genome_label" />
+
+                <TextView
+                    android:id="@+id/virusGenome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textAlignment="textEnd"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_large"
+                    android:text="@string/virus_origin_label" />
+
+                <TextView
+                    android:id="@+id/virusOrigin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:textAlignment="textEnd"
+                    android:textSize="18sp" />
+
+                <include layout="@layout/include_virus_actions" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

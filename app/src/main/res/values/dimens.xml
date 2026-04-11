@@ -6,4 +6,6 @@
     <dimen name="page_spacing_small">8dp</dimen>
     <dimen name="page_spacing_medium">12dp</dimen>
     <dimen name="page_spacing_large">16dp</dimen>
+    <dimen name="surface_card_corner_radius">24dp</dimen>
+    <dimen name="surface_card_elevation">3dp</dimen>
 </resources>
