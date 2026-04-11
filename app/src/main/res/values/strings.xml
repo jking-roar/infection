@@ -95,6 +95,13 @@
     <string name="combine_pinned_selection_instructions">Pinned strain: %1$s. Choose partner strains, then combine.</string>
     <string name="combine_pinned_locked">%1$s stays pinned in this combine.</string>
     <string name="combine_pinned_opened_toast">%1$s is pinned as the lead strain.</string>
+    <string name="combine_selector_open">Open selector panel</string>
+    <string name="combine_selector_title">Selector panel</string>
+    <string name="combine_selector_done">Done selecting</string>
+    <string name="combine_selector_none_selected">No partner strains selected yet.</string>
+    <string name="combine_selector_selected_count">%1$d partner strain(s) selected.</string>
+    <string name="combine_selector_badge_pinned">Pinned</string>
+    <string name="combine_selector_badge_selected">Selected</string>
     <string name="combine_latest_label">Latest combination</string>
     <string name="combine_result_info_none">No combination run yet.</string>
     <string name="create_page_header">Create a Lab Virus</string>

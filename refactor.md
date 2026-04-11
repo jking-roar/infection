@@ -95,7 +95,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Add/adjust unit tests for remove behavior and ordering (newest first).
 - Run regression smoke checks across remaining tabs and updated Lab flows.
 
-### Task 7 - Enhanced combine UX (optional follow-up)
+### Completed Task 7 - Enhanced combine UX (optional follow-up)
 - Definition of Done: enhanced slide-out combine UI is implemented behind an explicit ship/no-ship decision with MVP fallback preserved.
 - Implement slide-out combine selector with richer visual selection model.
 - Preserve MVP combine behavior as fallback.
