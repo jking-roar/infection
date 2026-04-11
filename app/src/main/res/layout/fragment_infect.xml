@@ -1,123 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingStart="@dimen/page_horizontal_padding"
-    android:paddingTop="@dimen/page_top_padding"
-    android:paddingEnd="@dimen/page_horizontal_padding"
-    android:paddingBottom="@dimen/page_bottom_padding">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/infect_view_title"
-        android:textSize="24sp"
-        android:textStyle="bold"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:text="@string/infect_view_instructions"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_medium"
-        android:text="@string/infect_view_list_label"
-        android:textStyle="bold"/>
-
-    <ListView
-        android:id="@+id/virusList"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:layout_weight="1"
-        android:choiceMode="multipleChoice"
-        android:overScrollMode="ifContentScrolls"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_large"
-        android:text="@string/infect_view_invite_label"
-        android:textStyle="bold"/>
-
-    <EditText
-        android:id="@+id/friendCode"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:autofillHints=""
-        android:gravity="top|start"
-        android:hint="@string/infect_view_invite_instructions"
-        android:importantForAutofill="no"
-        android:inputType="textMultiLine"
-        android:maxLines="4"
-        android:minLines="2"
-        android:overScrollMode="ifContentScrolls"
-        android:scrollbars="vertical"
-        android:scrollHorizontally="false"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_large"
-        android:text="@string/infect_view_latest_outbreak_label"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
-
-    <TextView
-        android:id="@+id/resultSummary"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:text="@string/infect_view_latest_outbreak_missing_text"/>
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_large"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:paddingStart="@dimen/page_horizontal_padding"
+        android:paddingTop="@dimen/page_top_padding"
+        android:paddingEnd="@dimen/page_horizontal_padding"
+        android:paddingBottom="@dimen/page_bottom_padding">
 
-        <Button
-            android:id="@+id/infectButton"
-            android:layout_width="0dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/infect_view_infect_button"/>
+            android:text="@string/import_view_title"
+            android:textSize="24sp"
+            android:textStyle="bold"/>
 
-        <Button
-            android:id="@+id/shareButton"
-            android:layout_width="0dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/page_spacing_medium"
-            android:layout_weight="1"
-            android:text="@string/infect_view_show_qr_button"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/shareTextButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/infect_view_share_text_button"/>
+            android:layout_marginTop="@dimen/page_spacing_small"
+            android:text="@string/import_view_instructions"/>
 
         <Button
             android:id="@+id/scanQrButton"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/page_spacing_medium"
-            android:layout_weight="1"
-            android:text="@string/infect_view_scan_qr_button"/>
-    </LinearLayout>
+            android:layout_marginTop="@dimen/page_spacing_large"
+            android:minHeight="56dp"
+            android:text="@string/import_scan_qr_button"/>
 
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/page_spacing_large"
+            android:text="@string/import_code_label"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/friendCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/page_spacing_small"
+            android:autofillHints=""
+            android:gravity="top|start"
+            android:hint="@string/import_code_hint"
+            android:importantForAutofill="no"
+            android:inputType="textMultiLine"
+            android:maxLines="4"
+            android:minLines="2"
+            android:overScrollMode="ifContentScrolls"
+            android:scrollbars="vertical"
+            android:scrollHorizontally="false"/>
+
+        <Button
+            android:id="@+id/infectButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/page_spacing_medium"
+            android:minHeight="56dp"
+            android:text="@string/import_button"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/page_spacing_large"
+            android:text="@string/import_result_label"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/resultSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/page_spacing_small"
+            android:text="@string/import_result_none"/>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
 

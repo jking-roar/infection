@@ -32,7 +32,7 @@
     <string name="collection_summary_collected_viruses">%1$s\'s lab strains: %2$d</string>
     <string name="username_saved_toast">Saved user name: %1$s</string>
     <string name="tab_collection">Lab</string>
-    <string name="tab_infect">Infect</string>
+    <string name="tab_infect">Import</string>
     <string name="tab_friends">Friends</string>
     <string name="coming_soon_friends">Coming Soon: Browse your infected network of friends</string>
     <string name="infect_view_show_qr_button">Show QR</string>
@@ -66,6 +66,22 @@
     <string name="infect_view_infect_button">Infect</string>
     <string name="infect_view_latest_outbreak_label">Latest outbreak</string>
     <string name="infect_view_latest_outbreak_missing_text">No infection has been triggered yet.</string>
+    <string name="import_view_title">Import a Strain</string>
+    <string name="import_view_instructions">Scan a friend\'s QR code or paste their invite code to bring a new strain into your lab.</string>
+    <string name="import_scan_qr_button">Scan QR Code</string>
+    <string name="import_code_label">Invite code</string>
+    <string name="import_code_hint">Paste a friend\'s invite code here</string>
+    <string name="import_button">Import Strain</string>
+    <string name="import_button_confirm">Import</string>
+    <string name="import_result_label">Last import</string>
+    <string name="import_result_none">No strain imported yet.</string>
+    <string name="import_preview_title">Confirm import</string>
+    <string name="import_preview_message">Projected offspring: %1$s family, genome %2$s.\n%3$s\n\nSource: %4$s</string>
+    <string name="import_preview_source_code">Invite code decoded (%1$d strain(s)).</string>
+    <string name="import_preview_source_random">No valid invite code — a random strain will be used.</string>
+    <string name="import_result_summary">%1$s joined the %2$s family with genome %3$s. Strength %4$d, generation %5$d. %6$s</string>
+    <string name="import_result_code_decoded">Decoded from invite code (%1$d strain(s)).</string>
+    <string name="import_result_random_used">Random strain used as source.</string>
     <string name="start_virus_code_instructions">Paste a virus code or leave blank for a random match</string>
     <string name="start_view_virus_code_reminder">Matching strains produce matching offspring. Mutations are rare but
         possible.
