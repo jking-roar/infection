@@ -48,7 +48,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
   - Purge Strain (with irreversible confirmation)
   - Combine (left-side fixed to tapped strain)
 
-### Task 2b - refinement of refactor
+### Completed Task 2b - refinement of refactor
 - Definition of Done: Lab virus rows have no selection checkbox, and tapping any row opens a command menu with working actions for details, share text, share QR, purge, and combine.
 - Remove selection checkboxes from Lab virus list items.
 - Use tap-to-open action menu as the only row interaction pattern.

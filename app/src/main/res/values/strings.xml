@@ -76,8 +76,6 @@
     <string name="collection_name_hint">Tell others who you are</string>
     <string name="collection_name_save_button">Save</string>
     <string name="collection_virus_list_label">Your lab strains</string>
-    <string name="collection_view_virus_button">View Selected Strain</string>
-    <string name="collection_view_virus_empty">No strain available to show.</string>
     <string name="lab_action_menu_title">Actions for %1$s</string>
     <string name="lab_action_view_details">View details</string>
     <string name="lab_action_share_text">Share via text</string>

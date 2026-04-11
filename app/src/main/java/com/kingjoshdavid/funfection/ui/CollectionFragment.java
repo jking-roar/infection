@@ -3,7 +3,6 @@ package com.kingjoshdavid.funfection.ui;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +57,6 @@ public class CollectionFragment extends Fragment {
         collectionSummary = view.findViewById(R.id.collectionSummary);
         userNameInput = view.findViewById(R.id.userNameInput);
         Button saveUserNameButton = view.findViewById(R.id.saveUserNameButton);
-        Button viewButton = view.findViewById(R.id.viewButton);
 
         userNameInput.setText(UserProfileRepository.getCurrentUser().getUserName());
         virusList.setOnItemClickListener((parent, itemView, position, id) -> {
@@ -76,8 +74,6 @@ public class CollectionFragment extends Fragment {
                     getString(R.string.username_saved_toast, updated.getUserName()),
                     Toast.LENGTH_SHORT).show();
         });
-
-        viewButton.setOnClickListener(v -> openSelectedVirus());
     }
 
     @Override
@@ -94,7 +90,7 @@ public class CollectionFragment extends Fragment {
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_list_item_multiple_choice,
+                android.R.layout.simple_list_item_1,
                 labels);
         virusList.setAdapter(adapter);
         UserProfile userProfile = UserProfileRepository.getCurrentUser();
@@ -102,18 +98,6 @@ public class CollectionFragment extends Fragment {
                 R.string.collection_summary_collected_viruses,
                 userProfile.getUserName(),
                 viruses.size()));
-    }
-
-    private void openSelectedVirus() {
-        List<Virus> selected = getSelectedViruses();
-        Virus virus = selected.isEmpty()
-                ? (viruses.isEmpty() ? null : viruses.get(0))
-                : selected.get(0);
-        if (virus == null) {
-            Toast.makeText(requireContext(), R.string.collection_view_virus_empty, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        openVirusDetails(virus);
     }
 
     private void showVirusActions(Virus virus) {
@@ -236,15 +220,6 @@ public class CollectionFragment extends Fragment {
                 .replace(R.id.nav_host_fragment, CombineFragment.newPinnedInstance(virus.getId()))
                 .addToBackStack(null)
                 .commit();
-    }
-
-    private List<Virus> getSelectedViruses() {
-        List<Virus> selected = new ArrayList<>();
-        SparseBooleanArray checked = virusList.getCheckedItemPositions();
-        for (int i = 0; i < virusList.getCount(); i++) {
-            if (checked.get(i)) selected.add(viruses.get(i));
-        }
-        return selected;
     }
 }
 

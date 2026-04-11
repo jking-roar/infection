@@ -20,7 +20,7 @@
         android:layout_marginTop="@dimen/page_spacing_small"
         android:orientation="horizontal">
 
-            <EditText
+        <EditText
                 android:id="@+id/userNameInput"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -28,13 +28,15 @@
                 android:autofillHints="name,username"
                 android:hint="@string/collection_name_hint"
                 android:inputType="textPersonName"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:minHeight="48dp"/>
 
         <Button
             android:id="@+id/saveUserNameButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/page_spacing_small"
+            android:minHeight="48dp"
             android:text="@string/collection_name_save_button" />
     </LinearLayout>
 
@@ -52,15 +54,9 @@
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/page_spacing_small"
         android:layout_weight="1"
-        android:choiceMode="multipleChoice"
+        android:choiceMode="none"
         android:overScrollMode="ifContentScrolls" />
 
-    <Button
-        android:id="@+id/viewButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_medium"
-        android:text="@string/collection_view_virus_button" />
 
 </LinearLayout>
 
