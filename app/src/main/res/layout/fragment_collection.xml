@@ -57,6 +57,14 @@
         android:choiceMode="none"
         android:overScrollMode="ifContentScrolls" />
 
+    <Button
+        android:id="@+id/createVirusButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:minHeight="48dp"
+        android:text="@string/create_virus_button" />
+
 
 </LinearLayout>
 

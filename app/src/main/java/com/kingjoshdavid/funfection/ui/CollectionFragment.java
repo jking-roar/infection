@@ -3,6 +3,7 @@ package com.kingjoshdavid.funfection.ui;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.data.VirusRepository;
+import com.kingjoshdavid.funfection.engine.VirusFactory;
 import com.kingjoshdavid.funfection.model.UserProfile;
 import com.kingjoshdavid.funfection.model.Virus;
 
@@ -57,6 +59,7 @@ public class CollectionFragment extends Fragment {
         collectionSummary = view.findViewById(R.id.collectionSummary);
         userNameInput = view.findViewById(R.id.userNameInput);
         Button saveUserNameButton = view.findViewById(R.id.saveUserNameButton);
+        Button createVirusButton = view.findViewById(R.id.createVirusButton);
 
         userNameInput.setText(UserProfileRepository.getCurrentUser().getUserName());
         virusList.setOnItemClickListener((parent, itemView, position, id) -> {
@@ -74,6 +77,8 @@ public class CollectionFragment extends Fragment {
                     getString(R.string.username_saved_toast, updated.getUserName()),
                     Toast.LENGTH_SHORT).show();
         });
+
+        createVirusButton.setOnClickListener(v -> promptCreateVirus());
     }
 
     @Override
@@ -220,6 +225,28 @@ public class CollectionFragment extends Fragment {
                 .replace(R.id.nav_host_fragment, CombineFragment.newPinnedInstance(virus.getId()))
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void promptCreateVirus() {
+        EditText seedInput = new EditText(requireContext());
+        seedInput.setHint(R.string.lab_seed_hint);
+        seedInput.setInputType(InputType.TYPE_CLASS_TEXT);
+        seedInput.setSingleLine(true);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.lab_seed_title)
+                .setView(seedInput)
+                .setNegativeButton(R.string.infection_preview_cancel, null)
+                .setPositiveButton(R.string.create_virus_button,
+                        (dialog, which) -> createFromLab(seedInput.getText().toString()))
+                .show();
+    }
+
+    private void createFromLab(String seed) {
+        Virus createdVirus = VirusFactory.createLabVirus(seed);
+        VirusRepository.addVirus(createdVirus);
+        refreshCollection();
+        openVirusDetails(createdVirus);
     }
 }
 

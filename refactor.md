@@ -62,7 +62,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Commit combine via existing local combine logic.
 - Persist offspring and refresh Lab list.
 
-### Task 4 - Create-from-Lab
+### Completed Task 4 - Create-from-Lab
 - Definition of Done: Lab `Create Virus` prompt creates and persists a strain, then opens that strain's details screen.
 - Add bottom `Create Virus` CTA in Lab.
 - Prompt for inspiration/seed.
