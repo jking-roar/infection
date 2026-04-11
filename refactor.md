@@ -150,14 +150,14 @@ All task definitions of done were verified against the production codebase. All 
 These items are not blocking any current task but represent cleanup and polish debt identified during verification.
 
 ### Cleanup – Dead code removal
-- [ ] Delete `CreateVirusFragment.java` — the class has no nav entry and is not referenced anywhere outside its own file.
-- [ ] Delete `fragment_create_virus.xml` — only referenced by `CreateVirusFragment` which is itself dead.
-- [ ] Remove unused string resources `tab_create` and `tab_combine` from `strings.xml` — they are defined but not referenced in any layout, menu, or Java source.
+- [x] Delete `CreateVirusFragment.java` — the class has no nav entry and is not referenced anywhere outside its own file.
+- [x] Delete `fragment_create_virus.xml` — only referenced by `CreateVirusFragment` which is itself dead.
+- [x] Remove unused string resources `tab_create` and `tab_combine` from `strings.xml` — they are defined but not referenced in any layout, menu, or Java source.
 
 ### Cleanup – Feature-flag simplification
-- [ ] Remove the `ENABLE_ENHANCED_COMBINE_SELECTOR` boolean flag from `CombineFragment` now that Task 7 has shipped and the enhanced path is the only intended path. Inline the `true` branch and delete the dead `else`/MVP fallback code blocks.
+- [x] Remove the `ENABLE_ENHANCED_COMBINE_SELECTOR` boolean flag from `CombineFragment` now that Task 7 has shipped and the enhanced path is the only intended path. Inline the `true` branch and delete the dead `else`/MVP fallback code blocks.
 
 ### Docs alignment
-- [ ] Update `AGENTS.md` line 16 to remove the reference to `VirusRepository.incrementInfectionCounts(...)` — this method does not exist; `InfectFragment.executeInfection()` calls only `VirusRepository.addVirus()`.
+- [x] Update `AGENTS.md` line 16 to remove the reference to `VirusRepository.incrementInfectionCounts(...)` — this method does not exist; `InfectFragment.executeInfection()` calls only `VirusRepository.addVirus()`.
 
 

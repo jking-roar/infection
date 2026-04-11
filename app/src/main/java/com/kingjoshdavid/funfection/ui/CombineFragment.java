@@ -1,7 +1,6 @@
 package com.kingjoshdavid.funfection.ui;
 
 import android.os.Bundle;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,6 @@ import java.util.Set;
 public class CombineFragment extends Fragment {
 
     public static final String ARG_FIXED_VIRUS_ID = "com.kingjoshdavid.funfection.FIXED_VIRUS_ID";
-    private static final boolean ENABLE_ENHANCED_COMBINE_SELECTOR = true;
 
     private ListView virusList;
     private TextView instructionsView;
@@ -75,34 +73,16 @@ public class CombineFragment extends Fragment {
         Button combineButton = view.findViewById(R.id.combineButton);
         Button backToLabButton = view.findViewById(R.id.combine_back_button);
 
-        if (ENABLE_ENHANCED_COMBINE_SELECTOR) {
-            selectorAdapter = new CombineSelectorAdapter(requireContext(), selectedPartnerIds);
-            selectorList.setAdapter(selectorAdapter);
-            selectorList.setOnItemClickListener((parent, itemView, position, id) -> onSelectorVirusTapped(position));
-            openSelectorButton.setOnClickListener(v -> showSelectorPanel());
-            closeSelectorButton.setOnClickListener(v -> hideSelectorPanel());
-            virusList.setChoiceMode(ListView.CHOICE_MODE_NONE);
-        } else {
-            selectorPanel.setVisibility(View.GONE);
-            openSelectorButton.setVisibility(View.GONE);
-            virusList.setOnItemClickListener((parent, itemView, position, id) -> {
-                Virus fixedVirus = getFixedVirus();
-                if (fixedVirus == null || position < 0 || position >= viruses.size()) {
-                    return;
-                }
-                Virus tappedVirus = viruses.get(position);
-                if (fixedVirus.getId().equals(tappedVirus.getId()) && !virusList.isItemChecked(position)) {
-                    virusList.setItemChecked(position, true);
-                    Toast.makeText(requireContext(),
-                            getString(R.string.combine_pinned_locked, fixedVirus.getName()),
-                            Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+        selectorAdapter = new CombineSelectorAdapter(requireContext(), selectedPartnerIds);
+        selectorList.setAdapter(selectorAdapter);
+        selectorList.setOnItemClickListener((parent, itemView, position, id) -> onSelectorVirusTapped(position));
+        openSelectorButton.setOnClickListener(v -> showSelectorPanel());
+        closeSelectorButton.setOnClickListener(v -> hideSelectorPanel());
+        virusList.setChoiceMode(ListView.CHOICE_MODE_NONE);
 
         combineButton.setOnClickListener(v -> confirmCombine());
         backToLabButton.setOnClickListener(v -> {
-            if (ENABLE_ENHANCED_COMBINE_SELECTOR && selectorPanel.getVisibility() == View.VISIBLE) {
+            if (selectorPanel.getVisibility() == View.VISIBLE) {
                 hideSelectorPanel();
                 return;
             }
@@ -129,31 +109,19 @@ public class CombineFragment extends Fragment {
         viruses = new ArrayList<>(VirusRepository.getViruses());
         movePinnedVirusToTop();
         List<String> labels = buildDisplayLabels();
-        int rowLayout = ENABLE_ENHANCED_COMBINE_SELECTOR
-                ? android.R.layout.simple_list_item_1
-                : android.R.layout.simple_list_item_multiple_choice;
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), rowLayout, labels);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, labels);
         virusList.setAdapter(adapter);
 
         Virus fixedVirus = getFixedVirus();
         if (fixedVirus != null) {
             instructionsView.setText(getString(R.string.combine_pinned_selection_instructions, fixedVirus.getName()));
-            if (ENABLE_ENHANCED_COMBINE_SELECTOR) {
-                selectedPartnerIds.remove(fixedVirus.getId());
-                selectorAdapter.setViruses(viruses, fixedVirus.getId());
-                updateSelectorSummary();
-            } else {
-                int fixedIndex = findVirusIndex(fixedVirus.getId());
-                if (fixedIndex >= 0) {
-                    virusList.setItemChecked(fixedIndex, true);
-                }
-            }
+            selectedPartnerIds.remove(fixedVirus.getId());
+            selectorAdapter.setViruses(viruses, fixedVirus.getId());
+            updateSelectorSummary();
         } else {
             instructionsView.setText(R.string.combine_selection_instructions);
-            if (ENABLE_ENHANCED_COMBINE_SELECTOR) {
-                selectorAdapter.setViruses(viruses, null);
-                updateSelectorSummary();
-            }
+            selectorAdapter.setViruses(viruses, null);
+            updateSelectorSummary();
         }
     }
 
@@ -189,12 +157,8 @@ public class CombineFragment extends Fragment {
         List<Virus> selected = getSelectedViruses();
         if (selected.isEmpty() && !viruses.isEmpty()) {
             selected.add(viruses.get(0));
-            if (ENABLE_ENHANCED_COMBINE_SELECTOR) {
-                selectedPartnerIds.add(viruses.get(0).getId());
-                updateSelectorSummary();
-            } else {
-                virusList.setItemChecked(0, true);
-            }
+            selectedPartnerIds.add(viruses.get(0).getId());
+            updateSelectorSummary();
         }
         if (selected.isEmpty()) {
             Toast.makeText(requireContext(), "No viruses in collection to combine.", Toast.LENGTH_SHORT).show();
@@ -247,27 +211,13 @@ public class CombineFragment extends Fragment {
         if (fixedVirus != null) {
             selected.add(fixedVirus);
         }
-        if (ENABLE_ENHANCED_COMBINE_SELECTOR) {
-            for (Virus virus : viruses) {
-                if (fixedVirus != null && fixedVirus.getId().equals(virus.getId())) {
-                    continue;
-                }
-                if (selectedPartnerIds.contains(virus.getId())) {
-                    selected.add(virus);
-                }
-            }
-            return selected;
-        }
-        SparseBooleanArray checked = virusList.getCheckedItemPositions();
-        for (int i = 0; i < virusList.getCount(); i++) {
-            if (!checked.get(i)) {
-                continue;
-            }
-            Virus virus = viruses.get(i);
+        for (Virus virus : viruses) {
             if (fixedVirus != null && fixedVirus.getId().equals(virus.getId())) {
                 continue;
             }
-            selected.add(virus);
+            if (selectedPartnerIds.contains(virus.getId())) {
+                selected.add(virus);
+            }
         }
         return selected;
     }

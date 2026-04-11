@@ -32,8 +32,6 @@
     <string name="collection_summary_collected_viruses">%1$s\'s lab strains: %2$d</string>
     <string name="username_saved_toast">Saved user name: %1$s</string>
     <string name="tab_collection">Lab</string>
-    <string name="tab_create">Create</string>
-    <string name="tab_combine">Combine</string>
     <string name="tab_infect">Infect</string>
     <string name="tab_friends">Friends</string>
     <string name="coming_soon_friends">Coming Soon: Browse your infected network of friends</string>

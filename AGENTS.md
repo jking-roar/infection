@@ -13,7 +13,7 @@
 - `data/` is local state only: `VirusRepository` (in-memory collection) + `UserProfileRepository` (prefs-backed profile via `SharedPreferencesUtil`).
 
 ## High-value code paths
-- Infection flow: `InfectFragment.prepareAndShowPreview()` -> `VirusFactory.parseInviteCode(...)` fallback to `createRandomFriendVirus()` -> `InfectionEngine.infect(...)` -> `VirusRepository.incrementInfectionCounts(...)` + `addVirus(...)`.
+- Infection flow: `InfectFragment.prepareAndShowPreview()` -> `VirusFactory.parseInviteCode(...)` fallback to `createRandomFriendVirus()` -> `InfectionEngine.infect(...)` -> `VirusRepository.addVirus(...)`.
 - Local combine flow: `CombineFragment.confirmCombine()` -> `InfectionEngine.infectLocal(...)` -> `VirusRepository.addVirus(...)`.
 - Virus details: `CollectionFragment` passes `MyVirusActivity.EXTRA_VIRUS_ID`; detail screen resolves via `VirusRepository.getVirusById(...)`.
 - Provenance/degree tracking is centralized in `VirusOrigin` and travels through share payloads (`Virus.toShareCode()` + `VirusOrigin.toSharePayload()`).
