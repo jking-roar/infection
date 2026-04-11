@@ -318,10 +318,6 @@ public class Virus implements Serializable {
         return productionContext;
     }
 
-    public String getOriginReport() {
-        return origin.describeDetailed();
-    }
-
     public String getOriginReport(String viewerId) {
         return origin.describeDetailedForViewer(viewerId);
     }

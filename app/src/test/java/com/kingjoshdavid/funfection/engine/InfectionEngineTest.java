@@ -81,10 +81,10 @@ public class InfectionEngineTest {
 
     @Test
     public void infectFallsBackToSeededStrainsWhenListsAreEmpty() {
-        Virus result = InfectionEngine.infect(Collections.<Virus>emptyList(), Collections.<Virus>emptyList());
+        Virus result = InfectionEngine.infect(Collections.emptyList(), Collections.emptyList());
 
         assertFalse(result.getName().trim().isEmpty());
-        assertTrue(result.getGenome().length() > 0);
+        assertFalse(result.getGenome().isEmpty());
     }
 
     @Test
@@ -154,12 +154,12 @@ public class InfectionEngineTest {
 
     @Test
     public void infectLocalFallsBackWhenSelectionIsEmpty() {
-        Virus result = InfectionEngine.infectLocal(Collections.<Virus>emptyList());
+        Virus result = InfectionEngine.infectLocal(Collections.emptyList());
 
         assertEquals("Combined from local strains", result.getOrigin());
         assertFalse(result.getName().trim().isEmpty());
         assertEquals("Local Mix", result.getProductionContext());
-        assertTrue(result.getGenome().length() > 0);
+        assertFalse(result.getGenome().isEmpty());
         assertEquals(1, result.getInfectionCount());
     }
 

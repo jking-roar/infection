@@ -34,7 +34,6 @@ import java.util.UUID;
  */
 public final class VirusFactory {
 
-    private static final String LAB_CARRIER = "Lab";
     private static final String SIMULATED_FRIEND_FLAG = "[SIMULATED]";
     private static final int STARTER_MIN_INFECTIONS = 1;
     private static final int STARTER_MAX_INFECTIONS = 20;
