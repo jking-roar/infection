@@ -78,6 +78,11 @@ Move to a Lab-first experience where users can manage strains from one place, wh
   - Back to Lab
 - Keep behavior and side effects consistent with Lab actions.
 
+#### Additinal detail screen considerations:
+- modify the details page to be more dialog like so these action buttons will not be mistaken for the main navigation.
+- refactor a view to be used here as well as the action item list in the lab.
+- rework the action item lsit in the lab to be extending the list item rather than a dropdown menu.
+
 ### Task 6 - Repository and regression tests
 - Definition of Done: remove/purge behavior is repository-backed, covered by unit tests, and Lab-related smoke checks pass without regressions.
 - Add repository support for purge/remove if missing.
