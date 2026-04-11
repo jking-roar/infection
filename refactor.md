@@ -89,7 +89,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Plan default: ship Task 5a first, then Task 6 regression/testing, then Task 5b as a follow-up.
 - If Task 5b is pulled into the same release, time-box it and keep the Task 5a interaction path as fallback.
 
-### Task 6 - Repository and regression tests
+### Completed Task 6 - Repository and regression tests
 - Definition of Done: remove/purge behavior is repository-backed, covered by unit tests, and Lab-related smoke checks pass without regressions.
 - Add repository support for purge/remove if missing.
 - Add/adjust unit tests for remove behavior and ordering (newest first).

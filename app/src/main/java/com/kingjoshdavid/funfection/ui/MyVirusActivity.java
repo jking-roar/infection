@@ -171,8 +171,14 @@ public class MyVirusActivity extends AppCompatActivity {
     }
 
     private void confirmPurge() {
-        if (VirusRepository.getViruses().size() <= 1) {
+        VirusRepository.PurgeResult status = VirusRepository.getPurgeStatus(displayedVirus.getId());
+        if (status == VirusRepository.PurgeResult.BLOCKED_LAST) {
             Toast.makeText(this, R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (status == VirusRepository.PurgeResult.MISSING) {
+            Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+            finish();
             return;
         }
 
@@ -185,12 +191,12 @@ public class MyVirusActivity extends AppCompatActivity {
     }
 
     private void purgeVirus() {
-        if (VirusRepository.getViruses().size() <= 1) {
+        VirusRepository.PurgeResult result = VirusRepository.purgeVirusById(displayedVirus.getId());
+        if (result == VirusRepository.PurgeResult.BLOCKED_LAST) {
             Toast.makeText(this, R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
             return;
         }
-        boolean removed = VirusRepository.removeVirusById(displayedVirus.getId());
-        if (!removed) {
+        if (result == VirusRepository.PurgeResult.MISSING) {
             Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
             return;
         }

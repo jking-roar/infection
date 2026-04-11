@@ -11,6 +11,12 @@ public final class VirusRepository {
 
     private static final List<Virus> COLLECTION = new ArrayList<>();
 
+    public enum PurgeResult {
+        REMOVED,
+        MISSING,
+        BLOCKED_LAST
+    }
+
     private VirusRepository() {
     }
 
@@ -52,14 +58,44 @@ public final class VirusRepository {
     }
 
     public static boolean removeVirusById(String id) {
+        return purgeVirusById(id) == PurgeResult.REMOVED;
+    }
+
+    public static PurgeResult getPurgeStatus(String id) {
         ensureSeeded();
+        if (id == null || id.trim().isEmpty()) {
+            return PurgeResult.MISSING;
+        }
+        if (COLLECTION.size() <= 1) {
+            return findVirusIndexById(id) >= 0 ? PurgeResult.BLOCKED_LAST : PurgeResult.MISSING;
+        }
+        return findVirusIndexById(id) >= 0 ? PurgeResult.REMOVED : PurgeResult.MISSING;
+    }
+
+    public static PurgeResult purgeVirusById(String id) {
+        ensureSeeded();
+        PurgeResult status = getPurgeStatus(id);
+        if (status != PurgeResult.REMOVED) {
+            return status;
+        }
+        int index = findVirusIndexById(id);
+        if (index < 0) {
+            return PurgeResult.MISSING;
+        }
+        COLLECTION.remove(index);
+        return PurgeResult.REMOVED;
+    }
+
+    private static int findVirusIndexById(String id) {
+        if (id == null) {
+            return -1;
+        }
         for (int index = 0; index < COLLECTION.size(); index++) {
             if (COLLECTION.get(index).getId().equals(id)) {
-                COLLECTION.remove(index);
-                return true;
+                return index;
             }
         }
-        return false;
+        return -1;
     }
 
     public static List<Virus> pickByIds(List<String> ids) {

@@ -189,9 +189,14 @@ public class CollectionFragment extends Fragment {
         startActivity(Intent.createChooser(intent, getString(R.string.infect_share_chooser)));
     }
 
-    private void confirmPurge(Virus virus) {
-        if (VirusRepository.getViruses().size() <= 1) {
+    private void confirmPurge(Virus virus) {VirusRepository.PurgeResult status = VirusRepository.getPurgeStatus(virus.getId());
+        if (status == VirusRepository.PurgeResult.BLOCKED_LAST) {
             Toast.makeText(requireContext(), R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (status == VirusRepository.PurgeResult.MISSING) {
+            Toast.makeText(requireContext(), R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+            refreshCollection();
             return;
         }
 
@@ -204,13 +209,13 @@ public class CollectionFragment extends Fragment {
     }
 
     private void purgeVirus(Virus virus) {
-        if (VirusRepository.getViruses().size() <= 1) {
+        VirusRepository.PurgeResult result = VirusRepository.purgeVirusById(virus.getId());
+        refreshCollection();
+        if (result == VirusRepository.PurgeResult.BLOCKED_LAST) {
             Toast.makeText(requireContext(), R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
             return;
         }
-        boolean removed = VirusRepository.removeVirusById(virus.getId());
-        refreshCollection();
-        if (!removed) {
+        if (result == VirusRepository.PurgeResult.MISSING) {
             Toast.makeText(requireContext(), R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
             return;
         }

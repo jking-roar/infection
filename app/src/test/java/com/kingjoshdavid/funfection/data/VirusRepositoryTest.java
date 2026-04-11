@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -125,8 +126,67 @@ public class VirusRepositoryTest {
     public void removeVirusByIdReturnsFalseWhenVirusIsMissing() {
         VirusRepository.ensureSeeded();
 
-        assertTrue(!VirusRepository.getViruses().isEmpty());
-        org.junit.Assert.assertFalse(VirusRepository.removeVirusById("missing-id"));
+        assertFalse(VirusRepository.getViruses().isEmpty());
+        assertFalse(VirusRepository.removeVirusById("missing-id"));
+        assertEquals(VirusRepository.PurgeResult.MISSING, VirusRepository.getPurgeStatus("missing-id"));
+    }
+
+    @Test
+    public void purgeVirusByIdBlocksRemovingLastRemainingVirus() {
+        VirusRepository.ensureSeeded();
+        List<Virus> seeded = VirusRepository.getViruses();
+        String survivorId = seeded.get(0).getId();
+        for (int i = 1; i < seeded.size(); i++) {
+            assertEquals(VirusRepository.PurgeResult.REMOVED,
+                    VirusRepository.purgeVirusById(seeded.get(i).getId()));
+        }
+
+        assertEquals(1, VirusRepository.getViruses().size());
+        assertEquals(VirusRepository.PurgeResult.BLOCKED_LAST, VirusRepository.getPurgeStatus(survivorId));
+        assertEquals(VirusRepository.PurgeResult.BLOCKED_LAST, VirusRepository.purgeVirusById(survivorId));
+        assertNotNull(VirusRepository.getVirusById(survivorId));
+    }
+
+    @Test
+    public void purgeVirusByIdReturnsMissingWhenNoMatchExists() {
+        Virus first = new Virus("miss-1", "First", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-M1", "Fixture");
+        Virus second = new Virus("miss-2", "Second", "Echo", "Tester",
+            Infectivity.rate(2), Resilience.of(2), Chaos.level(2), false, "GEN-M2", "Fixture");
+        VirusRepository.addVirus(first);
+        VirusRepository.addVirus(second);
+        int before = VirusRepository.getViruses().size();
+
+        assertEquals(VirusRepository.PurgeResult.MISSING, VirusRepository.purgeVirusById("missing-id"));
+        assertEquals(before, VirusRepository.getViruses().size());
+    }
+
+    @Test
+    public void newestFirstOrderingStaysStableAcrossPurgeAndAdd() {
+        Virus first = new Virus("ord-1", "First", "Spark", "Tester",
+            Infectivity.rate(1), Resilience.of(1), Chaos.level(1), false, "GEN-O1", "Fixture");
+        Virus second = new Virus("ord-2", "Second", "Echo", "Tester",
+            Infectivity.rate(2), Resilience.of(2), Chaos.level(2), false, "GEN-O2", "Fixture");
+        Virus third = new Virus("ord-3", "Third", "Nova", "Tester",
+            Infectivity.rate(3), Resilience.of(3), Chaos.level(3), false, "GEN-O3", "Fixture");
+        Virus fourth = new Virus("ord-4", "Fourth", "Flux", "Tester",
+            Infectivity.rate(4), Resilience.of(4), Chaos.level(4), false, "GEN-O4", "Fixture");
+        VirusRepository.addVirus(first);
+        VirusRepository.addVirus(second);
+        VirusRepository.addVirus(third);
+
+        assertEquals("ord-3", VirusRepository.getViruses().get(0).getId());
+        assertEquals("ord-2", VirusRepository.getViruses().get(1).getId());
+        assertEquals("ord-1", VirusRepository.getViruses().get(2).getId());
+
+        assertEquals(VirusRepository.PurgeResult.REMOVED, VirusRepository.purgeVirusById("ord-2"));
+        assertEquals("ord-3", VirusRepository.getViruses().get(0).getId());
+        assertEquals("ord-1", VirusRepository.getViruses().get(1).getId());
+
+        VirusRepository.addVirus(fourth);
+        assertEquals("ord-4", VirusRepository.getViruses().get(0).getId());
+        assertEquals("ord-3", VirusRepository.getViruses().get(1).getId());
+        assertEquals("ord-1", VirusRepository.getViruses().get(2).getId());
     }
 
     @Test
