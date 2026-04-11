@@ -68,7 +68,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Prompt for inspiration/seed.
 - Create virus, persist it, and open details immediately.
 
-### Task 5 - Details screen parity
+### Task 5a - Details screen parity (MVP)
 - Definition of Done: details screen provides share text, share QR, purge, combine, and back-to-lab actions with behavior matching Lab.
 - Add detail-screen actions:
   - Share text
@@ -76,12 +76,18 @@ Move to a Lab-first experience where users can manage strains from one place, wh
   - Purge Strain
   - Combine
   - Back to Lab
-- Keep behavior and side effects consistent with Lab actions.
+- Keep behavior and side effects consistent with Lab actions (same share payloads, same purge rules, same combine entry behavior).
 
-#### Additinal detail screen considerations:
-- modify the details page to be more dialog like so these action buttons will not be mistaken for the main navigation.
-- refactor a view to be used here as well as the action item list in the lab.
-- rework the action item lsit in the lab to be extending the list item rather than a dropdown menu.
+### Task 5b - Details/Lab action UI unification (follow-up)
+- Definition of Done: details actions are presented in a dialog-like treatment, and the action UI is shared between details and Lab.
+- Update details page presentation to feel dialog-like so action buttons are not confused with main navigation.
+- Refactor a reusable action view/component that can be used by both details and Lab.
+- Rework Lab actions to extend the list item interaction model instead of using a dropdown action menu.
+- Preserve Task 5a behavior and side effects as-is while changing presentation.
+
+#### Task 5 sequencing note
+- Plan default: ship Task 5a first, then Task 6 regression/testing, then Task 5b as a follow-up.
+- If Task 5b is pulled into the same release, time-box it and keep the Task 5a interaction path as fallback.
 
 ### Task 6 - Repository and regression tests
 - Definition of Done: remove/purge behavior is repository-backed, covered by unit tests, and Lab-related smoke checks pass without regressions.
