@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
-
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.model.Virus;
 

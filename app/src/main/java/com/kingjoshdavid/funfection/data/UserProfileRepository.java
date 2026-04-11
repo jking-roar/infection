@@ -1,7 +1,6 @@
 package com.kingjoshdavid.funfection.data;
 
 import android.content.Context;
-
 import com.kingjoshdavid.funfection.model.UserProfile;
 
 import java.util.Random;

@@ -6,19 +6,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.VirusRepository;
 import com.kingjoshdavid.funfection.engine.InfectionEngine;
 import com.kingjoshdavid.funfection.model.Virus;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,12 +27,10 @@ public class CombineFragment extends Fragment {
     private static final boolean ENABLE_ENHANCED_COMBINE_SELECTOR = true;
 
     private ListView virusList;
-    private ListView selectorList;
     private TextView instructionsView;
     private TextView resultSummary;
     private TextView selectorSummary;
     private View selectorPanel;
-    private Button openSelectorButton;
     private List<Virus> viruses = new ArrayList<>();
     private final Set<String> selectedPartnerIds = new HashSet<>();
     private CombineSelectorAdapter selectorAdapter;
@@ -71,12 +65,12 @@ public class CombineFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         virusList = view.findViewById(R.id.virusList);
-        selectorList = view.findViewById(R.id.combineSelectorList);
+        ListView selectorList = view.findViewById(R.id.combineSelectorList);
         instructionsView = view.findViewById(R.id.combineInstructions);
         resultSummary = view.findViewById(R.id.resultSummary);
         selectorSummary = view.findViewById(R.id.combineSelectorSummary);
         selectorPanel = view.findViewById(R.id.combineSelectorPanel);
-        openSelectorButton = view.findViewById(R.id.combineOpenSelectorButton);
+        Button openSelectorButton = view.findViewById(R.id.combineOpenSelectorButton);
         Button closeSelectorButton = view.findViewById(R.id.combineCloseSelectorButton);
         Button combineButton = view.findViewById(R.id.combineButton);
         Button backToLabButton = view.findViewById(R.id.combine_back_button);

@@ -1,11 +1,7 @@
 package com.kingjoshdavid.funfection.engine;
 
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
-import com.kingjoshdavid.funfection.model.Chaos;
-import com.kingjoshdavid.funfection.model.Infectivity;
-import com.kingjoshdavid.funfection.model.Resilience;
-import com.kingjoshdavid.funfection.model.Virus;
-import com.kingjoshdavid.funfection.model.VirusOrigin;
+import com.kingjoshdavid.funfection.model.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
