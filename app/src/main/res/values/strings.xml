@@ -24,6 +24,10 @@
     <string name="create_virus_button">Create Virus</string>
     <string name="lab_seed_title">Create a lab virus</string>
     <string name="lab_seed_hint">Enter a seed or leave blank for a random virus</string>
+    <string name="lab_seed_scan_button">Scan QR / Barcode to seed</string>
+    <string name="lab_seed_scan_prompt">Scan a QR code or barcode to use as the seed</string>
+    <string name="lab_seed_scan_loaded">Seed loaded from scan.</string>
+    <string name="lab_seed_scan_empty">Nothing was scanned — enter a seed manually.</string>
     <string name="create_virus_toast">New virus created: %1$s</string>
     <string name="create_virus_seed_manual">Seed used: %1$s.</string>
     <string name="create_virus_seed_random">Seed used: random.</string>

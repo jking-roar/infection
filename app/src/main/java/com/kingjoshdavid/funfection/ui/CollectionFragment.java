@@ -3,14 +3,16 @@ package com.kingjoshdavid.funfection.ui;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -32,6 +34,26 @@ public class CollectionFragment extends Fragment {
     private EditText userNameInput;
     private List<Virus> viruses = new ArrayList<>();
     private LabVirusListAdapter virusAdapter;
+    private EditText pendingCreateSeedInput;
+    private ActivityResultLauncher<ScanOptions> createSeedScanLauncher;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        createSeedScanLauncher = registerForActivityResult(new ScanContract(), result -> {
+            if (!isAdded() || pendingCreateSeedInput == null) {
+                return;
+            }
+            String contents = result.getContents();
+            if (contents == null || contents.trim().isEmpty()) {
+                Toast.makeText(requireContext(), R.string.lab_seed_scan_empty, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            pendingCreateSeedInput.setText(contents.trim());
+            pendingCreateSeedInput.setSelection(pendingCreateSeedInput.getText().length());
+            Toast.makeText(requireContext(), R.string.lab_seed_scan_loaded, Toast.LENGTH_SHORT).show();
+        });
+    }
 
     @Nullable
     @Override
@@ -203,17 +225,30 @@ public class CollectionFragment extends Fragment {
     }
 
     private void promptCreateVirus() {
-        EditText seedInput = new EditText(requireContext());
-        seedInput.setHint(R.string.lab_seed_hint);
-        seedInput.setInputType(InputType.TYPE_CLASS_TEXT);
-        seedInput.setSingleLine(true);
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_create_virus, null, false);
+        EditText seedInput = dialogView.findViewById(R.id.createVirusSeedInput);
+        Button scanButton = dialogView.findViewById(R.id.createVirusScanButton);
+        pendingCreateSeedInput = seedInput;
+
+        scanButton.setOnClickListener(v -> {
+            ScanOptions options = new ScanOptions();
+            options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES);
+            options.setPrompt(getString(R.string.lab_seed_scan_prompt));
+            options.setBeepEnabled(false);
+            options.setOrientationLocked(true);
+            createSeedScanLauncher.launch(options);
+        });
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.lab_seed_title)
-                .setView(seedInput)
-                .setNegativeButton(R.string.infection_preview_cancel, null)
+                .setView(dialogView)
+                .setNegativeButton(R.string.infection_preview_cancel, (d, w) -> pendingCreateSeedInput = null)
                 .setPositiveButton(R.string.create_virus_button,
-                        (dialog, which) -> createFromLab(seedInput.getText().toString()))
+                        (dialog, which) -> {
+                            pendingCreateSeedInput = null;
+                            createFromLab(seedInput.getText().toString());
+                        })
                 .show();
     }
 
