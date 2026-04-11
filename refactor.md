@@ -53,7 +53,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Remove selection checkboxes from Lab virus list items.
 - Use tap-to-open action menu as the only row interaction pattern.
 
-### Task 3 - Combine-from-Lab (MVP)
+### Completed Task 3 - Combine-from-Lab (MVP)
 - Definition of Done: combine flow fixes left-side strain, places the pinned left strain at the top of the selection list, supports right-side selection, and provides back/cancel to return to Lab with no side effects when not committed.
 - Implement right-side selection dialog for combine.
 - Keep tapped virus fixed as left-side input.

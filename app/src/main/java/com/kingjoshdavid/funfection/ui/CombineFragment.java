@@ -64,6 +64,7 @@ public class CombineFragment extends Fragment {
         instructionsView = view.findViewById(R.id.combineInstructions);
         resultSummary = view.findViewById(R.id.resultSummary);
         Button combineButton = view.findViewById(R.id.combineButton);
+        Button backToLabButton = view.findViewById(R.id.combine_back_button);
         virusList.setOnItemClickListener((parent, itemView, position, id) -> {
             Virus fixedVirus = getFixedVirus();
             if (fixedVirus == null || position < 0 || position >= viruses.size()) {
@@ -78,6 +79,7 @@ public class CombineFragment extends Fragment {
             }
         });
         combineButton.setOnClickListener(v -> confirmCombine());
+        backToLabButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         if (savedInstanceState == null) {
             Virus fixedVirus = getFixedVirus();
@@ -96,7 +98,8 @@ public class CombineFragment extends Fragment {
     }
 
     private void refreshList() {
-        viruses = VirusRepository.getViruses();
+        viruses = new ArrayList<>(VirusRepository.getViruses());
+        movePinnedVirusToTop();
         List<String> labels = new ArrayList<>();
         for (Virus virus : viruses) {
             labels.add(virus.getSummaryLine());
@@ -116,6 +119,19 @@ public class CombineFragment extends Fragment {
         } else {
             instructionsView.setText(R.string.combine_selection_instructions);
         }
+    }
+
+    private void movePinnedVirusToTop() {
+        Virus fixedVirus = getFixedVirus();
+        if (fixedVirus == null) {
+            return;
+        }
+        int fixedIndex = findVirusIndex(fixedVirus.getId());
+        if (fixedIndex <= 0) {
+            return;
+        }
+        Virus pinned = viruses.remove(fixedIndex);
+        viruses.add(0, pinned);
     }
 
     private void confirmCombine() {
