@@ -1,13 +1,21 @@
 package com.kingjoshdavid.funfection.ui;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
+import android.view.LayoutInflater;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.data.VirusRepository;
@@ -26,6 +34,7 @@ public class MyVirusActivity extends AppCompatActivity {
     private TextView virusChaos;
     private TextView virusGenome;
     private TextView virusOrigin;
+    private Virus displayedVirus;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,9 +53,20 @@ public class MyVirusActivity extends AppCompatActivity {
         virusGenome = findViewById(R.id.virusGenome);
         virusOrigin = findViewById(R.id.virusOrigin);
 
-        Virus virus = resolveVirus(getIntent());
+        displayedVirus = resolveVirus(getIntent());
+        showVirusInformation(displayedVirus);
 
-        showVirusInformation(virus);
+        Button shareTextButton = findViewById(R.id.virusActionShareText);
+        Button shareQrButton = findViewById(R.id.virusActionShareQr);
+        Button purgeButton = findViewById(R.id.virusActionPurge);
+        Button combineButton = findViewById(R.id.virusActionCombine);
+        Button backToLabButton = findViewById(R.id.virusActionBackToLab);
+
+        shareTextButton.setOnClickListener(v -> shareVirusText());
+        shareQrButton.setOnClickListener(v -> showVirusQr());
+        purgeButton.setOnClickListener(v -> confirmPurge());
+        combineButton.setOnClickListener(v -> openCombine());
+        backToLabButton.setOnClickListener(v -> finish());
     }
 
     private void showVirusInformation(Virus virus) {
@@ -109,7 +129,82 @@ public class MyVirusActivity extends AppCompatActivity {
         return VirusRepository.getViruses().get(0);
     }
 
-    public void onClose(android.view.View button) {
+    private void shareVirusText() {
+        launchTextShare(buildInviteShareBody(displayedVirus.toShareCode()));
+    }
+
+    private void showVirusQr() {
+        String invitePayload = displayedVirus.toShareCode();
+        Bitmap qrBitmap;
+        try {
+            qrBitmap = new BarcodeEncoder().encodeBitmap(invitePayload, BarcodeFormat.QR_CODE, 768, 768);
+        } catch (WriterException error) {
+            Toast.makeText(this, R.string.infect_qr_generation_failed, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        android.view.View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_invite_qr, null, false);
+        android.widget.ImageView qrImage = dialogView.findViewById(R.id.qrInviteImage);
+        TextView qrSummary = dialogView.findViewById(R.id.qrInviteSummary);
+        qrImage.setImageBitmap(qrBitmap);
+        qrSummary.setText(getString(R.string.infect_qr_dialog_summary, 1));
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.infect_qr_dialog_title)
+                .setView(dialogView)
+                .setNegativeButton(R.string.infect_qr_dialog_close, null)
+                .setPositiveButton(R.string.infect_qr_dialog_share_text,
+                        (dialog, which) -> launchTextShare(buildInviteShareBody(invitePayload)))
+                .show();
+    }
+
+    private String buildInviteShareBody(String invitePayload) {
+        return getString(R.string.infect_share_body, invitePayload);
+    }
+
+    private void launchTextShare(String body) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.infect_share_subject));
+        intent.putExtra(Intent.EXTRA_TEXT, body);
+        startActivity(Intent.createChooser(intent, getString(R.string.infect_share_chooser)));
+    }
+
+    private void confirmPurge() {
+        if (VirusRepository.getViruses().size() <= 1) {
+            Toast.makeText(this, R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.lab_purge_title)
+                .setMessage(getString(R.string.lab_purge_message, displayedVirus.getName()))
+                .setNegativeButton(R.string.infection_preview_cancel, null)
+                .setPositiveButton(R.string.lab_purge_confirm, (dialog, which) -> purgeVirus())
+                .show();
+    }
+
+    private void purgeVirus() {
+        if (VirusRepository.getViruses().size() <= 1) {
+            Toast.makeText(this, R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        boolean removed = VirusRepository.removeVirusById(displayedVirus.getId());
+        if (!removed) {
+            Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Toast.makeText(this,
+                getString(R.string.lab_purge_success, displayedVirus.getName()),
+                Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
+    private void openCombine() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(MainActivity.EXTRA_OPEN_COMBINE_VIRUS_ID, displayedVirus.getId());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
         finish();
     }
 }

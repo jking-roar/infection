@@ -1,5 +1,6 @@
 package com.kingjoshdavid.funfection.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -9,6 +10,9 @@ import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import org.jetbrains.annotations.NotNull;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String EXTRA_OPEN_COMBINE_VIRUS_ID =
+            "com.kingjoshdavid.funfection.OPEN_COMBINE_VIRUS_ID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,15 @@ public class MainActivity extends AppCompatActivity {
 
             return true;
         });
+
+        openPinnedCombineIfRequested(getIntent(), savedInstanceState);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        openPinnedCombineIfRequested(intent, null);
     }
 
     private void showFragment(Fragment fragment) {
@@ -42,6 +55,22 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.tab_infect) return new InfectFragment();
         if (id == R.id.tab_friends) return new FriendsFragment();
         return new CollectionFragment();
+    }
+
+    private void openPinnedCombineIfRequested(Intent intent, Bundle savedInstanceState) {
+        if (intent == null || savedInstanceState != null) {
+            return;
+        }
+        String pinnedVirusId = intent.getStringExtra(EXTRA_OPEN_COMBINE_VIRUS_ID);
+        if (pinnedVirusId == null || pinnedVirusId.trim().isEmpty()) {
+            return;
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.nav_host_fragment, CombineFragment.newPinnedInstance(pinnedVirusId))
+                .addToBackStack(null)
+                .commit();
+        intent.removeExtra(EXTRA_OPEN_COMBINE_VIRUS_ID);
     }
 }
 

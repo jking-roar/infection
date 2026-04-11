@@ -68,7 +68,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Prompt for inspiration/seed.
 - Create virus, persist it, and open details immediately.
 
-### Task 5a - Details screen parity (MVP)
+### Completed Task 5a - Details screen parity (MVP)
 - Definition of Done: details screen provides share text, share QR, purge, combine, and back-to-lab actions with behavior matching Lab.
 - Add detail-screen actions:
   - Share text

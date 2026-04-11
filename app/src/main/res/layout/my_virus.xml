@@ -149,12 +149,43 @@
 
 
         <Button
+                android:id="@+id/virusActionShareText"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
-                android:text="Back to lab"
-                android:onClick="onClose"
                 android:layout_gravity="end"
-                android:layout_marginTop="14sp"
-        />
+                android:layout_marginTop="14dp"
+                android:text="@string/lab_action_share_text" />
+
+        <Button
+                android:id="@+id/virusActionShareQr"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_gravity="end"
+                android:layout_marginTop="8dp"
+                android:text="@string/lab_action_share_qr" />
+
+        <Button
+                android:id="@+id/virusActionPurge"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_gravity="end"
+                android:layout_marginTop="8dp"
+                android:text="@string/lab_action_purge" />
+
+        <Button
+                android:id="@+id/virusActionCombine"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_gravity="end"
+                android:layout_marginTop="8dp"
+                android:text="@string/lab_action_combine" />
+
+        <Button
+                android:id="@+id/virusActionBackToLab"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_gravity="end"
+                android:layout_marginTop="8dp"
+                android:text="@string/virus_back_to_lab_button" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
