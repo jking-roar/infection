@@ -38,7 +38,7 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 - Remove or redirect duplicate navigation entries for standalone Create/Combine flows.
 - Update screen titles and supporting copy to match Lab-first wording.
 
-### Task 2 - Lab action menu
+### Completed Task 2a - Lab action menu
 - Definition of Done: tapping any Lab virus opens a command menu with working actions for details, share text, share QR, purge, and combine.
 - Replace current tap behavior with a per-virus action menu/dialog.
 - Implement handlers for:
@@ -48,10 +48,17 @@ Move to a Lab-first experience where users can manage strains from one place, wh
   - Purge Strain (with irreversible confirmation)
   - Combine (left-side fixed to tapped strain)
 
+### Task 2b - refinement of refactor
+- Definition of Done: Lab virus rows have no selection checkbox, and tapping any row opens a command menu with working actions for details, share text, share QR, purge, and combine.
+- Remove selection checkboxes from Lab virus list items.
+- Use tap-to-open action menu as the only row interaction pattern.
+
 ### Task 3 - Combine-from-Lab (MVP)
-- Definition of Done: combine flow supports fixed left-side strain, selectable right-side strains, successful offspring creation, and list refresh on commit.
+- Definition of Done: combine flow fixes left-side strain, places the pinned left strain at the top of the selection list, supports right-side selection, and provides back/cancel to return to Lab with no side effects when not committed.
 - Implement right-side selection dialog for combine.
 - Keep tapped virus fixed as left-side input.
+- Bring the pinned left-side strain to the top of the combine selection list.
+- Add a back/cancel path that returns to Lab without creating offspring or mutating repository state.
 - Commit combine via existing local combine logic.
 - Persist offspring and refresh Lab list.
 
@@ -85,9 +92,11 @@ Move to a Lab-first experience where users can manage strains from one place, wh
 
 ## Acceptance Criteria
 - UI consistently uses `Lab` instead of `Collection`.
+- Lab virus items do not show selection checkboxes.
 - Virus tap in Lab shows all required actions.
 - `Purge Strain` requires confirmation and removes the virus when confirmed.
-- Combine from Lab fixes left side and allows right-side selection before commit.
+- Combine from Lab fixes left side, places pinned strain at the top of selection UI, and allows right-side selection before commit.
+- Combine flow includes back/cancel that returns to Lab with no changes when user exits before commit.
 - `Create Virus` in Lab prompts for seed and opens new virus details.
 - Details view includes action parity plus `Back to Lab`.
 - Share payload format remains compatible with current invite/share parsing.
