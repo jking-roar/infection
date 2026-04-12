@@ -3,8 +3,12 @@
     <string name="app_name">funfection</string>
     <string name="theme_primary_font">sans-serif-medium</string>
     <string name="infection_preview_cancel">Cancel</string>
-    <string name="infection_preview_mutation_likely">Mutation outlook: a volatile mutation spike is expected from this pairing.</string>
-    <string name="infection_preview_mutation_stable">Mutation outlook: this pairing is projected to remain a stable transfer.</string>
+    <string name="infection_preview_mutation_likely">Mutation outlook: a volatile mutation spike is expected from this
+        pairing.
+    </string>
+    <string name="infection_preview_mutation_stable">Mutation outlook: this pairing is projected to remain a stable
+        transfer.
+    </string>
     <string name="create_virus_button">Create Virus</string>
     <string name="lab_seed_title">Create a lab virus</string>
     <string name="lab_seed_hint">Enter a seed or leave blank for a random virus</string>
@@ -13,7 +17,9 @@
     <string name="lab_seed_scan_loaded">Seed loaded from scan.</string>
     <string name="lab_seed_scan_empty">Nothing was scanned — enter a seed manually.</string>
     <string name="lab_wild_scan_created_toast">%1$s discovered: %2$s</string>
-    <string name="lab_seed_collision_toast">Achievement unlocked: Seed collision! %1$s already existed, and your new scan has been preserved.</string>
+    <string name="lab_seed_collision_toast">Achievement unlocked: Seed collision! %1$s already existed, and your new
+        scan has been preserved.
+    </string>
     <string name="collection_summary_collected_viruses">%1$s\'s lab strains: %2$d</string>
     <string name="username_saved_toast">Saved user name: %1$s</string>
     <string name="tab_collection">Lab</string>
@@ -23,7 +29,9 @@
     <string name="vectors_title">Vectors of Infection</string>
     <string name="vectors_subtitle">People discovered through your infection exchanges and lineage.</string>
     <string name="vectors_loading">Loading vectors…</string>
-    <string name="vectors_empty">No vectors discovered yet.\n\nVectors appear here after you exchange infections with others.</string>
+    <string name="vectors_empty">No vectors discovered yet.\n\nVectors appear here after you exchange infections with
+        others.
+    </string>
     <string name="friend_last_infection_value">Last infection: %1$s</string>
     <string name="friend_last_infection_unknown">No recorded infections yet</string>
     <string name="friend_source_handle_value">Source handle: %1$s</string>
@@ -50,20 +58,27 @@
     <string name="infect_share_chooser">Share virus invite</string>
     <string name="infect_share_body">Swap strains with me in Funfection. Paste this invite code into the lab:
 
-%1$s</string>
+        %1$s
+    </string>
     <string name="infect_qr_dialog_title">Invite QR</string>
     <string name="infect_qr_dialog_summary">Scan this QR code to load %1$d shared strain(s).</string>
-    <string name="infect_qr_dialog_hint">The same payload can still be pasted into the friend invite box or shared as plain text.</string>
+    <string name="infect_qr_dialog_hint">The same payload can still be pasted into the friend invite box or shared as
+        plain text.
+    </string>
     <string name="infect_qr_dialog_share_text">Share text</string>
     <string name="infect_qr_dialog_close">Close</string>
     <string name="infect_qr_image_description">QR code for a shared virus invite</string>
-    <string name="infect_qr_generation_failed">That invite is too large to fit into a QR code. Try sharing fewer strains as text.</string>
+    <string name="infect_qr_generation_failed">That invite is too large to fit into a QR code. Try sharing fewer strains
+        as text.
+    </string>
     <string name="infect_qr_scan_prompt">Scan a Funfection invite QR</string>
     <string name="infect_qr_scan_success">Invite QR loaded. Review it or infect immediately.</string>
     <string name="infect_qr_scan_empty">No QR invite was captured.</string>
     <string name="infect_new_virus_toast">New virus: %1$s</string>
     <string name="import_view_title">Import a Strain</string>
-    <string name="import_view_instructions">Scan a friend\'s QR code or paste their invite code to bring a new strain into your lab.</string>
+    <string name="import_view_instructions">Scan a friend\'s QR code or paste their invite code to bring a new strain
+        into your lab.
+    </string>
     <string name="import_scan_qr_button">Scan QR Code</string>
     <string name="import_code_label">Invite code</string>
     <string name="import_code_hint">Paste a friend\'s invite code here</string>
@@ -72,12 +87,11 @@
     <string name="import_result_label">Last import</string>
     <string name="import_result_none">No strain imported yet.</string>
     <string name="import_preview_title">Confirm import</string>
-    <string name="import_preview_message">Projected offspring: %1$s family, genome %2$s.\n%3$s\n\nSource: %4$s</string>
-    <string name="import_preview_source_code">Invite code decoded (%1$d strain(s)).</string>
-    <string name="import_preview_source_random">No valid invite code — a random strain will be used.</string>
-    <string name="import_result_summary">%1$s joined the %2$s family with genome %3$s. Strength %4$d, generation %5$d. %6$s</string>
-    <string name="import_result_code_decoded">Decoded from invite code (%1$d strain(s)).</string>
-    <string name="import_result_random_used">Random strain used as source.</string>
+    <string name="import_preview_message">Import %1$d strain(s) from this invite code?\n\nFirst strain: %2$s\nFamily:
+        %3$s\nGeneration: %4$d
+    </string>
+    <string name="import_preview_invalid">No valid invite strains were found in that code.</string>
+    <string name="import_result_summary">Imported %1$d strain(s). Latest: %2$s (%3$s), generation %4$d.</string>
     <string name="collection_name_label">Your Name</string>
     <string name="collection_name_hint">Tell others who you are</string>
     <string name="collection_name_save_button">Save</string>
@@ -101,7 +115,8 @@
     <string name="lab_action_show_actions">Show actions</string>
     <string name="lab_action_hide_actions">Hide actions</string>
     <string name="lab_purge_title">Purge Strain?</string>
-    <string name="lab_purge_message">This will permanently purge %1$s from your lab. This action is irreversible.</string>
+    <string name="lab_purge_message">This will permanently purge %1$s from your lab. This action is irreversible.
+    </string>
     <string name="lab_purge_confirm">Purge Strain</string>
     <string name="lab_purge_success">%1$s was purged from your lab.</string>
     <string name="lab_purge_missing">That strain is no longer available in your lab.</string>

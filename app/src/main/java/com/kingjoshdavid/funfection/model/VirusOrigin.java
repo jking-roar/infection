@@ -59,24 +59,20 @@ public final class VirusOrigin implements Serializable {
 
     public static VirusOrigin importedFromInvite(VirusOrigin sharedOrigin, String carrier) {
         VirusOrigin base = sharedOrigin == null ? legacy("Imported from invite") : sharedOrigin;
-        Source source;
-        if (isLikelyRealFriendCarrier(carrier)) {
-            if (base.directSource != null
-                    && base.directSource.isRealFriend()
-                    && carrier != null
-                    && carrier.trim().equalsIgnoreCase(base.directSource.getDisplayName())) {
-                source = base.directSource.withDegree(1);
-            } else {
-                source = Source.real(stableId("carrier:" + carrier), carrier, 1);
-            }
-        } else if (base.directSource != null) {
-            source = base.directSource.withDegree(base.directSource.isRealFriend() ? 1 : 0);
-        } else {
-            source = null;
-        }
+        PatientZero primary = resolvePrimaryPatientZero(base, carrier);
+        PatientZero secondary = resolveSecondaryPatientZero(base, primary);
+        Source source = primary == null
+                ? (base.directSource == null ? null : base.directSource.withDegree(base.directSource.isRealFriend() ? 1 : 0))
+                : Source.real(primary.getId(), primary.getDisplayName(), 1);
 
-        List<PatientZero> advancedLineage = advanceLineage(base.exportLineage(), source);
-        return new VirusOrigin(Type.IMPORTED_INVITE, "Imported from invite", source, advancedLineage);
+        List<PatientZero> lineage = new ArrayList<>();
+        if (primary != null) {
+            lineage.add(primary.withDegree(1));
+        }
+        if (secondary != null) {
+            lineage.add(secondary.withDegree(Math.max(1, secondary.getDegreeOfSeparation())));
+        }
+        return new VirusOrigin(Type.IMPORTED_INVITE, "Imported from invite", source, lineage);
     }
 
     public static VirusOrigin collapsed(List<Virus> viruses) {
@@ -107,34 +103,26 @@ public final class VirusOrigin implements Serializable {
     }
 
     public static VirusOrigin infectedFrom(String leftName,
-                                          VirusOrigin leftOrigin,
-                                          String rightName,
-                                          VirusOrigin rightOrigin) {
-        Source source = rightOrigin == null ? null : rightOrigin.directSource;
-        if (source != null && source.isRealFriend()) {
-            source = source.withDegree(1);
-        }
+                                           VirusOrigin leftOrigin,
+                                           String rightName,
+                                           VirusOrigin rightOrigin) {
+        PatientZero leftPrimary = primaryPatientZeroOf(leftOrigin);
+        PatientZero rightPrimary = primaryPatientZeroOf(rightOrigin);
+        Source source = rightPrimary == null
+                ? (rightOrigin == null || rightOrigin.directSource == null
+                ? null
+                : rightOrigin.directSource.withDegree(rightOrigin.directSource.isRealFriend() ? 1 : 0))
+                : Source.real(rightPrimary.getId(), rightPrimary.getDisplayName(), 1);
 
         List<PatientZero> lineage = new ArrayList<>();
-        if (rightOrigin != null) {
-            lineage.addAll(rightOrigin.exportLineage());
+        if (leftPrimary != null) {
+            lineage.add(leftPrimary.withDegree(Math.max(1, leftPrimary.getDegreeOfSeparation())));
         }
-        if (leftOrigin != null) {
-            lineage.addAll(leftOrigin.exportLineage());
+        if (rightPrimary != null) {
+            lineage.add(rightPrimary.withDegree(Math.max(1, rightPrimary.getDegreeOfSeparation())));
         }
-
-        if (source != null && source.isRealFriend()) {
-            boolean resetExisting = false;
-            for (int index = 0; index < lineage.size(); index++) {
-                PatientZero patientZero = lineage.get(index);
-                if (patientZero.getId().equals(source.getId())) {
-                    lineage.set(index, patientZero.withDegree(1));
-                    resetExisting = true;
-                }
-            }
-            if (!resetExisting && lineage.isEmpty()) {
-                lineage.add(PatientZero.fromSource(source));
-            }
+        if (lineage.isEmpty() && source != null && source.isRealFriend()) {
+            lineage.add(PatientZero.fromSource(source));
         }
 
         return new VirusOrigin(Type.FRIEND_INFECTION,
@@ -325,10 +313,10 @@ public final class VirusOrigin implements Serializable {
             for (int index = 0; index < deduped.size(); index++) {
                 PatientZero existing = deduped.get(index);
                 if (existing.getId().equals(candidate.getId())) {
-                    if (candidate.getDegreeOfSeparation() > existing.getDegreeOfSeparation()) {
+                    if (candidate.getDegreeOfSeparation() < existing.getDegreeOfSeparation()) {
                         deduped.set(index, candidate);
                     } else if (candidate.getDegreeOfSeparation() == existing.getDegreeOfSeparation()
-                            && candidate.getDisplayName().compareTo(existing.getDisplayName()) < 0) {
+                            && !candidate.getDisplayName().trim().isEmpty()) {
                         deduped.set(index, candidate);
                     }
                     replaced = true;
@@ -340,19 +328,50 @@ public final class VirusOrigin implements Serializable {
             }
         }
 
-        deduped.sort((left, right) -> {
-            int degreeOrder = Integer.compare(right.getDegreeOfSeparation(), left.getDegreeOfSeparation());
-            if (degreeOrder != 0) {
-                return degreeOrder;
-            }
-            // Keep insertion order on ties so callers can bias preferred sources.
-            return 0;
-        });
-
         if (deduped.size() <= MAX_PATIENT_ZEROS) {
             return new ArrayList<>(deduped);
         }
         return new ArrayList<>(deduped.subList(0, MAX_PATIENT_ZEROS));
+    }
+
+    private static PatientZero primaryPatientZeroOf(VirusOrigin origin) {
+        if (origin == null) {
+            return null;
+        }
+        if (!origin.patientZeros.isEmpty()) {
+            return origin.patientZeros.get(0);
+        }
+        if (origin.directSource != null && origin.directSource.isRealFriend()) {
+            return PatientZero.fromSource(origin.directSource);
+        }
+        return null;
+    }
+
+    private static PatientZero resolvePrimaryPatientZero(VirusOrigin base, String carrier) {
+        PatientZero fromOrigin = primaryPatientZeroOf(base);
+        if (fromOrigin != null) {
+            return fromOrigin;
+        }
+        if (isLikelyRealFriendCarrier(carrier)) {
+            return new PatientZero(stableId("carrier:" + carrier), carrier, 1);
+        }
+        return null;
+    }
+
+    private static PatientZero resolveSecondaryPatientZero(VirusOrigin base, PatientZero primary) {
+        if (base == null || base.patientZeros.isEmpty()) {
+            return null;
+        }
+        for (PatientZero candidate : base.patientZeros) {
+            if (candidate == null) {
+                continue;
+            }
+            if (primary != null && primary.getId().equals(candidate.getId())) {
+                continue;
+            }
+            return candidate;
+        }
+        return null;
     }
 
     private static Source choosePreferredDirectSource(Source current, Source candidate) {
@@ -377,7 +396,7 @@ public final class VirusOrigin implements Serializable {
         }
         String normalized = carrier.trim();
         return !LAB_CARRIER.equalsIgnoreCase(normalized)
-            && !normalized.contains(" x ")
+                && !normalized.contains(" x ")
                 && !normalized.contains(SIMULATED_FLAG);
     }
 

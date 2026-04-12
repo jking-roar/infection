@@ -17,10 +17,10 @@ import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.VirusRepository;
-import com.kingjoshdavid.funfection.engine.InfectionEngine;
 import com.kingjoshdavid.funfection.engine.VirusFactory;
 import com.kingjoshdavid.funfection.model.Virus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class InfectFragment extends Fragment {
@@ -68,63 +68,51 @@ public class InfectFragment extends Fragment {
 
     private void prepareAndShowPreview() {
         String inviteCodeText = friendCode.getText().toString().trim();
-        List<Virus> friendViruses = VirusFactory.parseInviteCode(inviteCodeText);
-        boolean decodedInvite = !friendViruses.isEmpty();
-        if (friendViruses.isEmpty()) {
-            friendViruses.add(VirusFactory.createRandomFriendVirus());
+        List<Virus> importedViruses = VirusFactory.parseInviteCode(inviteCodeText);
+        if (importedViruses.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.import_preview_invalid, Toast.LENGTH_SHORT).show();
+            return;
         }
-        VirusRepository.getVirusesAsync(myViruses -> {
+        Virus first = importedViruses.get(0);
+        String previewMessage = getString(R.string.import_preview_message,
+                importedViruses.size(),
+                first.getName(),
+                first.getFamily(),
+                first.getGeneration());
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.import_preview_title)
+                .setMessage(previewMessage)
+                .setNegativeButton(R.string.infection_preview_cancel, null)
+                .setPositiveButton(R.string.import_button_confirm,
+                        (d, w) -> executeImport(new ArrayList<>(importedViruses)))
+                .show();
+    }
+
+    private void executeImport(List<Virus> importedViruses) {
+        saveImportedVirus(importedViruses, 0, () -> {
             if (!isAdded()) {
                 return;
             }
-            List<Virus> localSeeds = myViruses.isEmpty()
-                    ? java.util.Collections.emptyList()
-                    : java.util.Collections.singletonList(myViruses.get(0));
-
-            Virus offspring = InfectionEngine.infect(localSeeds, friendViruses);
-
-            String sourceLabel = decodedInvite
-                    ? getString(R.string.import_preview_source_code, friendViruses.size())
-                    : getString(R.string.import_preview_source_random);
-            String previewMessage = getString(R.string.import_preview_message,
-                    offspring.getFamily(),
-                    offspring.getGenome(),
-                    getString(offspring.hasMutation()
-                            ? R.string.infection_preview_mutation_likely
-                            : R.string.infection_preview_mutation_stable),
-                    sourceLabel);
-
-            final List<Virus> finalFriendViruses = friendViruses;
-            new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.import_preview_title)
-                    .setMessage(previewMessage)
-                    .setNegativeButton(R.string.infection_preview_cancel, null)
-                    .setPositiveButton(R.string.import_button_confirm,
-                            (d, w) -> executeImport(finalFriendViruses, offspring, decodedInvite))
-                    .show();
+            Virus newest = importedViruses.get(importedViruses.size() - 1);
+            resultSummary.setText(getString(R.string.import_result_summary,
+                    importedViruses.size(),
+                    newest.getName(),
+                    newest.getFamily(),
+                    newest.getGeneration()));
+            Toast.makeText(requireContext(),
+                    getString(R.string.infect_new_virus_toast, newest.getName()),
+                    Toast.LENGTH_SHORT).show();
         });
     }
 
-    private void executeImport(List<Virus> friendViruses,
-                               Virus offspring, boolean decodedInvite) {
-        VirusRepository.addVirusAsync(offspring, () -> {
-            if (!isAdded()) {
-                return;
-            }
-            String inviteMode = decodedInvite
-                    ? getString(R.string.import_result_code_decoded, friendViruses.size())
-                    : getString(R.string.import_result_random_used);
-            resultSummary.setText(getString(R.string.import_result_summary,
-                    offspring.getName(),
-                    offspring.getFamily(),
-                    offspring.getGenome(),
-                    offspring.getInfectionStrength(),
-                    offspring.getGeneration(),
-                    inviteMode));
-            Toast.makeText(requireContext(),
-                    getString(R.string.infect_new_virus_toast, offspring.getName()),
-                    Toast.LENGTH_SHORT).show();
-        });
+    private void saveImportedVirus(List<Virus> viruses, int index, Runnable onComplete) {
+        if (index >= viruses.size()) {
+            onComplete.run();
+            return;
+        }
+        VirusRepository.addVirusAsync(viruses.get(index),
+                () -> saveImportedVirus(viruses, index + 1, onComplete));
     }
 
     private void scanInviteQr() {

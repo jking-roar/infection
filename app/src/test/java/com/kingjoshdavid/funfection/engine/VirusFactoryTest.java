@@ -1,13 +1,7 @@
 package com.kingjoshdavid.funfection.engine;
 
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
-import com.kingjoshdavid.funfection.model.Chaos;
-import com.kingjoshdavid.funfection.model.Infectivity;
-import com.kingjoshdavid.funfection.model.Resilience;
-import com.kingjoshdavid.funfection.model.UserProfile;
-import com.kingjoshdavid.funfection.model.Virus;
-import com.kingjoshdavid.funfection.model.VirusOrigin;
-
+import com.kingjoshdavid.funfection.model.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,12 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class VirusFactoryTest {
 
@@ -102,10 +91,10 @@ public class VirusFactoryTest {
     @Test
     public void parseInviteCodeIgnoresBlankAndInvalidLines() {
         Virus original = new Virus("virus-1", "Spark:Name", "Spark", "Carrier|One",
-            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123",
-            VirusOrigin.infectedFrom("Local", VirusOrigin.seededInLab(), "Carrier One",
-                VirusOrigin.importedFromInvite(VirusOrigin.randomFriendFallback("Placeholder [SIMULATED]"), "Carrier One")),
-            7);
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true, "GEN-123",
+                VirusOrigin.infectedFrom("Local", VirusOrigin.seededInLab(), "Carrier One",
+                        VirusOrigin.importedFromInvite(VirusOrigin.randomFriendFallback("Placeholder [SIMULATED]"), "Carrier One")),
+                7);
 
         List<Virus> viruses = VirusFactory.parseInviteCode("\n" + original.toShareCode() + "\ninvalid\n");
 
@@ -131,6 +120,34 @@ public class VirusFactoryTest {
         assertEquals(1, viruses.get(0).getOriginInfo().getDegreeOfSeparation());
         assertEquals(1, viruses.get(0).getOriginInfo().getPatientZeros().size());
         assertEquals(1, viruses.get(0).getOriginInfo().getPatientZeros().get(0).getDegreeOfSeparation());
+    }
+
+    @Test
+    public void parseInviteCodeRetainsPrimaryAndSecondaryPatientZerosFromSharedOriginOrder() {
+        Virus shared = new Virus("virus-order-1", "Shared Sample", "Spark", "Jordan",
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false, "GEN-778",
+                VirusOrigin.infectedFrom("Left", VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Creator"),
+                        "Right", VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "RightZero")),
+                3);
+
+        List<Virus> viruses = VirusFactory.parseInviteCode(shared.toShareCode());
+
+        assertEquals(1, viruses.size());
+        assertEquals(2, viruses.get(0).getOriginInfo().getPatientZeros().size());
+        assertEquals("Creator", viruses.get(0).getOriginInfo().getPatientZeros().get(0).getDisplayName());
+        assertEquals("RightZero", viruses.get(0).getOriginInfo().getPatientZeros().get(1).getDisplayName());
+    }
+
+    @Test
+    public void parseInviteCodeDoesNotStoreFullInvitePayloadInRawSeed() {
+        Virus shared = new Virus("virus-seed-1", "Shared Sample", "Spark", "Jordan",
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false, "GEN-779",
+                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Jordan"), 1);
+
+        Virus parsed = VirusFactory.parseInviteCode(shared.toShareCode()).get(0);
+
+        assertEquals("invite-id:virus-seed-1", parsed.getRawSeed());
+        assertFalse(parsed.getRawSeed().contains(shared.toShareCode()));
     }
 
     @Test
@@ -234,9 +251,9 @@ public class VirusFactoryTest {
     @Test
     public void buildGenomeIncludesMutationMarker() {
         String stableGenome = VirusFactory.buildGenome("12345678-1234-1234-1234-123456789012", "Spark",
-            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false);
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), false);
         String mutatedGenome = VirusFactory.buildGenome("12345678-1234-1234-1234-123456789012", "Spark",
-            Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true);
+                Infectivity.rate(4), Resilience.of(5), Chaos.level(6), true);
 
         assertTrue(stableGenome.endsWith("-S"));
         assertTrue(mutatedGenome.endsWith("-M"));

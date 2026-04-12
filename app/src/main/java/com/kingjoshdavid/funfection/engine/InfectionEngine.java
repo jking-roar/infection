@@ -203,7 +203,7 @@ public final class InfectionEngine {
         String lineage = shortIdPrefix(left.getId()) + shortIdPrefix(right.getId());
         String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation)
                 .getBytes(StandardCharsets.UTF_8)).toString();
-        String carrier = left.getCarrier() + " x " + right.getCarrier();
+        String carrier = resolveCombinedCarrier(left, right);
         String prefix = chooseLowerInfectionPrefix(left, right);
         String suffix = chooseHigherInfectionSuffix(left, right);
         Infectivity infectivityRate = Infectivity.rate(infectivity);
@@ -338,7 +338,7 @@ public final class InfectionEngine {
      * Selects a family label from the candidate set that is within mutation distance of the source
      * family, or returns the source family if no candidates are close enough.
      *
-     * @param source the virus whose family is the starting point for mutation
+     * @param source      the virus whose family is the starting point for mutation
      * @param chaosEnergy the amount of mutation energy available, which determines how far the mutation can deviate from the source family
      * @return a new family label that is within mutation distance of the source family, or the source family if no such label exists
      */
@@ -362,7 +362,7 @@ public final class InfectionEngine {
         int variation = 0;
         //Math random used here for chaos effect.
         for (int i = 0; i < chaosEnergy; i++) {
-            if(Math.random() < CHAOTIC_DEVIATION_FACTOR) {
+            if (Math.random() < CHAOTIC_DEVIATION_FACTOR) {
                 variation++;
             }
         }
@@ -372,6 +372,32 @@ public final class InfectionEngine {
     private static String shortIdPrefix(String id) {
         String value = normalizeToken(id, "virus");
         return value.substring(0, Math.min(4, value.length()));
+    }
+
+    private static String resolveCombinedCarrier(Virus left, Virus right) {
+        String leftPrimary = primaryPatientZeroHandle(left);
+        if (!leftPrimary.isEmpty()) {
+            return leftPrimary;
+        }
+        String rightPrimary = primaryPatientZeroHandle(right);
+        if (!rightPrimary.isEmpty()) {
+            return rightPrimary;
+        }
+        return normalizeCarrier(left.getCarrier(), right.getCarrier());
+    }
+
+    private static String primaryPatientZeroHandle(Virus virus) {
+        if (virus == null || virus.getOriginInfo() == null) {
+            return "";
+        }
+        List<VirusOrigin.PatientZero> patientZeros = virus.getOriginInfo().getPatientZeros();
+        if (!patientZeros.isEmpty()) {
+            return normalizeToken(patientZeros.get(0).getDisplayName(), "");
+        }
+        if (virus.getOriginInfo().hasDirectSource() && virus.getOriginInfo().getDirectSource().isRealFriend()) {
+            return normalizeToken(virus.getOriginInfo().getDirectSource().getDisplayName(), "");
+        }
+        return "";
     }
 
     private static String normalizeFamily(String family) {

@@ -1,19 +1,12 @@
 package com.kingjoshdavid.funfection.engine;
 
-import com.kingjoshdavid.funfection.model.Chaos;
-import com.kingjoshdavid.funfection.model.Infectivity;
-import com.kingjoshdavid.funfection.model.Resilience;
-import com.kingjoshdavid.funfection.model.Virus;
-import com.kingjoshdavid.funfection.model.VirusOrigin;
-
+import com.kingjoshdavid.funfection.model.*;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class InfectionEngineTest {
 
@@ -61,8 +54,22 @@ public class InfectionEngineTest {
         assertEquals(Infectivity.rate(8), result.getInfectivity());
         assertEquals(Resilience.of(7), result.getResilience());
         assertEquals(Chaos.level(8), result.getChaos());
-        assertEquals("Tester x Tester", result.getCarrier());
+        assertEquals("Tester", result.getCarrier());
         assertEquals(2, result.getGeneration());
+    }
+
+    @Test
+    public void combineUsesPrimaryPatientZeroAsCarrierWhenAvailable() {
+        Virus left = new Virus("carrier-left", "Left Sample", "Spark", "Left Carrier",
+                Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "LC-1",
+                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Creator"), 2);
+        Virus right = new Virus("carrier-right", "Right Sample", "Spark", "Right Carrier",
+                Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "RC-1",
+                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Other"), 2);
+
+        Virus result = InfectionEngine.combine(left, right);
+
+        assertEquals("Creator", result.getCarrier());
     }
 
     @Test
@@ -102,11 +109,11 @@ public class InfectionEngineTest {
     @Test
     public void combineUsesLowerInfectionPrefixAndHigherInfectionSuffix() {
         Virus left = new Virus("rule-left", "Alpha", "LeftTail", "Spark", "Tester",
-            Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "RL-1",
-            VirusOrigin.seededInLab(), 1);
+                Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "RL-1",
+                VirusOrigin.seededInLab(), 1);
         Virus right = new Virus("rule-right", "Omega", "RightTail", "Spark", "Tester",
-            Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "RR-1",
-            VirusOrigin.seededInLab(), 5);
+                Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "RR-1",
+                VirusOrigin.seededInLab(), 5);
 
         Virus result = InfectionEngine.combine(left, right);
 
@@ -118,11 +125,11 @@ public class InfectionEngineTest {
     @Test
     public void combineTieUsesLeftPrefixAndRightSuffix() {
         Virus left = new Virus("tie-left", "LeftPrefix", "LeftTail", "Spark", "Tester",
-            Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "TL-1",
-            VirusOrigin.seededInLab(), 4);
+                Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "TL-1",
+                VirusOrigin.seededInLab(), 4);
         Virus right = new Virus("tie-right", "RightPrefix", "RightTail", "Spark", "Tester",
-            Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "TR-1",
-            VirusOrigin.seededInLab(), 4);
+                Infectivity.rate(6), Resilience.of(6), Chaos.level(6), false, "TR-1",
+                VirusOrigin.seededInLab(), 4);
 
         Virus result = InfectionEngine.combine(left, right);
 
@@ -134,9 +141,9 @@ public class InfectionEngineTest {
     @Test
     public void infectCollapsesOwnedVirusesBeforeCombining() {
         Virus ownedFirst = new Virus("owned-1", "Spark One", "Spark", "Owner",
-            Infectivity.rate(9), Resilience.of(6), Chaos.level(3), false, "OWN-1", "Fixture");
+                Infectivity.rate(9), Resilience.of(6), Chaos.level(3), false, "OWN-1", "Fixture");
         Virus ownedSecond = new Virus("owned-2", "Spark Two", "Spark", "Owner",
-            Infectivity.rate(3), Resilience.of(6), Chaos.level(9), true, "OWN-2", "Fixture");
+                Infectivity.rate(3), Resilience.of(6), Chaos.level(9), true, "OWN-2", "Fixture");
         Virus friend = virus("friend-1", "Spark", 7, 7, 7, "AAA-0");
 
         Virus result = InfectionEngine.infect(Arrays.asList(ownedFirst, ownedSecond), Collections.singletonList(friend));
@@ -207,9 +214,9 @@ public class InfectionEngineTest {
         // The collapsed template is named "Hybrid Cluster" but its family field is the last entry's
         // family rather than a hybrid code. infectLocal then uses that family directly.
         Virus first = new Virus("mixed-1", "Spark One", "Spark", "Owner",
-            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "G1", "Fixture");
+                Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "G1", "Fixture");
         Virus second = new Virus("mixed-2", "Echo Two", "Echo", "Owner",
-            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "G2", "Fixture");
+                Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "G2", "Fixture");
 
         Virus result = InfectionEngine.infectLocal(Arrays.asList(first, second));
 
@@ -235,28 +242,28 @@ public class InfectionEngineTest {
     @Test
     public void infectKeepsFurthestPatientZerosAndResetsKnownDirectFriendToOneDegree() {
         Virus local = new Virus("owned-origin-1", "Local Sample", "Spark", "Owner",
-            Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "OWN-O1",
-            VirusOrigin.importedFromInvite(
-                VirusOrigin.infectedFrom("Seed", VirusOrigin.seededInLab(), "Far Friend",
-                    VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Far Friend")),
-                "Near Friend"),
-            0);
+                Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "OWN-O1",
+                VirusOrigin.importedFromInvite(
+                        VirusOrigin.infectedFrom("Seed", VirusOrigin.seededInLab(), "Far Friend",
+                                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Far Friend")),
+                        "Near Friend"),
+                0);
         Virus friend = new Virus("friend-origin-1", "Friend Sample", "Spark", "Near Friend",
-            Infectivity.rate(6), Resilience.of(5), Chaos.level(4), false, "FRI-O1",
-            VirusOrigin.importedFromInvite(
-                VirusOrigin.infectedFrom("Seed", VirusOrigin.seededInLab(), "Far Friend",
-                    VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Far Friend")),
-                "Near Friend"),
-            0);
+                Infectivity.rate(6), Resilience.of(5), Chaos.level(4), false, "FRI-O1",
+                VirusOrigin.importedFromInvite(
+                        VirusOrigin.infectedFrom("Seed", VirusOrigin.seededInLab(), "Far Friend",
+                                VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Far Friend")),
+                        "Near Friend"),
+                0);
 
         Virus result = InfectionEngine.infect(Collections.singletonList(local), Collections.singletonList(friend));
 
         assertEquals("Infected from Local Sample and Friend Sample", result.getOrigin());
         assertTrue(result.getOriginInfo().hasDirectSource());
         assertEquals(1, result.getOriginInfo().getDegreeOfSeparation());
-        assertEquals("Near Friend", result.getOriginInfo().getDirectSource().getDisplayName());
+        assertEquals("Far Friend", result.getOriginInfo().getDirectSource().getDisplayName());
         assertFalse(result.getOriginInfo().getPatientZeros().isEmpty());
-        assertEquals(2, result.getOriginInfo().getPatientZeros().get(0).getDegreeOfSeparation());
+        assertEquals(1, result.getOriginInfo().getPatientZeros().get(0).getDegreeOfSeparation());
     }
 
     @Test
