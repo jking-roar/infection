@@ -17,5 +17,7 @@ public class FriendEntity {
     public String description;
     public boolean protectedProfile;
 
+    public long lastInfectionAt;
+
     public long createdAt;
 }

@@ -1,5 +1,6 @@
 package com.kingjoshdavid.funfection.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +42,12 @@ public class FriendsFragment extends Fragment {
 
         vectorAdapter = new VectorListAdapter(requireContext());
         vectorsList.setAdapter(vectorAdapter);
+        vectorsList.setOnItemClickListener((parent, itemView, position, id) -> {
+            Friend friend = vectorAdapter.getItem(position);
+            Intent intent = new Intent(requireContext(), FriendDetailsActivity.class);
+            intent.putExtra(FriendDetailsActivity.EXTRA_FRIEND_ID, friend.getId());
+            startActivity(intent);
+        });
 
         loadVectors();
     }

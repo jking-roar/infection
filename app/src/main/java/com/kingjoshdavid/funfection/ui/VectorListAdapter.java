@@ -10,7 +10,9 @@ import android.widget.TextView;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.model.Friend;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class VectorListAdapter extends BaseAdapter {
@@ -78,17 +80,31 @@ public class VectorListAdapter extends BaseAdapter {
             holder.description.setVisibility(View.GONE);
         }
 
+        holder.lastInfection.setText(holder.lastInfection.getContext().getString(
+                R.string.friend_last_infection_value,
+                formatTimestamp(vector.getLastInfectionAt(), holder.lastInfection)));
+
         return convertView;
+    }
+
+    private String formatTimestamp(long timestamp, TextView view) {
+        if (timestamp <= 0L) {
+            return view.getContext().getString(R.string.friend_last_infection_unknown);
+        }
+        DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
+        return formatter.format(new Date(timestamp));
     }
 
     private static final class ViewHolder {
         private final TextView handle;
         private final TextView historySignal;
+        private final TextView lastInfection;
         private final TextView description;
 
         private ViewHolder(View itemView) {
             handle = itemView.findViewById(R.id.vectorHandle);
             historySignal = itemView.findViewById(R.id.vectorHistorySignal);
+            lastInfection = itemView.findViewById(R.id.vectorLastInfection);
             description = itemView.findViewById(R.id.vectorDescription);
         }
     }

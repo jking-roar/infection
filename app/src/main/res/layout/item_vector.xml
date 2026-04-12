@@ -28,6 +28,13 @@
             android:visibility="gone" />
 
         <TextView
+            android:id="@+id/vectorLastInfection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/page_spacing_small"
+            android:textSize="13sp" />
+
+        <TextView
             android:id="@+id/vectorDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

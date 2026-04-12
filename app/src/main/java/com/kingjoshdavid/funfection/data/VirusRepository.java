@@ -17,7 +17,11 @@ import com.kingjoshdavid.funfection.model.VirusOrigin;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +40,8 @@ public final class VirusRepository {
 
     // Kept for JVM unit tests where Android Room is unavailable.
     private static final List<Virus> COLLECTION = new ArrayList<>();
+    private static final Map<String, Long> CREATED_AT = new HashMap<>();
+    private static final Map<String, Set<String>> VIRUS_TO_FRIEND_IDS = new HashMap<>();
 
     private static final String IO_THREAD_NAME = "virus-repository-io";
     private static final ExecutorService IO = Executors.newSingleThreadExecutor(
@@ -61,7 +67,15 @@ public final class VirusRepository {
     public static void ensureSeeded() {
         if (isUsingInMemoryFallback()) {
             if (COLLECTION.isEmpty()) {
-                COLLECTION.addAll(VirusFactory.createStarterViruses());
+                List<Virus> starters = VirusFactory.createStarterViruses();
+                COLLECTION.addAll(starters);
+                long now = System.currentTimeMillis();
+                int size = starters.size();
+                for (int index = 0; index < size; index++) {
+                    Virus virus = starters.get(index);
+                    CREATED_AT.put(virus.getId(), now + (size - index));
+                    syncInMemoryLinksForVirus(virus);
+                }
             }
             return;
         }
@@ -137,6 +151,8 @@ public final class VirusRepository {
         ensureSeeded();
         if (isUsingInMemoryFallback()) {
             COLLECTION.add(0, virus);
+            CREATED_AT.put(virus.getId(), System.currentTimeMillis());
+            syncInMemoryLinksForVirus(virus);
             FriendsRepository.recordDiscovery(virus);
             return;
         }
@@ -149,6 +165,7 @@ public final class VirusRepository {
             entity.createdAt = System.currentTimeMillis();
             database.virusDao().upsert(entity);
             FriendsRepository.recordDiscovery(virus);
+            syncRoomLinksForVirus(database, virus);
             return null;
         });
     }
@@ -163,11 +180,17 @@ public final class VirusRepository {
             for (int index = 0; index < COLLECTION.size(); index++) {
                 if (COLLECTION.get(index).getId().equals(virus.getId())) {
                     COLLECTION.set(index, virus);
+                    if (!CREATED_AT.containsKey(virus.getId())) {
+                        CREATED_AT.put(virus.getId(), System.currentTimeMillis());
+                    }
+                    syncInMemoryLinksForVirus(virus);
                     FriendsRepository.recordDiscovery(virus);
                     return;
                 }
             }
             COLLECTION.add(0, virus);
+            CREATED_AT.put(virus.getId(), System.currentTimeMillis());
+            syncInMemoryLinksForVirus(virus);
             FriendsRepository.recordDiscovery(virus);
             return;
         }
@@ -181,6 +204,7 @@ public final class VirusRepository {
             entity.createdAt = existing == null ? System.currentTimeMillis() : existing.createdAt;
             database.virusDao().upsert(entity);
             FriendsRepository.recordDiscovery(virus);
+            syncRoomLinksForVirus(database, virus);
             return null;
         });
     }
@@ -211,6 +235,61 @@ public final class VirusRepository {
 
     public static void getVirusBySeedAsync(long seed, ResultCallback<Virus> callback) {
         runOnIoAsync(() -> getVirusBySeed(seed), callback);
+    }
+
+    public static List<Virus> getVirusesByFriendId(String friendId) {
+        ensureSeeded();
+        if (friendId == null || friendId.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (isUsingInMemoryFallback()) {
+            List<Virus> matches = new ArrayList<>();
+            for (Virus virus : COLLECTION) {
+                Set<String> linkedIds = VIRUS_TO_FRIEND_IDS.get(virus.getId());
+                if (linkedIds != null && linkedIds.contains(friendId)) {
+                    matches.add(virus);
+                }
+            }
+            return matches;
+        }
+        return runOnIo(() -> {
+            FunfectionDatabase database = DatabaseProvider.getIfInitialized();
+            if (database == null) {
+                return Collections.emptyList();
+            }
+            List<String> virusIds = database.friendVirusDao().getVirusIdsByFriendId(friendId);
+            if (virusIds == null || virusIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+            return pickByIds(virusIds);
+        });
+    }
+
+    public static void getVirusesByFriendIdAsync(String friendId, ResultCallback<List<Virus>> callback) {
+        runOnIoAsync(() -> getVirusesByFriendId(friendId), callback);
+    }
+
+    public static long getVirusCreatedAt(String id) {
+        ensureSeeded();
+        if (id == null || id.trim().isEmpty()) {
+            return 0L;
+        }
+        if (isUsingInMemoryFallback()) {
+            Long createdAt = CREATED_AT.get(id);
+            return createdAt == null ? 0L : createdAt;
+        }
+        return runOnIo(() -> {
+            FunfectionDatabase database = DatabaseProvider.getIfInitialized();
+            if (database == null) {
+                return 0L;
+            }
+            Long createdAt = database.virusDao().findCreatedAtById(id);
+            return createdAt == null ? 0L : createdAt;
+        });
+    }
+
+    public static void getVirusCreatedAtAsync(String id, ResultCallback<Long> callback) {
+        runOnIoAsync(() -> getVirusCreatedAt(id), callback);
     }
 
     public static boolean removeVirusById(String id) {
@@ -256,6 +335,8 @@ public final class VirusRepository {
                 return PurgeResult.MISSING;
             }
             COLLECTION.remove(index);
+            CREATED_AT.remove(id);
+            VIRUS_TO_FRIEND_IDS.remove(id);
             return PurgeResult.REMOVED;
         }
 
@@ -264,9 +345,12 @@ public final class VirusRepository {
             if (database == null) {
                 return PurgeResult.MISSING;
             }
-            return database.virusDao().deleteById(id) > 0
-                ? PurgeResult.REMOVED
-                : PurgeResult.MISSING;
+            int removed = database.virusDao().deleteById(id);
+            if (removed > 0) {
+                database.friendVirusDao().deleteByVirusId(id);
+                return PurgeResult.REMOVED;
+            }
+            return PurgeResult.MISSING;
         });
     }
 
@@ -384,6 +468,47 @@ public final class VirusRepository {
         entity.rawSeed = virus.getRawSeed();
         entity.seed = virus.getSeed();
         return entity;
+    }
+
+    private static void syncInMemoryLinksForVirus(Virus virus) {
+        if (virus == null) {
+            return;
+        }
+        VIRUS_TO_FRIEND_IDS.put(virus.getId(), deriveAssociatedFriendIds(virus));
+    }
+
+    private static void syncRoomLinksForVirus(FunfectionDatabase database, Virus virus) {
+        if (database == null || virus == null) {
+            return;
+        }
+        database.friendVirusDao().deleteByVirusId(virus.getId());
+        Set<String> linkedFriendIds = deriveAssociatedFriendIds(virus);
+        long linkedAt = System.currentTimeMillis();
+        for (String friendId : linkedFriendIds) {
+            com.kingjoshdavid.funfection.data.local.FriendVirusCrossRef link =
+                    new com.kingjoshdavid.funfection.data.local.FriendVirusCrossRef();
+            link.friendId = friendId;
+            link.virusId = virus.getId();
+            link.linkedAt = linkedAt;
+            database.friendVirusDao().upsert(link);
+        }
+    }
+
+    private static Set<String> deriveAssociatedFriendIds(Virus virus) {
+        Set<String> ids = new HashSet<>();
+        if (virus == null || virus.getOriginInfo() == null) {
+            return ids;
+        }
+        VirusOrigin.Source source = virus.getOriginInfo().getDirectSource();
+        if (source != null && source.getId() != null && !source.getId().trim().isEmpty()) {
+            ids.add(source.getId());
+        }
+        for (VirusOrigin.PatientZero patientZero : virus.getOriginInfo().getPatientZeros()) {
+            if (patientZero != null && patientZero.getId() != null && !patientZero.getId().trim().isEmpty()) {
+                ids.add(patientZero.getId());
+            }
+        }
+        return ids;
     }
 
     private static Virus toDomain(VirusEntity entity) {

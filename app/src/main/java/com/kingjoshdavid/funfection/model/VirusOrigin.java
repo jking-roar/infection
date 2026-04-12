@@ -109,11 +109,11 @@ public final class VirusOrigin implements Serializable {
         }
 
         List<PatientZero> lineage = new ArrayList<>();
-        if (leftOrigin != null) {
-            lineage.addAll(leftOrigin.exportLineage());
-        }
         if (rightOrigin != null) {
             lineage.addAll(rightOrigin.exportLineage());
+        }
+        if (leftOrigin != null) {
+            lineage.addAll(leftOrigin.exportLineage());
         }
 
         if (source != null && source.isRealFriend()) {
@@ -158,6 +158,18 @@ public final class VirusOrigin implements Serializable {
 
     public List<PatientZero> getPatientZeros() {
         return patientZeros;
+    }
+
+    public boolean isLabSeed() {
+        return type == Type.LAB;
+    }
+
+    public boolean isWildQrSeed() {
+        return type == Type.WILD_QR;
+    }
+
+    public boolean isWildBarcodeSeed() {
+        return type == Type.WILD_BARCODE;
     }
 
     public String describeDetailed() {
@@ -326,7 +338,8 @@ public final class VirusOrigin implements Serializable {
             if (degreeOrder != 0) {
                 return degreeOrder;
             }
-            return left.getDisplayName().compareTo(right.getDisplayName());
+            // Keep insertion order on ties so callers can bias preferred sources.
+            return 0;
         });
 
         if (deduped.size() <= MAX_PATIENT_ZEROS) {

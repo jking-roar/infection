@@ -21,6 +21,9 @@ import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.data.VirusRepository;
 import com.kingjoshdavid.funfection.model.Virus;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 public class MyVirusActivity extends AppCompatActivity {
 
     public static final String EXTRA_VIRUS_ID = "com.kingjoshdavid.funfection.VIRUS_ID";
@@ -33,6 +36,8 @@ public class MyVirusActivity extends AppCompatActivity {
     private TextView virusFamily;
     private TextView virusChaos;
     private TextView virusGenome;
+    private TextView virusSeedSource;
+    private TextView virusSeedTimestamp;
     private TextView virusOrigin;
     private Virus displayedVirus;
 
@@ -53,6 +58,8 @@ public class MyVirusActivity extends AppCompatActivity {
         virusFamily = findViewById(R.id.virusFamily);
         virusChaos = findViewById(R.id.virusChaos);
         virusGenome = findViewById(R.id.virusGenome);
+        virusSeedSource = findViewById(R.id.virusSeedSource);
+        virusSeedTimestamp = findViewById(R.id.virusSeedTimestamp);
         virusOrigin = findViewById(R.id.virusOrigin);
 
         resolveVirus(getIntent(), virus -> {
@@ -111,9 +118,65 @@ public class MyVirusActivity extends AppCompatActivity {
         virusFamily.setText(virus.getFamily());
         virusChaos.setText(Integer.toString(virus.getChaos().score()));
         virusGenome.setText(virus.getGenome());
+        bindSeedDetails(virus);
         String report = formatOriginReportWithProductionContext(virus,
                 UserProfileRepository.getCurrentUser().getId());
         virusOrigin.setText(withItalicizedYou(report));
+    }
+
+    private void bindSeedDetails(Virus virus) {
+        boolean isUserTextSeed = virus.getOriginInfo().isLabSeed();
+        if (isUserTextSeed) {
+            virusSeedSource.setText(R.string.virus_seed_source_user_text_tap);
+            virusSeedSource.setOnClickListener(v -> showSeedTextDrilldown(virus));
+        } else {
+            virusSeedSource.setText(resolveSeedSourceLabelRes(virus));
+            virusSeedSource.setOnClickListener(null);
+        }
+
+        virusSeedTimestamp.setText(R.string.virus_seed_timestamp_unknown);
+        VirusRepository.getVirusCreatedAtAsync(virus.getId(), createdAt -> {
+            if (isFinishing() || isDestroyed() || displayedVirus == null) {
+                return;
+            }
+            if (!displayedVirus.getId().equals(virus.getId())) {
+                return;
+            }
+            virusSeedTimestamp.setText(formatTimestamp(createdAt));
+        });
+    }
+
+    private int resolveSeedSourceLabelRes(Virus virus) {
+        if (virus.getOriginInfo().isWildQrSeed()) {
+            return R.string.virus_seed_source_wild_qr;
+        }
+        if (virus.getOriginInfo().isWildBarcodeSeed()) {
+            return R.string.virus_seed_source_wild_barcode;
+        }
+        if (virus.getOriginInfo().isLabSeed()) {
+            return R.string.virus_seed_source_user_text;
+        }
+        return R.string.virus_seed_source_other;
+    }
+
+    private String formatTimestamp(long createdAtMillis) {
+        if (createdAtMillis <= 0L) {
+            return getString(R.string.virus_seed_timestamp_unknown);
+        }
+        DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+        return formatter.format(new Date(createdAtMillis));
+    }
+
+    private void showSeedTextDrilldown(Virus virus) {
+        String rawSeed = virus.getRawSeed();
+        String message = rawSeed == null || rawSeed.trim().isEmpty()
+                ? getString(R.string.virus_seed_drilldown_empty)
+                : rawSeed;
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.virus_seed_drilldown_title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     private String formatOriginReportWithProductionContext(Virus virus, String viewerId) {

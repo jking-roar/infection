@@ -54,7 +54,9 @@ public final class FriendsRepository {
 
     public static List<Friend> getFriends() {
         if (DatabaseProvider.getIfInitialized() == null) {
-            return new ArrayList<>(FRIENDS);
+            List<Friend> copy = new ArrayList<>(FRIENDS);
+            sortFriendsForDisplay(copy);
+            return copy;
         }
         return runOnIo(() -> {
             FunfectionDatabase database = DatabaseProvider.getIfInitialized();
@@ -67,6 +69,7 @@ public final class FriendsRepository {
                 List<UsernameHistoryEntry> history = loadUsernameHistory(database, entity.id);
                 friends.add(toDomain(entity, history));
             }
+            sortFriendsForDisplay(friends);
             return friends;
         });
     }
@@ -111,6 +114,7 @@ public final class FriendsRepository {
         if (DatabaseProvider.getIfInitialized() == null) {
             deleteFriendInternal(normalized.getId());
             FRIENDS.add(0, normalized);
+            sortFriendsForDisplay(FRIENDS);
             return;
         }
         runOnIo(() -> {
@@ -148,6 +152,7 @@ public final class FriendsRepository {
                 return false;
             }
             database.friendUsernameHistoryDao().deleteByFriendId(id);
+            database.friendVirusDao().deleteByFriendId(id);
             return database.friendDao().deleteById(id) > 0;
         });
     }
@@ -182,7 +187,8 @@ public final class FriendsRepository {
             return;
         }
         runOnIo(() -> {
-            LinkedHashMap<String, DiscoveredFriend> discovered = collectDiscoveredFriends(origin);
+            long discoveredAt = System.currentTimeMillis();
+            LinkedHashMap<String, DiscoveredFriend> discovered = collectDiscoveredFriends(origin, discoveredAt);
             for (DiscoveredFriend candidate : discovered.values()) {
                 upsertDiscoveredFriend(candidate);
             }
@@ -257,7 +263,8 @@ public final class FriendsRepository {
                 entity.notes,
                 entity.description,
                 entity.protectedProfile,
-                usernameHistory);
+                usernameHistory,
+                entity.lastInfectionAt);
     }
 
     private static Friend toDomain(FriendEntity entity) {
@@ -273,6 +280,7 @@ public final class FriendsRepository {
         entity.notes = friend.isProtectedProfile() ? "" : friend.getNotes();
         entity.description = friend.getDescription();
         entity.protectedProfile = friend.isProtectedProfile();
+        entity.lastInfectionAt = friend.getLastInfectionAt();
         return entity;
     }
 
@@ -284,46 +292,60 @@ public final class FriendsRepository {
                 friend.getNotes(),
                 friend.getDescription(),
                 friend.isProtectedProfile(),
-                friend.getUsernameHistory());
+                friend.getUsernameHistory(),
+                friend.getLastInfectionAt());
     }
 
-    private static LinkedHashMap<String, DiscoveredFriend> collectDiscoveredFriends(VirusOrigin origin) {
+    private static LinkedHashMap<String, DiscoveredFriend> collectDiscoveredFriends(VirusOrigin origin, long discoveredAt) {
         LinkedHashMap<String, DiscoveredFriend> discovered = new LinkedHashMap<>();
         for (VirusOrigin.PatientZero patientZero : origin.getPatientZeros()) {
-            DiscoveredFriend candidate = toDiscoveredFriend(patientZero);
+            DiscoveredFriend candidate = toDiscoveredFriend(patientZero, discoveredAt);
             if (candidate != null) {
                 discovered.put(candidate.id, candidate);
             }
         }
-        DiscoveredFriend source = toDiscoveredFriend(origin.getDirectSource());
+        DiscoveredFriend source = toDiscoveredFriend(origin.getDirectSource(), discoveredAt);
         if (source != null) {
             discovered.put(source.id, source);
         }
         return discovered;
     }
 
-    private static DiscoveredFriend toDiscoveredFriend(VirusOrigin.Source source) {
+    private static DiscoveredFriend toDiscoveredFriend(VirusOrigin.Source source, long discoveredAt) {
         if (source == null || source.getId().trim().isEmpty() || source.getDisplayName().trim().isEmpty()) {
             return null;
         }
-        if (isCurrentUser(source.getId()) || isKnownScientistId(source.getId()) || !source.isRealFriend()) {
+        if (isCurrentUser(source.getId())) {
             return null;
         }
-        return buildDiscoveredFriend(source.getId(), source.getDisplayName());
+        Friend scientist = knownScientistById(source.getId());
+        if (scientist != null) {
+            return new DiscoveredFriend(scientist.getId(), scientist.getDisplayName(), true,
+                    scientist.getDescription(), discoveredAt);
+        }
+        if (!source.isRealFriend()) {
+            return null;
+        }
+        return buildDiscoveredFriend(source.getId(), source.getDisplayName(), discoveredAt);
     }
 
-    private static DiscoveredFriend toDiscoveredFriend(VirusOrigin.PatientZero patientZero) {
+    private static DiscoveredFriend toDiscoveredFriend(VirusOrigin.PatientZero patientZero, long discoveredAt) {
         if (patientZero == null || patientZero.getId().trim().isEmpty() || patientZero.getDisplayName().trim().isEmpty()) {
             return null;
         }
-        if (isCurrentUser(patientZero.getId()) || isKnownScientistId(patientZero.getId())) {
+        if (isCurrentUser(patientZero.getId())) {
             return null;
         }
-        return buildDiscoveredFriend(patientZero.getId(), patientZero.getDisplayName());
+        Friend scientist = knownScientistById(patientZero.getId());
+        if (scientist != null) {
+            return new DiscoveredFriend(scientist.getId(), scientist.getDisplayName(), true,
+                    scientist.getDescription(), discoveredAt);
+        }
+        return buildDiscoveredFriend(patientZero.getId(), patientZero.getDisplayName(), discoveredAt);
     }
 
-    private static DiscoveredFriend buildDiscoveredFriend(String id, String displayName) {
-        return new DiscoveredFriend(id, displayName, false, "");
+    private static DiscoveredFriend buildDiscoveredFriend(String id, String displayName, long discoveredAt) {
+        return new DiscoveredFriend(id, displayName, false, "", discoveredAt);
     }
 
     private static void upsertDiscoveredFriend(DiscoveredFriend candidate) {
@@ -354,7 +376,8 @@ public final class FriendsRepository {
                 existing.isProtectedProfile() || candidate.protectedProfile ? "" : existing.getNotes(),
                 candidate.description.isEmpty() ? existing.getDescription() : candidate.description,
                 existing.isProtectedProfile() || candidate.protectedProfile,
-                history));
+                history,
+                Math.max(existing.getLastInfectionAt(), candidate.lastInfectionAt)));
     }
 
     private static boolean shouldArchiveHandle(String previousDisplayName, String nextDisplayName) {
@@ -388,15 +411,19 @@ public final class FriendsRepository {
     }
 
     private static boolean isKnownScientistId(String id) {
+        return knownScientistById(id) != null;
+    }
+
+    private static Friend knownScientistById(String id) {
         if (id == null || id.trim().isEmpty()) {
-            return false;
+            return null;
         }
         for (Friend scientist : KNOWN_SCIENTISTS) {
             if (scientist.getId().equals(id)) {
-                return true;
+                return scientist;
             }
         }
-        return false;
+        return null;
     }
 
     private static String normalizeHandle(String value) {
@@ -496,7 +523,25 @@ public final class FriendsRepository {
                 "",
                 description,
                 true,
-                Collections.emptyList());
+                Collections.emptyList(),
+                0L);
+    }
+
+    private static void sortFriendsForDisplay(List<Friend> friends) {
+        if (friends == null || friends.size() < 2) {
+            return;
+        }
+        friends.sort((left, right) -> {
+            if (left.isProtectedProfile() != right.isProtectedProfile()) {
+                return left.isProtectedProfile() ? 1 : -1;
+            }
+            int infectionOrder = Long.compare(right.getLastInfectionAt(), left.getLastInfectionAt());
+            if (infectionOrder != 0) {
+                return infectionOrder;
+            }
+            // Preserve existing relative order from persistence/insertion for ties.
+            return 0;
+        });
     }
 
     private static String scientistId(String displayName) {
@@ -511,12 +556,14 @@ public final class FriendsRepository {
         private final String displayName;
         private final boolean protectedProfile;
         private final String description;
+        private final long lastInfectionAt;
 
-        private DiscoveredFriend(String id, String displayName, boolean protectedProfile, String description) {
+        private DiscoveredFriend(String id, String displayName, boolean protectedProfile, String description, long lastInfectionAt) {
             this.id = id == null ? UUID.randomUUID().toString() : id;
             this.displayName = normalizeHandle(displayName);
             this.protectedProfile = protectedProfile;
             this.description = description == null ? "" : description;
+            this.lastInfectionAt = Math.max(0L, lastInfectionAt);
         }
     }
 }

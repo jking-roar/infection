@@ -23,5 +23,9 @@
                 android:name=".ui.MyVirusActivity"
                 android:exported="false"
                 android:screenOrientation="portrait"/>
+        <activity
+                android:name=".ui.FriendDetailsActivity"
+                android:exported="false"
+                android:screenOrientation="portrait"/>
     </application>
 </manifest>

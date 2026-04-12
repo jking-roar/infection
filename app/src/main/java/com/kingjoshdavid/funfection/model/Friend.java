@@ -14,9 +14,10 @@ public final class Friend {
     private final String description;
     private final boolean protectedProfile;
     private final List<UsernameHistoryEntry> usernameHistory;
+    private final long lastInfectionAt;
 
     public Friend(String id, String displayName, String inviteCode) {
-        this(id, displayName, inviteCode, "", "", "", false, Collections.emptyList());
+        this(id, displayName, inviteCode, "", "", "", false, Collections.emptyList(), 0L);
     }
 
     public Friend(String id,
@@ -27,6 +28,18 @@ public final class Friend {
                   String description,
                   boolean protectedProfile,
                   List<UsernameHistoryEntry> usernameHistory) {
+        this(id, displayName, inviteCode, displayNameOverride, notes, description, protectedProfile, usernameHistory, 0L);
+    }
+
+    public Friend(String id,
+                  String displayName,
+                  String inviteCode,
+                  String displayNameOverride,
+                  String notes,
+                  String description,
+                  boolean protectedProfile,
+                  List<UsernameHistoryEntry> usernameHistory,
+                  long lastInfectionAt) {
         this.id = id;
         this.displayName = normalize(displayName, "Unknown");
         this.inviteCode = normalize(inviteCode, "");
@@ -35,6 +48,7 @@ public final class Friend {
         this.description = normalize(description, "");
         this.protectedProfile = protectedProfile;
         this.usernameHistory = Collections.unmodifiableList(normalizeHistory(usernameHistory));
+        this.lastInfectionAt = Math.max(0L, lastInfectionAt);
     }
 
     public String getId() {
@@ -71,6 +85,10 @@ public final class Friend {
 
     public List<UsernameHistoryEntry> getUsernameHistory() {
         return usernameHistory;
+    }
+
+    public long getLastInfectionAt() {
+        return lastInfectionAt;
     }
 
     private static String normalize(String value, String fallback) {
