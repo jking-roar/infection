@@ -18,11 +18,6 @@ The combine operation should complete successfully, the new offspring virus shou
 ## Actual Behavior
 The app crashes with a fatal exception on the `virus-repository-io` thread. The new virus is not saved and the detail screen never opens.
 
-## Additional Information
-- Device: Pixel 5
-- Android Version: 14
-- App Version: 1.0
-
 ### Logcat Output:
 ```
 04-12 15:29:12.620  5614  5636 E AndroidRuntime: FATAL EXCEPTION: virus-repository-io

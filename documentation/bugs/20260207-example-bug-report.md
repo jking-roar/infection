@@ -15,10 +15,6 @@ When the "Example Bug" button is clicked, the app should display a message that 
 ## Actual Behavior
 When the "Example Bug" button is clicked, the app displays an error message that says "An error has occurred. Please try again later."
 
-## Additional Information
-- Device: Pixel 4a
-- Android Version: 11
-- App Version: 1.0.0
 ### Logcat Output:
 ```
 2026-02-07 12:34:56.789 E/ExampleBug: An error has occurred. Please try again later.
