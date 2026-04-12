@@ -59,3 +59,8 @@ The helper `deriveAssociatedFriendIds` (line 497) extracts source IDs from the v
 
 The fix likely needs to go in `deriveAssociatedFriendIds` and/or `syncRoomLinksForVirus`: only attempt to link friend IDs that are confirmed to exist in the `FriendEntity` table (or that have `isRealFriend() == true` and are pre-ensured in `FriendsRepository`). Alternatively, the `FriendVirusCrossRef` FK could be made deferrable/nullable, though constraining it at the repository layer is cleaner.
 
+## Fix Direction:
+Add the user to the friends table if they are not already present before attempting to link them in `syncRoomLinksForVirus`. This would ensure that any real friend sources are properly linked without causing FK violations, while still allowing non-friend sources to be ignored.
+Filter the friends list to not show yourself by default.  Add a configuration item to show yourself in the friends list if desired. call the option "You are your friend" and display as a checkbox.
+
+This configuration should be saved immediately when changed.
