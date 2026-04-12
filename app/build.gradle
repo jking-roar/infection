@@ -9,7 +9,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace 'com.kingjoshdavid.funfection'
+    namespace = 'com.kingjoshdavid.funfection'
     compileSdk 36
 
     defaultConfig {
@@ -21,7 +21,7 @@ android {
     }
 
     compileOptions {
-        coreLibraryDesugaringEnabled true
+        coreLibraryDesugaringEnabled = true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -46,7 +46,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            signingConfig = signingConfigs.release
         }
     }
 
