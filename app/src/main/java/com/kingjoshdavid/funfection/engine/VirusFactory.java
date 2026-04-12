@@ -154,10 +154,8 @@ public final class VirusFactory {
      * @return a virus tagged as found in the wild, carrying the raw seed internally
      */
     public static Virus createWildVirus(String seed, boolean isQrCode) {
-        String effectiveSeed = seed == null ? UUID.randomUUID().toString() : seed.trim();
-        if (effectiveSeed.isEmpty()) {
-            effectiveSeed = UUID.randomUUID().toString();
-        }
+        String normalizedSeed = seed == null ? "" : seed.trim();
+        String effectiveSeed = normalizedSeed.isEmpty() ? UUID.randomUUID().toString() : normalizedSeed;
         UserProfile userProfile = UserProfileRepository.getCurrentUser();
         VirusOrigin origin = isQrCode
                 ? VirusOrigin.foundInWildFromQr()

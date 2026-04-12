@@ -387,11 +387,8 @@ public class CollectionFragment extends Fragment {
                 return;
             }
             refreshCollection();
-            String originLabel = getString(isQrCode
-                    ? R.string.lab_wild_scan_origin_qr
-                    : R.string.lab_wild_scan_origin_barcode);
             Toast.makeText(requireContext(),
-                    getString(R.string.lab_wild_scan_created_toast, createdVirus.getName(), originLabel),
+                    getString(R.string.lab_wild_scan_created_toast, createdVirus.getName(), createdVirus.getOrigin()),
                     Toast.LENGTH_SHORT).show();
             openVirusDetails(createdVirus);
         });
