@@ -46,19 +46,19 @@ public class FriendsRepositoryRoomTest {
     public void saveFriendAndGetFriendByIdRoundTripThroughRoom() {
         assertNotNull(DatabaseProvider.getIfInitialized());
 
-        Friend friend = new Friend("friend-1", "Alpha", "code-1");
+        Friend friend = new Friend("friend-1", "Alpha");
         FriendsRepository.saveFriend(friend);
 
         Friend loaded = FriendsRepository.getFriendById("friend-1");
         assertNotNull(loaded);
         assertEquals("Alpha", loaded.getDisplayName());
-        assertEquals("code-1", loaded.getInviteCode());
+        assertEquals("", loaded.getDisplayNameOverride());
     }
 
     @Test
     public void getFriendsReturnsNewestFirstAndUpdateKeepsSingleRow() throws Exception {
-        Friend first = new Friend("friend-a", "A", "invite-a");
-        Friend second = new Friend("friend-b", "B", "invite-b");
+        Friend first = new Friend("friend-a", "A");
+        Friend second = new Friend("friend-b", "B");
 
         FriendsRepository.saveFriend(first);
         Thread.sleep(2L);
@@ -68,7 +68,7 @@ public class FriendsRepositoryRoomTest {
         assertEquals("friend-b", ordered.get(0).getId());
         assertEquals("friend-a", ordered.get(1).getId());
 
-        FriendsRepository.saveFriend(new Friend("friend-a", "A Updated", "invite-a2"));
+        FriendsRepository.saveFriend(new Friend("friend-a", "A Updated"));
 
         List<Friend> afterUpdate = FriendsRepository.getFriends();
         int countA = 0;
@@ -83,8 +83,8 @@ public class FriendsRepositoryRoomTest {
 
     @Test
     public void deleteFriendAndPickByIdsUseRoomData() {
-        Friend first = new Friend("friend-pick-1", "One", "invite-1");
-        Friend second = new Friend("friend-pick-2", "Two", "invite-2");
+        Friend first = new Friend("friend-pick-1", "One");
+        Friend second = new Friend("friend-pick-2", "Two");
         FriendsRepository.saveFriend(first);
         FriendsRepository.saveFriend(second);
 
@@ -94,13 +94,17 @@ public class FriendsRepositoryRoomTest {
         assertEquals("friend-pick-1", picked.get(1).getId());
 
         assertTrue(FriendsRepository.deleteFriend("friend-pick-1"));
-        assertNull(FriendsRepository.getFriendById("friend-pick-1"));
-        assertFalse(FriendsRepository.deleteFriend("friend-pick-1"));
+        Friend anonymized = FriendsRepository.getFriendById("friend-pick-1");
+        assertNotNull(anonymized);
+        assertEquals("Mysterious Entity", anonymized.getDisplayName());
+        assertEquals("", anonymized.getDisplayNameOverride());
+        assertTrue(anonymized.getUsernameHistory().isEmpty());
+        assertTrue(FriendsRepository.deleteFriend("friend-pick-1"));
     }
 
     @Test
     public void saveFriendRoundTripsHistoryAndProtectedMetadata() {
-        Friend scientist = new Friend("scientist-room", "Professor Tesla [SIMULATED]", "",
+        Friend scientist = new Friend("scientist-room", "Professor Tesla [SIMULATED]",
                 "", "private notes should be cleared", "Scientist fallback", true,
                 Collections.singletonList(new UsernameHistoryEntry("Professor Tesla", 1000L)));
 
@@ -157,7 +161,7 @@ public class FriendsRepositoryRoomTest {
     @Test
     public void usernameHistoryTimestampPersistedAndReturnedOnFetch() {
         long ts = 999_000L;
-        Friend friend = new Friend("friend-ts", "Alice", "code-ts",
+        Friend friend = new Friend("friend-ts", "Alice",
                 "", "", "", false,
                 Collections.singletonList(new UsernameHistoryEntry("OldAlice", ts)));
         FriendsRepository.saveFriend(friend);
@@ -173,7 +177,7 @@ public class FriendsRepositoryRoomTest {
     public void usernameHistoryDeduplicatesByCaseInsensitiveUsernameOnSave() {
         long ts1 = 1000L;
         long ts2 = 2000L;
-        Friend friend = new Friend("friend-dedup", "Bob", "code-dedup",
+        Friend friend = new Friend("friend-dedup", "Bob",
                 "", "", "", false,
                 Arrays.asList(
                         new UsernameHistoryEntry("Bobby", ts1),
@@ -188,14 +192,17 @@ public class FriendsRepositoryRoomTest {
 
     @Test
     public void deleteFriendAlsoDeletesUsernameHistory() {
-        Friend friend = new Friend("friend-del-hist", "Carol", "code-del",
+        Friend friend = new Friend("friend-del-hist", "Carol",
                 "", "", "", false,
                 Collections.singletonList(new UsernameHistoryEntry("OldCarol", 5000L)));
         FriendsRepository.saveFriend(friend);
 
         assertNotNull(FriendsRepository.getFriendById("friend-del-hist"));
         assertTrue(FriendsRepository.deleteFriend("friend-del-hist"));
-        assertNull(FriendsRepository.getFriendById("friend-del-hist"));
+        Friend anonymized = FriendsRepository.getFriendById("friend-del-hist");
+        assertNotNull(anonymized);
+        assertEquals("Mysterious Entity", anonymized.getDisplayName());
+        assertTrue(anonymized.getUsernameHistory().isEmpty());
     }
 
     private Friend findFriendByDisplayName(String displayName) {

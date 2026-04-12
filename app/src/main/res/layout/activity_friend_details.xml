@@ -33,6 +33,13 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/friendDetailsSourceHandle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_small"
+                    android:textSize="13sp" />
+
+                <TextView
                     android:id="@+id/friendDetailsLastInfection"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -46,6 +53,20 @@
                     android:layout_marginTop="@dimen/page_spacing_medium"
                     android:textSize="14sp"
                     android:visibility="gone" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_large"
+                    android:text="@string/friend_nickname_label"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/friendDetailsNicknameText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/page_spacing_small"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -73,7 +94,14 @@
                         android:id="@+id/friendDetailsEditNotesButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/friend_notes_edit" />
+                        android:text="@string/friend_edit" />
+
+                    <Button
+                        android:id="@+id/friendDetailsClearNicknameButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/page_spacing_small"
+                        android:text="@string/friend_nickname_clear" />
 
                     <Button
                         android:id="@+id/friendDetailsClearNotesButton"
@@ -92,9 +120,18 @@
                     android:visibility="gone">
 
                     <EditText
+                        android:id="@+id/friendDetailsNicknameInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/friend_nickname_hint"
+                        android:inputType="textPersonName"
+                        android:maxLines="1" />
+
+                    <EditText
                         android:id="@+id/friendDetailsNotesInput"
                         android:layout_width="match_parent"
                         android:layout_height="120dp"
+                        android:layout_marginTop="@dimen/page_spacing_small"
                         android:gravity="top|start"
                         android:hint="@string/friend_notes_hint"
                         android:inputType="textMultiLine"

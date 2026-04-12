@@ -27,7 +27,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
 
 ---
 
-[ ] P0-2) Define Room-Backed Vector Identity Model (No Invite Code Persistence)
+[x] P0-2) Define Room-Backed Vector Identity Model (No Invite Code Persistence) - COMPLETED
 **Goal:** Update friend/vector data model to align with privacy and provenance needs.
 
 **Implementation Notes:**
@@ -88,7 +88,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
 
 ---
 
-[ ] P0-6) Vector Detail + Personal Annotation Editing
+[x] P0-6) Vector Detail + Personal Annotation Editing - COMPLETED
 **Goal:** Provide detail view for a vector with editable private notes and personal display-name override.
 
 **Implementation Notes:**
@@ -103,7 +103,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
 
 ---
 
-[ ] P0-7) Replace Deletion With Anonymization ("Mystery Entity")
+[x] P0-7) Replace Deletion With Anonymization ("Mystery Entity") - COMPLETED
 **Goal:** Implement deletion semantics as anonymization instead of hard delete.
 
 **Implementation Notes:**

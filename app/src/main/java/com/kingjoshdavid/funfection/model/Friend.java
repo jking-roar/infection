@@ -8,7 +8,6 @@ public final class Friend {
 
     private final String id;
     private final String displayName;
-    private final String inviteCode;
     private final String displayNameOverride;
     private final String notes;
     private final String description;
@@ -16,24 +15,22 @@ public final class Friend {
     private final List<UsernameHistoryEntry> usernameHistory;
     private final long lastInfectionAt;
 
-    public Friend(String id, String displayName, String inviteCode) {
-        this(id, displayName, inviteCode, "", "", "", false, Collections.emptyList(), 0L);
+    public Friend(String id, String displayName) {
+        this(id, displayName, "", "", "", false, Collections.emptyList(), 0L);
     }
 
     public Friend(String id,
                   String displayName,
-                  String inviteCode,
                   String displayNameOverride,
                   String notes,
                   String description,
                   boolean protectedProfile,
                   List<UsernameHistoryEntry> usernameHistory) {
-        this(id, displayName, inviteCode, displayNameOverride, notes, description, protectedProfile, usernameHistory, 0L);
+        this(id, displayName, displayNameOverride, notes, description, protectedProfile, usernameHistory, 0L);
     }
 
     public Friend(String id,
                   String displayName,
-                  String inviteCode,
                   String displayNameOverride,
                   String notes,
                   String description,
@@ -42,7 +39,6 @@ public final class Friend {
                   long lastInfectionAt) {
         this.id = id;
         this.displayName = normalize(displayName, "Unknown");
-        this.inviteCode = normalize(inviteCode, "");
         this.displayNameOverride = normalize(displayNameOverride, "");
         this.notes = protectedProfile ? "" : normalize(notes, "");
         this.description = normalize(description, "");
@@ -59,9 +55,6 @@ public final class Friend {
         return displayName;
     }
 
-    public String getInviteCode() {
-        return inviteCode;
-    }
 
     public String getDisplayNameOverride() {
         return displayNameOverride;

@@ -11,7 +11,6 @@ public class FriendEntity {
     @NonNull
     public String id;
     public String displayName;
-    public String inviteCode;
     public String displayNameOverride;
     public String notes;
     public String description;

@@ -38,6 +38,7 @@ public final class FriendsRepository {
     private static final List<Friend> FRIENDS = new ArrayList<>();
     private static final String IO_THREAD_NAME = "friends-repository-io";
     private static final String SELF_DESCRIPTION = "Your local player profile.";
+    private static final String ANONYMIZED_DISPLAY_NAME = "Mysterious Entity";
     private static final String SCIENTIST_TESLA_ID = "d929c435-7962-3951-b6d0-3514538a493c";
     private static final String SCIENTIST_CURIE_ID = "6d44e6bb-0a02-3fc4-83ae-f2531f22f184";
     private static final String SCIENTIST_BROWN_ID = "51114d6d-922e-3893-8e83-efb62fa9688a";
@@ -159,8 +160,12 @@ public final class FriendsRepository {
         if (existing != null && existing.isProtectedProfile()) {
             return false;
         }
+        if (existing == null) {
+            return false;
+        }
         if (DatabaseProvider.getIfInitialized() == null) {
-            return deleteFriendInternal(id);
+            saveFriend(anonymizeFriend(existing));
+            return true;
         }
         return runOnIo(() -> {
             FunfectionDatabase database = DatabaseProvider.getIfInitialized();
@@ -168,8 +173,8 @@ public final class FriendsRepository {
                 return false;
             }
             database.friendUsernameHistoryDao().deleteByFriendId(id);
-            database.friendVirusDao().deleteByFriendId(id);
-            return database.friendDao().deleteById(id) > 0;
+            saveFriend(anonymizeFriend(existing));
+            return true;
         });
     }
 
@@ -274,7 +279,6 @@ public final class FriendsRepository {
     private static Friend toDomain(FriendEntity entity, List<UsernameHistoryEntry> usernameHistory) {
         return new Friend(entity.id,
                 entity.displayName,
-                entity.inviteCode,
                 entity.displayNameOverride,
                 entity.notes,
                 entity.description,
@@ -291,7 +295,6 @@ public final class FriendsRepository {
         FriendEntity entity = new FriendEntity();
         entity.id = friend.getId();
         entity.displayName = friend.getDisplayName();
-        entity.inviteCode = friend.getInviteCode();
         entity.displayNameOverride = friend.getDisplayNameOverride();
         entity.notes = friend.isProtectedProfile() ? "" : friend.getNotes();
         entity.description = friend.getDescription();
@@ -303,12 +306,22 @@ public final class FriendsRepository {
     private static Friend normalizeFriend(Friend friend) {
         return new Friend(friend.getId(),
                 friend.getDisplayName(),
-                friend.getInviteCode(),
                 friend.getDisplayNameOverride(),
                 friend.getNotes(),
                 friend.getDescription(),
                 friend.isProtectedProfile(),
                 friend.getUsernameHistory(),
+                friend.getLastInfectionAt());
+    }
+
+    private static Friend anonymizeFriend(Friend friend) {
+        return new Friend(friend.getId(),
+                ANONYMIZED_DISPLAY_NAME,
+                "",
+                friend.getNotes(),
+                friend.getDescription(),
+                false,
+                Collections.emptyList(),
                 friend.getLastInfectionAt());
     }
 
@@ -371,7 +384,6 @@ public final class FriendsRepository {
                     candidate.displayName,
                     "",
                     "",
-                    "",
                     candidate.description,
                     candidate.protectedProfile,
                     Collections.emptyList()));
@@ -387,7 +399,6 @@ public final class FriendsRepository {
 
         saveFriend(new Friend(existing.getId(),
                 candidate.displayName,
-                existing.getInviteCode(),
                 existing.getDisplayNameOverride(),
                 existing.isProtectedProfile() || candidate.protectedProfile ? "" : existing.getNotes(),
                 candidate.description.isEmpty() ? existing.getDescription() : candidate.description,
@@ -518,7 +529,6 @@ public final class FriendsRepository {
                     currentUser.getUserName(),
                     "",
                     "",
-                    "",
                     SELF_DESCRIPTION,
                     true,
                     Collections.emptyList(),
@@ -528,7 +538,6 @@ public final class FriendsRepository {
 
         saveFriend(new Friend(existing.getId(),
                 currentUser.getUserName(),
-                existing.getInviteCode(),
                 existing.getDisplayNameOverride(),
                 existing.getNotes(),
                 existing.getDescription().isEmpty() ? SELF_DESCRIPTION : existing.getDescription(),
@@ -565,7 +574,6 @@ public final class FriendsRepository {
     private static Friend createKnownScientist(String id, String displayName, String description) {
         return new Friend(id,
                 displayName,
-                "",
                 "",
                 "",
                 description,

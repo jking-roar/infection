@@ -30,8 +30,10 @@ public class FriendDetailsActivity extends AppCompatActivity {
     public static final String EXTRA_FRIEND_ID = "com.kingjoshdavid.funfection.FRIEND_ID";
 
     private TextView nameView;
+    private TextView sourceHandleView;
     private TextView lastInfectionView;
     private TextView descriptionView;
+    private TextView nicknameTextView;
     private TextView notesTextView;
     private TextView historyTextView;
     private ScrollView historyContainer;
@@ -39,7 +41,9 @@ public class FriendDetailsActivity extends AppCompatActivity {
     private View notesActions;
     private View notesEditor;
     private EditText notesInput;
+    private EditText nicknameInput;
     private Button editNotesButton;
+    private Button clearNicknameButton;
     private Button clearNotesButton;
     private Button cancelNotesButton;
     private Button saveNotesButton;
@@ -52,8 +56,10 @@ public class FriendDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_friend_details);
 
         nameView = findViewById(R.id.friendDetailsName);
+        sourceHandleView = findViewById(R.id.friendDetailsSourceHandle);
         lastInfectionView = findViewById(R.id.friendDetailsLastInfection);
         descriptionView = findViewById(R.id.friendDetailsDescription);
+        nicknameTextView = findViewById(R.id.friendDetailsNicknameText);
         notesTextView = findViewById(R.id.friendDetailsNotesText);
         historyTextView = findViewById(R.id.friendDetailsHistoryText);
         historyContainer = findViewById(R.id.friendDetailsHistoryContainer);
@@ -61,7 +67,9 @@ public class FriendDetailsActivity extends AppCompatActivity {
         notesActions = findViewById(R.id.friendDetailsNotesActions);
         notesEditor = findViewById(R.id.friendDetailsNotesEditor);
         notesInput = findViewById(R.id.friendDetailsNotesInput);
+        nicknameInput = findViewById(R.id.friendDetailsNicknameInput);
         editNotesButton = findViewById(R.id.friendDetailsEditNotesButton);
+        clearNicknameButton = findViewById(R.id.friendDetailsClearNicknameButton);
         clearNotesButton = findViewById(R.id.friendDetailsClearNotesButton);
         cancelNotesButton = findViewById(R.id.friendDetailsCancelNotesButton);
         saveNotesButton = findViewById(R.id.friendDetailsSaveNotesButton);
@@ -71,8 +79,11 @@ public class FriendDetailsActivity extends AppCompatActivity {
         toggleHistoryButton.setOnClickListener(v -> toggleHistory());
         editNotesButton.setOnClickListener(v -> enterEditMode());
         cancelNotesButton.setOnClickListener(v -> exitEditMode());
-        clearNotesButton.setOnClickListener(v -> saveNotes(""));
-        saveNotesButton.setOnClickListener(v -> saveNotes(notesInput.getText().toString()));
+        clearNicknameButton.setOnClickListener(v -> saveFriendDetails("", notesInput.getText().toString()));
+        clearNotesButton.setOnClickListener(v -> saveFriendDetails(nicknameInput.getText().toString(), ""));
+        saveNotesButton.setOnClickListener(v -> saveFriendDetails(
+                nicknameInput.getText().toString(),
+                notesInput.getText().toString()));
 
         String friendId = getIntent().getStringExtra(EXTRA_FRIEND_ID);
         if (friendId == null || friendId.trim().isEmpty()) {
@@ -89,7 +100,7 @@ public class FriendDetailsActivity extends AppCompatActivity {
                 return;
             }
             if (loaded == null) {
-                Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.friend_detail_missing, Toast.LENGTH_SHORT).show();
                 finish();
                 return;
             }
@@ -101,8 +112,15 @@ public class FriendDetailsActivity extends AppCompatActivity {
 
     private void bindFriend() {
         nameView.setText(friend.getEffectiveDisplayName());
+        sourceHandleView.setText(getString(R.string.friend_source_handle_value, friend.getDisplayName()));
         lastInfectionView.setText(getString(R.string.friend_last_infection_value,
                 formatTimestamp(friend.getLastInfectionAt())));
+
+        String nickname = friend.getDisplayNameOverride();
+        nicknameTextView.setText(nickname.isEmpty()
+                ? getString(R.string.friend_nickname_empty)
+                : nickname);
+        nicknameInput.setText(nickname);
 
         if (friend.getDescription().isEmpty()) {
             descriptionView.setVisibility(View.GONE);
@@ -119,8 +137,10 @@ public class FriendDetailsActivity extends AppCompatActivity {
         boolean editableNotes = !friend.isProtectedProfile();
         notesActions.setVisibility(editableNotes ? View.VISIBLE : View.GONE);
         notesEditor.setVisibility(View.GONE);
+        nicknameInput.setEnabled(editableNotes);
         notesInput.setEnabled(editableNotes);
         if (!editableNotes) {
+            nicknameTextView.setText(getString(R.string.friend_nickname_locked));
             notesTextView.setText(getString(R.string.friend_notes_locked));
         }
 
@@ -182,17 +202,17 @@ public class FriendDetailsActivity extends AppCompatActivity {
     private void exitEditMode() {
         notesEditor.setVisibility(View.GONE);
         notesActions.setVisibility(View.VISIBLE);
+        nicknameInput.setText(friend.getDisplayNameOverride());
         notesInput.setText(friend.getNotes());
     }
 
-    private void saveNotes(String notes) {
+    private void saveFriendDetails(String nicknameOverride, String notes) {
         if (friend == null || friend.isProtectedProfile()) {
             return;
         }
         Friend updated = new Friend(friend.getId(),
                 friend.getDisplayName(),
-                friend.getInviteCode(),
-                friend.getDisplayNameOverride(),
+                nicknameOverride,
                 notes,
                 friend.getDescription(),
                 false,

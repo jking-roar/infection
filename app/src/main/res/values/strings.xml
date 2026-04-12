@@ -26,6 +26,13 @@
     <string name="vectors_empty">No vectors discovered yet.\n\nVectors appear here after you exchange infections with others.</string>
     <string name="friend_last_infection_value">Last infection: %1$s</string>
     <string name="friend_last_infection_unknown">No recorded infections yet</string>
+    <string name="friend_source_handle_value">Source handle: %1$s</string>
+    <string name="friend_nickname_label">Nickname</string>
+    <string name="friend_nickname_hint">Set a personal nickname override</string>
+    <string name="friend_nickname_empty">No nickname override.</string>
+    <string name="friend_nickname_locked">This profile is read-only.</string>
+    <string name="friend_nickname_clear">Clear Nickname</string>
+    <string name="friend_edit">Edit</string>
     <string name="friend_notes_label">Notes</string>
     <string name="friend_notes_hint">Add private notes about this friend</string>
     <string name="friend_notes_empty">No notes yet.</string>
@@ -128,6 +135,7 @@
     <string name="virus_seed_drilldown_empty">No text seed is stored for this strain.</string>
     <string name="virus_origin_label">Origin</string>
     <string name="virus_back_to_lab_button">Back to Lab</string>
+    <string name="friend_detail_missing">No such friend - go back to the lab</string>
 
     <plurals name="vectors_history_signal">
         <item quantity="one">+%1$d prior handle</item>
