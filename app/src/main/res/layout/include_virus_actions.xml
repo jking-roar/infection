@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/virusActionPanel"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -13,52 +14,113 @@
         android:text="@string/virus_actions_heading"
         android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/virusActionViewDetails"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/page_spacing_small"
-        android:minHeight="48dp"
-        android:text="@string/lab_action_view_details" />
+        android:gravity="center"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/virusActionShareText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:minHeight="48dp"
-        android:text="@string/lab_action_share_text" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/virusActionViewDetails"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/lab_action_view_details"
+            android:insetBottom="0dp"
+            android:insetTop="0dp"
+            android:minWidth="0dp"
+            android:text=""
+            app:icon="@drawable/ic_action_details"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="24dp" />
 
-    <Button
-        android:id="@+id/virusActionShareQr"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:minHeight="48dp"
-        android:text="@string/lab_action_share_qr" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/virusActionShareText"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="@dimen/page_spacing_small"
+            android:layout_weight="1"
+            android:contentDescription="@string/lab_action_share_text"
+            android:insetBottom="0dp"
+            android:insetTop="0dp"
+            android:minWidth="0dp"
+            android:text=""
+            app:icon="@drawable/ic_action_share_text"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="24dp" />
 
-    <Button
-        android:id="@+id/virusActionPurge"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:minHeight="48dp"
-        android:text="@string/lab_action_purge" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/virusActionShareQr"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="@dimen/page_spacing_small"
+            android:layout_weight="1"
+            android:contentDescription="@string/lab_action_share_qr"
+            android:insetBottom="0dp"
+            android:insetTop="0dp"
+            android:minWidth="0dp"
+            android:text=""
+            app:icon="@drawable/ic_action_share_qr"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="24dp" />
 
-    <Button
-        android:id="@+id/virusActionCombine"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:minHeight="48dp"
-        android:text="@string/lab_action_combine" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/virusActionPurge"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="@dimen/page_spacing_small"
+            android:layout_weight="1"
+            android:contentDescription="@string/lab_action_purge"
+            android:insetBottom="0dp"
+            android:insetTop="0dp"
+            android:minWidth="0dp"
+            android:text=""
+            app:icon="@drawable/ic_action_purge"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="24dp" />
 
-    <Button
-        android:id="@+id/virusActionBackToLab"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/page_spacing_small"
-        android:minHeight="48dp"
-        android:text="@string/virus_back_to_lab_button" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/virusActionCombine"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="@dimen/page_spacing_small"
+            android:layout_weight="1"
+            android:contentDescription="@string/lab_action_combine"
+            android:insetBottom="0dp"
+            android:insetTop="0dp"
+            android:minWidth="0dp"
+            android:text=""
+            app:icon="@drawable/ic_action_combine"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/virusActionBackToLab"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="@dimen/page_spacing_small"
+            android:layout_weight="1"
+            android:contentDescription="@string/virus_back_to_lab_button"
+            android:insetBottom="0dp"
+            android:insetTop="0dp"
+            android:minWidth="0dp"
+            android:text=""
+            app:icon="@drawable/ic_action_back_to_lab"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="24dp" />
+
+    </LinearLayout>
 </LinearLayout>
-
