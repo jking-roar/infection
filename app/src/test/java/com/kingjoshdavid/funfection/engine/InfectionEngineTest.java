@@ -205,6 +205,20 @@ public class InfectionEngineTest {
     }
 
     @Test
+    public void infectLocalHandlesLegacyVirusesWithMissingFamilyWithoutCrashing() {
+        Virus first = new Virus("legacy-1", "Legacy", "One", null, "Owner",
+                Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "G1", "Fixture");
+        Virus second = new Virus("legacy-2", "Legacy", "Two", "Echo", "Owner",
+                Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "G2", "Fixture");
+
+        Virus result = InfectionEngine.infectLocal(Arrays.asList(first, second));
+
+        assertEquals("Echo", result.getFamily());
+        assertEquals("Local Mix", result.getProductionContext());
+        assertFalse(result.getGenome().isEmpty());
+    }
+
+    @Test
     public void infectKeepsFurthestPatientZerosAndResetsKnownDirectFriendToOneDegree() {
         Virus local = new Virus("owned-origin-1", "Local Sample", "Spark", "Owner",
             Infectivity.rate(5), Resilience.of(5), Chaos.level(5), false, "OWN-O1",

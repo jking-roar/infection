@@ -112,8 +112,8 @@ public final class InfectionEngine {
         int resilience = 0;
         int chaos = 0;
         int maxGeneration = 1;
-        String family = viruses.get(0).getFamily();
-        String carrier = viruses.get(0).getCarrier();
+        String family = normalizeFamily(viruses.get(0).getFamily());
+        String carrier = normalizeCarrier(viruses.get(0).getCarrier(), defaultCarrier);
         boolean sameFamily = true;
         boolean mutated = false;
 
@@ -123,7 +123,8 @@ public final class InfectionEngine {
             chaos += virus.getChaos().score();
             maxGeneration = Math.max(maxGeneration, virus.getGeneration());
             mutated = mutated || virus.hasMutation();
-            if (!family.equals(virus.getFamily())) {
+            String candidateFamily = normalizeFamily(virus.getFamily());
+            if (!family.equals(candidateFamily)) {
                 sameFamily = false;
             }
         }
@@ -133,7 +134,7 @@ public final class InfectionEngine {
         resilience = average(resilience, size);
         chaos = average(chaos, size);
         if (!sameFamily) {
-            family = viruses.get(size - 1).getFamily();
+            family = normalizeFamily(viruses.get(size - 1).getFamily());
         }
 
         String id = UUID.nameUUIDFromBytes((family + infectivity + resilience + chaos + carrier)
@@ -180,7 +181,9 @@ public final class InfectionEngine {
      * @return offspring virus representing the final infection result
      */
     static Virus combine(Virus left, Virus right) {
-        String dominantFamily = left.getFamily().equals(right.getFamily()) ? left.getFamily() : mixFamily(left, right);
+        String leftFamily = normalizeFamily(left.getFamily());
+        String rightFamily = normalizeFamily(right.getFamily());
+        String dominantFamily = leftFamily.equals(rightFamily) ? leftFamily : mixFamily(left, right);
         int infectivity = mergeStat(left.getInfectivity().score(), right.getInfectivity().score(), true);
         int resilience = mergeStat(left.getResilience().score(), right.getResilience().score(), false);
         int chaos = mergeStat(left.getChaos().score(), right.getChaos().score(), true);
@@ -192,7 +195,7 @@ public final class InfectionEngine {
             infectivity = clamp(infectivity + 1);
         }
 
-        String lineage = left.getId().substring(0, 4) + right.getId().substring(0, 4);
+        String lineage = shortIdPrefix(left.getId()) + shortIdPrefix(right.getId());
         String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation)
             .getBytes(StandardCharsets.UTF_8)).toString();
         String carrier = left.getCarrier() + " x " + right.getCarrier();
@@ -288,7 +291,7 @@ public final class InfectionEngine {
      */
     static boolean shouldMutate(Virus left, Virus right) {
         int similarity = 0;
-        if (left.getFamily().equals(right.getFamily())) {
+        if (normalizeFamily(left.getFamily()).equals(normalizeFamily(right.getFamily()))) {
             similarity += 35;
         }
         similarity += 10 - Math.abs(left.getInfectivity().score() - right.getInfectivity().score());
@@ -307,7 +310,33 @@ public final class InfectionEngine {
      * <p>Formula: first two chars of left family + last two chars of right family.</p>
      */
     private static String mixFamily(Virus left, Virus right) {
-        return left.getFamily().substring(0, 2) + right.getFamily().substring(Math.max(0, right.getFamily().length() - 2));
+        String leftFamily = normalizeFamily(left.getFamily());
+        String rightFamily = normalizeFamily(right.getFamily());
+        int leftEnd = Math.min(2, leftFamily.length());
+        int rightStart = Math.max(0, rightFamily.length() - 2);
+        return leftFamily.substring(0, leftEnd) + rightFamily.substring(rightStart);
+    }
+
+    private static String shortIdPrefix(String id) {
+        String value = normalizeToken(id, "virus");
+        return value.substring(0, Math.min(4, value.length()));
+    }
+
+    private static String normalizeFamily(String family) {
+        return normalizeToken(family, "UnknownFamily");
+    }
+
+    private static String normalizeCarrier(String carrier, String fallbackCarrier) {
+        return normalizeToken(carrier, normalizeToken(fallbackCarrier, "Unknown Carrier"));
+    }
+
+    private static String normalizeToken(String value, String fallback) {
+        String normalized = value == null ? "" : value.trim();
+        if (!normalized.isEmpty()) {
+            return normalized;
+        }
+        String safeFallback = fallback == null ? "" : fallback.trim();
+        return safeFallback.isEmpty() ? "Unknown" : safeFallback;
     }
 
     /**
