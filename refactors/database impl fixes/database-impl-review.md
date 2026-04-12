@@ -15,6 +15,8 @@
 - developer notes:
   - runOnIo pattern should be replaced with asynchronous with(dataAccessor, doCallback) or similar, where callback is invoked with result on main thread. This will require refactoring call sites to handle async results, but is critical for a responsive UI.
   - While data is loading, UI should have a loading placeholder.
+  - refer to [live data guidelines.md](live%20data%20guidelines.md) for developer guidelines on using LiveData and async patterns in the future.
+
 
 ### Medium - "Cannot delete last virus" rule is not atomic in DB path
 - **Where:** `app/src/main/java/com/kingjoshdavid/funfection/data/VirusRepository.java:175-186` and `app/src/main/java/com/kingjoshdavid/funfection/data/VirusRepository.java:205-213`
