@@ -4,7 +4,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
 
 ## MVP Scope (Release Target)
 
-[ ] P0-0) Save friend info on infection exchange and provenance discovery
+[x] P0-0) Save friend info on infection exchange and provenance discovery - COMPLETED
 **Goal:** Populate friend/vector records automatically from infection events and provenance data, not manual entry.
 **Implementation Notes:**
 - hard coded scientists are everyone's friends and cannot be deleted. They cannot have custom notes, but they will have descriptions.
@@ -12,7 +12,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
   - May need a handle table to track handle history and support efficient updates without creating duplicates.
 - Keep identity stable by UUID mapping strategy from provenance data.
 
-[ ] P0-1) Reframe Friends Tab as Vectors of Infection
+[x] P0-1) Reframe Friends Tab as Vectors of Infection - COMPLETED
 **Goal:** Replace "Friends" placeholder behavior with a vectors-focused view: people discovered through infection exchange and lineage provenance.
 
 **Implementation Notes:**
@@ -43,7 +43,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
 
 ---
 
-[ ] P0-3) Build Provenance-Driven Discovery and Upsert Pipeline
+[x] P0-3) Build Provenance-Driven Discovery and Upsert Pipeline - COMPLETED
 **Goal:** Create/update vector records automatically from infection events and provenance (carrier/patient zero references), not manual entry.
 
 **Implementation Notes:**
@@ -58,7 +58,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
 
 ---
 
-[ ] P0-4) Persist Vector-to-Virus Associations
+[x] P0-4) Persist Vector-to-Virus Associations - COMPLETED
 **Goal:** Track which viruses each vector is known as carrier or patient zero for.
 
 **Implementation Notes:**
@@ -73,7 +73,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
 
 ---
 
-[x] P0-5) Vectors List UI (Discovered Records Only)
+[x] P0-5) Vectors List UI (Discovered Records Only) - COMPLETED
 **Goal:** Render vectors in `FriendsFragment` as a historical exchange network view.
 
 **Implementation Notes:**
