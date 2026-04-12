@@ -33,6 +33,8 @@ public class CombineFragment extends Fragment {
     private final Set<String> selectedPartnerIds = new HashSet<>();
     private CombineSelectorAdapter selectorAdapter;
     private String fixedVirusId;
+    private Virus fixedVirus;
+    private boolean shouldShowPinnedOpenedToast;
 
     public static CombineFragment newPinnedInstance(String virusId) {
         CombineFragment fragment = new CombineFragment();
@@ -89,14 +91,7 @@ public class CombineFragment extends Fragment {
             getParentFragmentManager().popBackStack();
         });
 
-        if (savedInstanceState == null) {
-            Virus fixedVirus = getFixedVirus();
-            if (fixedVirus != null) {
-                Toast.makeText(requireContext(),
-                        getString(R.string.combine_pinned_opened_toast, fixedVirus.getName()),
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
+        shouldShowPinnedOpenedToast = savedInstanceState == null;
     }
 
     @Override
@@ -106,28 +101,49 @@ public class CombineFragment extends Fragment {
     }
 
     private void refreshList() {
-        viruses = new ArrayList<>(VirusRepository.getViruses());
-        movePinnedVirusToTop();
-        List<String> labels = buildDisplayLabels();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, labels);
-        virusList.setAdapter(adapter);
+        VirusRepository.getVirusesAsync(allViruses -> {
+            if (!isAdded()) {
+                return;
+            }
+            viruses = new ArrayList<>(allViruses);
+            fixedVirus = null;
+            if (fixedVirusId != null && !fixedVirusId.trim().isEmpty()) {
+                for (Virus virus : viruses) {
+                    if (fixedVirusId.equals(virus.getId())) {
+                        fixedVirus = virus;
+                        break;
+                    }
+                }
+                if (fixedVirus == null) {
+                    fixedVirusId = null;
+                }
+            }
 
-        Virus fixedVirus = getFixedVirus();
-        if (fixedVirus != null) {
-            instructionsView.setText(getString(R.string.combine_pinned_selection_instructions, fixedVirus.getName()));
-            selectedPartnerIds.remove(fixedVirus.getId());
-            selectorAdapter.setViruses(viruses, fixedVirus.getId());
+            movePinnedVirusToTop();
+            List<String> labels = buildDisplayLabels();
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, labels);
+            virusList.setAdapter(adapter);
+
+            if (fixedVirus != null) {
+                instructionsView.setText(getString(R.string.combine_pinned_selection_instructions, fixedVirus.getName()));
+                selectedPartnerIds.remove(fixedVirus.getId());
+                selectorAdapter.setViruses(viruses, fixedVirus.getId());
+                if (shouldShowPinnedOpenedToast) {
+                    Toast.makeText(requireContext(),
+                            getString(R.string.combine_pinned_opened_toast, fixedVirus.getName()),
+                            Toast.LENGTH_SHORT).show();
+                    shouldShowPinnedOpenedToast = false;
+                }
+            } else {
+                instructionsView.setText(R.string.combine_selection_instructions);
+                selectorAdapter.setViruses(viruses, null);
+            }
             updateSelectorSummary();
-        } else {
-            instructionsView.setText(R.string.combine_selection_instructions);
-            selectorAdapter.setViruses(viruses, null);
-            updateSelectorSummary();
-        }
+        });
     }
 
     private List<String> buildDisplayLabels() {
         List<String> labels = new ArrayList<>();
-        Virus fixedVirus = getFixedVirus();
         for (Virus virus : viruses) {
             String prefix = "";
             if (fixedVirus != null && fixedVirus.getId().equals(virus.getId())) {
@@ -141,7 +157,6 @@ public class CombineFragment extends Fragment {
     }
 
     private void movePinnedVirusToTop() {
-        Virus fixedVirus = getFixedVirus();
         if (fixedVirus == null) {
             return;
         }
@@ -195,19 +210,22 @@ public class CombineFragment extends Fragment {
     }
 
     private void executeCombine(List<Virus> sources, Virus offspring) {
-        VirusRepository.addVirus(offspring);
-        refreshList();
-        resultSummary.setText("Combined " + sources.size() + " strain(s). "
-                + offspring.getName() + " emerged in the " + offspring.getFamily()
-                + " family with genome " + offspring.getGenome()
-                + ". Strength " + offspring.getInfectionStrength()
-                + ", lineage generation " + offspring.getGeneration() + ".");
-        Toast.makeText(requireContext(), "New virus: " + offspring.getName(), Toast.LENGTH_SHORT).show();
+        VirusRepository.addVirusAsync(offspring, () -> {
+            if (!isAdded()) {
+                return;
+            }
+            refreshList();
+            resultSummary.setText("Combined " + sources.size() + " strain(s). "
+                    + offspring.getName() + " emerged in the " + offspring.getFamily()
+                    + " family with genome " + offspring.getGenome()
+                    + ". Strength " + offspring.getInfectionStrength()
+                    + ", lineage generation " + offspring.getGeneration() + ".");
+            Toast.makeText(requireContext(), "New virus: " + offspring.getName(), Toast.LENGTH_SHORT).show();
+        });
     }
 
     private List<Virus> getSelectedViruses() {
         List<Virus> selected = new ArrayList<>();
-        Virus fixedVirus = getFixedVirus();
         if (fixedVirus != null) {
             selected.add(fixedVirus);
         }
@@ -220,18 +238,6 @@ public class CombineFragment extends Fragment {
             }
         }
         return selected;
-    }
-
-    @Nullable
-    private Virus getFixedVirus() {
-        if (fixedVirusId == null || fixedVirusId.trim().isEmpty()) {
-            return null;
-        }
-        Virus fixedVirus = VirusRepository.getVirusById(fixedVirusId);
-        if (fixedVirus == null) {
-            fixedVirusId = null;
-        }
-        return fixedVirus;
     }
 
     private int findVirusIndex(String virusId) {
@@ -248,7 +254,6 @@ public class CombineFragment extends Fragment {
             return;
         }
         Virus tappedVirus = viruses.get(position);
-        Virus fixedVirus = getFixedVirus();
         if (fixedVirus != null && fixedVirus.getId().equals(tappedVirus.getId())) {
             Toast.makeText(requireContext(),
                     getString(R.string.combine_pinned_locked, fixedVirus.getName()),

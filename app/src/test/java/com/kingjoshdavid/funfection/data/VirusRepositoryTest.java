@@ -132,19 +132,14 @@ public class VirusRepositoryTest {
     }
 
     @Test
-    public void purgeVirusByIdBlocksRemovingLastRemainingVirus() {
-        VirusRepository.ensureSeeded();
-        List<Virus> seeded = VirusRepository.getViruses();
-        String survivorId = seeded.get(0).getId();
-        for (int i = 1; i < seeded.size(); i++) {
-            assertEquals(VirusRepository.PurgeResult.REMOVED,
-                    VirusRepository.purgeVirusById(seeded.get(i).getId()));
-        }
+    public void purgeVirusByIdRemovesLastRemainingVirus() throws Exception {
+        Virus lone = new Virus("last-custom", "Last", "Spark", "Tester",
+            Infectivity.rate(4), Resilience.of(4), Chaos.level(4), false, "GEN-LAST", "Fixture");
+        setRepositoryContents(java.util.Collections.singletonList(lone));
 
-        assertEquals(1, VirusRepository.getViruses().size());
-        assertEquals(VirusRepository.PurgeResult.BLOCKED_LAST, VirusRepository.getPurgeStatus(survivorId));
-        assertEquals(VirusRepository.PurgeResult.BLOCKED_LAST, VirusRepository.purgeVirusById(survivorId));
-        assertNotNull(VirusRepository.getVirusById(survivorId));
+        assertEquals(VirusRepository.PurgeResult.REMOVED, VirusRepository.getPurgeStatus(lone.getId()));
+        assertEquals(VirusRepository.PurgeResult.REMOVED, VirusRepository.purgeVirusById(lone.getId()));
+        assertNull(VirusRepository.getVirusById(lone.getId()));
     }
 
     @Test
@@ -212,5 +207,14 @@ public class VirusRepositoryTest {
         List<?> collection = (List<?>) collectionField.get(null);
         //noinspection DataFlowIssue
         collection.clear();
+    }
+
+    private void setRepositoryContents(List<Virus> viruses) throws Exception {
+        Field collectionField = VirusRepository.class.getDeclaredField("COLLECTION");
+        collectionField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<Virus> collection = (List<Virus>) collectionField.get(null);
+        collection.clear();
+        collection.addAll(viruses);
     }
 }

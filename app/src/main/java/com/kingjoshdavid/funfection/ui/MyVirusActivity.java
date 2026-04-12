@@ -16,6 +16,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.kingjoshdavid.funfection.R;
+import com.kingjoshdavid.funfection.data.FriendsRepository;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.data.VirusRepository;
 import com.kingjoshdavid.funfection.model.Virus;
@@ -39,6 +40,8 @@ public class MyVirusActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         UserProfileRepository.initialize(getApplicationContext());
+        VirusRepository.initialize(getApplicationContext());
+        FriendsRepository.initialize(getApplicationContext());
         setContentView(R.layout.my_virus);
 
         virusName = findViewById(R.id.virusName);
@@ -52,8 +55,18 @@ public class MyVirusActivity extends AppCompatActivity {
         virusGenome = findViewById(R.id.virusGenome);
         virusOrigin = findViewById(R.id.virusOrigin);
 
-        displayedVirus = resolveVirus(getIntent());
-        showVirusInformation(displayedVirus);
+        resolveVirus(getIntent(), virus -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+            if (virus == null) {
+                Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
+            displayedVirus = virus;
+            showVirusInformation(displayedVirus);
+        });
 
         VirusActionPanelBinder.bind(findViewById(R.id.virusActionPanel), false, true,
                 new VirusActionPanelBinder.Callbacks() {
@@ -136,24 +149,36 @@ public class MyVirusActivity extends AppCompatActivity {
         return styled;
     }
 
-    private Virus resolveVirus(Intent intent) {
+    private void resolveVirus(Intent intent, VirusRepository.ResultCallback<Virus> callback) {
         if (intent != null) {
             String virusId = intent.getStringExtra(EXTRA_VIRUS_ID);
             if (virusId != null) {
-                Virus existing = VirusRepository.getVirusById(virusId);
-                if (existing != null) {
-                    return existing;
-                }
+                VirusRepository.getVirusByIdAsync(virusId, existing -> {
+                    if (existing != null) {
+                        callback.onResult(existing);
+                        return;
+                    }
+                    VirusRepository.getVirusesAsync(viruses -> callback.onResult(
+                            viruses.isEmpty() ? null : viruses.get(0)));
+                });
+                return;
             }
         }
-        return VirusRepository.getViruses().get(0);
+        VirusRepository.getVirusesAsync(viruses -> callback.onResult(
+                viruses.isEmpty() ? null : viruses.get(0)));
     }
 
     private void shareVirusText() {
+        if (displayedVirus == null) {
+            return;
+        }
         launchTextShare(buildInviteShareBody(displayedVirus.toShareCode()));
     }
 
     private void showVirusQr() {
+        if (displayedVirus == null) {
+            return;
+        }
         String invitePayload = displayedVirus.toShareCode();
         Bitmap qrBitmap;
         try {
@@ -191,42 +216,59 @@ public class MyVirusActivity extends AppCompatActivity {
     }
 
     private void confirmPurge() {
-        VirusRepository.PurgeResult status = VirusRepository.getPurgeStatus(displayedVirus.getId());
-        if (status == VirusRepository.PurgeResult.BLOCKED_LAST) {
-            Toast.makeText(this, R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+        if (displayedVirus == null) {
             return;
         }
-        if (status == VirusRepository.PurgeResult.MISSING) {
-            Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        VirusRepository.getPurgeStatusAsync(displayedVirus.getId(), status -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+            if (status == VirusRepository.PurgeResult.BLOCKED_LAST) {
+                Toast.makeText(this, R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (status == VirusRepository.PurgeResult.MISSING) {
+                Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            }
 
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.lab_purge_title)
-                .setMessage(getString(R.string.lab_purge_message, displayedVirus.getName()))
-                .setNegativeButton(R.string.infection_preview_cancel, null)
-                .setPositiveButton(R.string.lab_purge_confirm, (dialog, which) -> purgeVirus())
-                .show();
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.lab_purge_title)
+                    .setMessage(getString(R.string.lab_purge_message, displayedVirus.getName()))
+                    .setNegativeButton(R.string.infection_preview_cancel, null)
+                    .setPositiveButton(R.string.lab_purge_confirm, (dialog, which) -> purgeVirus())
+                    .show();
+        });
     }
 
     private void purgeVirus() {
-        VirusRepository.PurgeResult result = VirusRepository.purgeVirusById(displayedVirus.getId());
-        if (result == VirusRepository.PurgeResult.BLOCKED_LAST) {
-            Toast.makeText(this, R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+        if (displayedVirus == null) {
             return;
         }
-        if (result == VirusRepository.PurgeResult.MISSING) {
-            Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Toast.makeText(this,
-                getString(R.string.lab_purge_success, displayedVirus.getName()),
-                Toast.LENGTH_SHORT).show();
-        finish();
+        VirusRepository.purgeVirusByIdAsync(displayedVirus.getId(), result -> {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+            if (result == VirusRepository.PurgeResult.BLOCKED_LAST) {
+                Toast.makeText(this, R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (result == VirusRepository.PurgeResult.MISSING) {
+                Toast.makeText(this, R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(this,
+                    getString(R.string.lab_purge_success, displayedVirus.getName()),
+                    Toast.LENGTH_SHORT).show();
+            finish();
+        });
     }
 
     private void openCombine() {
+        if (displayedVirus == null) {
+            return;
+        }
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(MainActivity.EXTRA_OPEN_COMBINE_VIRUS_ID, displayedVirus.getId());
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
