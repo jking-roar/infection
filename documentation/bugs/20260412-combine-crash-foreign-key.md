@@ -30,26 +30,8 @@ The app crashes with a fatal exception on the `virus-repository-io` thread. The 
 04-12 15:29:12.620  5614  5636 E AndroidRuntime: java.lang.IllegalStateException: VirusRepository operation failed
 04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository.runOnIo(VirusRepository.java:397)
 04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository.addVirus(VirusRepository.java:159)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository.lambda$addVirusAsync$6(VirusRepository.java:174)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository$$ExternalSyntheticLambda8.run(D8$$SyntheticClass:0)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository.lambda$runOnIoAsync$21(VirusRepository.java:427)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository$$ExternalSyntheticLambda13.run(D8$$SyntheticClass:0)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1154)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:652)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at java.lang.Thread.run(Thread.java:1564)
 04-12 15:29:12.620  5614  5636 E AndroidRuntime: Caused by: android.database.sqlite.SQLiteConstraintException: FOREIGN KEY constraint failed (code 787 SQLITE_CONSTRAINT_FOREIGNKEY)
 04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at android.database.sqlite.SQLiteConnection.nativeExecuteForLastInsertedRowId(Native Method)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at android.database.sqlite.SQLiteConnection.executeForLastInsertedRowId(SQLiteConnection.java:961)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at android.database.sqlite.SQLiteSession.executeForLastInsertedRowId(SQLiteSession.java:790)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at android.database.sqlite.SQLiteStatement.executeInsert(SQLiteStatement.java:89)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at androidx.sqlite.db.framework.FrameworkSQLiteStatement.executeInsert(FrameworkSQLiteStatement.kt:42)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at androidx.room.EntityInsertionAdapter.insert(EntityInsertionAdapter.kt:51)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.local.FriendVirusDao_Impl.upsert(FriendVirusDao_Impl.java:79)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository.syncRoomLinksForVirus(VirusRepository.java:493)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository.lambda$addVirus$5(VirusRepository.java:168)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository$$ExternalSyntheticLambda16.call(D8$$SyntheticClass:0)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        at com.kingjoshdavid.funfection.data.VirusRepository.runOnIo(VirusRepository.java:395)
-04-12 15:29:12.620  5614  5636 E AndroidRuntime:        ... 8 more
 ```
 
 ## Thoughts where problem might be:
@@ -59,8 +41,14 @@ The helper `deriveAssociatedFriendIds` (line 497) extracts source IDs from the v
 
 The fix likely needs to go in `deriveAssociatedFriendIds` and/or `syncRoomLinksForVirus`: only attempt to link friend IDs that are confirmed to exist in the `FriendEntity` table (or that have `isRealFriend() == true` and are pre-ensured in `FriendsRepository`). Alternatively, the `FriendVirusCrossRef` FK could be made deferrable/nullable, though constraining it at the repository layer is cleaner.
 
-## Fix Direction:
-Add the user to the friends table if they are not already present before attempting to link them in `syncRoomLinksForVirus`. This would ensure that any real friend sources are properly linked without causing FK violations, while still allowing non-friend sources to be ignored.
+# Fix Direction:
+After the app starts up, add the user to the friends table if they are not already present.
+
+That way they are there before attempting to link them in `syncRoomLinksForVirus`. This would ensure that any real friend sources are properly linked without causing FK violations, while still allowing non-friend sources to be ignored.
+
+
 Filter the friends list to not show yourself by default.  Add a configuration item to show yourself in the friends list if desired. call the option "You are your friend" and display as a checkbox.
 
 This configuration should be saved immediately when changed.
+
+Extra fix: add static UUIDs to all the MadScientists, so they can be added to the friends table as well. This would allow them to be linked as sources without causing FK violations, and would also enable features like showing them in the friends list or allowing the player to "friend" them for fun.
