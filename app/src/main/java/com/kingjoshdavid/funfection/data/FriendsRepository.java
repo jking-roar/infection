@@ -447,14 +447,18 @@ public final class FriendsRepository {
 
     private static Map<String, String> createScientistDescriptions() {
         Map<String, String> descriptions = new LinkedHashMap<>();
-        descriptions.put(normalizeScientistName("Professor Tesla"), "Simulated scientist contact used as a deterministic fallback exchange source.");
-        descriptions.put(normalizeScientistName("Doctor Curie"), "Simulated scientist contact used as a deterministic fallback exchange source.");
-        descriptions.put(normalizeScientistName("Doc Brown"), "Simulated scientist contact used as a deterministic fallback exchange source.");
-        descriptions.put(normalizeScientistName("Professor Xavier"), "Simulated scientist contact used as a deterministic fallback exchange source.");
-        descriptions.put(normalizeScientistName("The Gutter Man"), "Simulated scientist contact used as a deterministic fallback exchange source.");
+        descriptions.put(normalizeScientistName("Professor Tesla"),
+                "A reclusive pioneer of unstable energy-based strains. Tesla's creations hum with latent power, often behaving unpredictably when exposed to other signals.");
+        descriptions.put(normalizeScientistName("Doctor Curie"),
+                "A meticulous researcher of radiant mutations. Curie specializes in slow-evolving strains that intensify over time, rewarding patience—and punishing carelessness.");
+        descriptions.put(normalizeScientistName("Doc Brown"),
+                "An erratic temporal theorist whose viruses don’t always follow linear progression. Effects may trigger early, late, or seemingly out of order.");
+        descriptions.put(normalizeScientistName("Professor Xavier"),
+                "A strategist of cognitive contagions. Xavier engineers subtle strains that influence behavior, spreading quietly before revealing their full impact.");
+        descriptions.put(normalizeScientistName("The Gutter Man"),
+                "A shadowy figure lurking beneath the system. His strains are crude, resilient, and disturbingly adaptive—thriving in neglected or chaotic environments.");
         return descriptions;
     }
-
     private static String describeScientist(String displayName) {
         String normalized = normalizeScientistName(displayName);
         String description = SCIENTIST_DESCRIPTIONS.get(normalized);
