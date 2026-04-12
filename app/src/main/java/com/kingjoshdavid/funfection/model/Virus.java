@@ -100,6 +100,16 @@ public class Virus implements Serializable {
     private final String productionContext;
 
     /**
+     * Raw seed string captured when this strain was discovered by scanning a QR code or barcode
+     * in the wild.
+     *
+     * <p><strong>Do not send this field to the UI.</strong> It is stored internally for
+     * duplicate-discovery tracking only. Present when the strain was created via a wild scan;
+     * {@code null} for all other creation paths.</p>
+     */
+    private final String wildSeed;
+
+    /**
      * Lineage generation depth for this strain.
      *
      * <p>Starter and seeded strains begin at generation {@code 1}. Any new offspring should be
@@ -253,6 +263,24 @@ public class Virus implements Serializable {
                  VirusOrigin origin,
                  int generation,
                  String productionContext) {
+        this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
+                origin, generation, productionContext, null);
+    }
+
+    public Virus(String id,
+                 String prefix,
+                 String suffix,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 VirusOrigin origin,
+                 int generation,
+                 String productionContext,
+                 String wildSeed) {
         this.id = id;
         this.prefix = normalizeNamePart(prefix, "Unknown");
         this.suffix = normalizeNamePart(suffix, "");
@@ -266,6 +294,7 @@ public class Virus implements Serializable {
         this.origin = origin == null ? VirusOrigin.legacy("Unknown origin") : origin;
         this.generation = Math.max(1, generation);
         this.productionContext = normalizeOptionalMetadata(productionContext);
+        this.wildSeed = wildSeed == null || wildSeed.trim().isEmpty() ? null : wildSeed.trim();
     }
 
     public String getId() {
@@ -322,6 +351,19 @@ public class Virus implements Serializable {
 
     public String getProductionContext() {
         return productionContext;
+    }
+
+    /**
+     * Returns the raw seed that was scanned from a QR code or barcode when this strain was
+     * discovered in the wild.
+     *
+     * <p><strong>Do not expose this value in the UI.</strong> It is for internal duplicate
+     * tracking only. Returns {@code null} for strains not created via a wild scan.</p>
+     *
+     * @return raw scanned seed, or {@code null} if this strain was not created from a wild scan
+     */
+    public String getWildSeed() {
+        return wildSeed;
     }
 
     public String getOriginReport(String viewerId) {
@@ -416,7 +458,18 @@ public class Virus implements Serializable {
      */
     public Virus withGeneration(int updatedGeneration) {
         return new Virus(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
-                updatedGeneration, productionContext);
+                updatedGeneration, productionContext, wildSeed);
+    }
+
+    /**
+     * Returns a copy of this strain with the given wild-scan seed attached.
+     *
+     * @param seed raw scanned seed value to associate with this strain
+     * @return copied virus with the wild seed set
+     */
+    public Virus withWildSeed(String seed) {
+        return new Virus(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
+                generation, productionContext, seed);
     }
 
     public Virus incrementGeneration() {

@@ -84,6 +84,14 @@ public final class VirusOrigin implements Serializable {
         return new VirusOrigin(Type.COLLAPSED, "Collapsed host strain", directSource, lineage);
     }
 
+    public static VirusOrigin foundInWildFromQr() {
+        return new VirusOrigin(Type.WILD_QR, "Found in the wild (QR code)", null, Collections.emptyList());
+    }
+
+    public static VirusOrigin foundInWildFromBarcode() {
+        return new VirusOrigin(Type.WILD_BARCODE, "Found in the wild (barcode)", null, Collections.emptyList());
+    }
+
     public static VirusOrigin combinedLocally(VirusOrigin mergedOrigin) {
         List<PatientZero> lineage = mergedOrigin == null
                 ? Collections.emptyList()
@@ -379,7 +387,9 @@ public final class VirusOrigin implements Serializable {
         IMPORTED_INVITE,
         COLLAPSED,
         LOCAL_COMBINE,
-        FRIEND_INFECTION
+        FRIEND_INFECTION,
+        WILD_QR,
+        WILD_BARCODE
     }
 
     public static final class Source implements Serializable {

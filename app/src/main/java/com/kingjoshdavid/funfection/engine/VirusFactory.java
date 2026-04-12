@@ -143,6 +143,30 @@ public final class VirusFactory {
     }
 
     /**
+     * Creates a virus discovered by scanning a QR code or barcode in the wild.
+     *
+     * <p>The scanned raw value is used as a deterministic seed so the same code always
+     * produces the same strain. The wild-scan seed is stored internally on the virus for
+     * duplicate-discovery tracking but is never shown to the player.</p>
+     *
+     * @param seed     raw scanned content from the QR code or barcode
+     * @param isQrCode {@code true} if the source was a QR code; {@code false} for a barcode
+     * @return a virus tagged as found in the wild, carrying the raw seed internally
+     */
+    public static Virus createWildVirus(String seed, boolean isQrCode) {
+        String effectiveSeed = seed == null ? UUID.randomUUID().toString() : seed.trim();
+        if (effectiveSeed.isEmpty()) {
+            effectiveSeed = UUID.randomUUID().toString();
+        }
+        UserProfile userProfile = UserProfileRepository.getCurrentUser();
+        VirusOrigin origin = isQrCode
+                ? VirusOrigin.foundInWildFromQr()
+                : VirusOrigin.foundInWildFromBarcode();
+        Virus virus = fromSeed(userProfile.getUserName(), effectiveSeed, origin);
+        return virus.withWildSeed(effectiveSeed);
+    }
+
+    /**
      * Creates a lab virus from user-provided seed text or a random fallback seed.
      *
      * <p>When the supplied text contains visible characters, the trimmed value is used as the

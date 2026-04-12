@@ -12,6 +12,9 @@
     <string name="lab_seed_scan_prompt">Scan a QR code or barcode to use as the seed</string>
     <string name="lab_seed_scan_loaded">Seed loaded from scan.</string>
     <string name="lab_seed_scan_empty">Nothing was scanned — enter a seed manually.</string>
+    <string name="lab_wild_scan_origin_qr">QR code</string>
+    <string name="lab_wild_scan_origin_barcode">barcode</string>
+    <string name="lab_wild_scan_created_toast">%1$s found in the wild via %2$s.</string>
     <string name="collection_summary_collected_viruses">%1$s\'s lab strains: %2$d</string>
     <string name="username_saved_toast">Saved user name: %1$s</string>
     <string name="tab_collection">Lab</string>
