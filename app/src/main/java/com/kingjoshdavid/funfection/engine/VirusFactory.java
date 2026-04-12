@@ -28,12 +28,17 @@ public final class VirusFactory {
 
     private static final String SIMULATED_FRIEND_FLAG = "[SIMULATED]";
     private static final int STARTER_GENERATION = 1;
+    private static final String SCIENTIST_TESLA_ID = "d929c435-7962-3951-b6d0-3514538a493c";
+    private static final String SCIENTIST_CURIE_ID = "6d44e6bb-0a02-3fc4-83ae-f2531f22f184";
+    private static final String SCIENTIST_BROWN_ID = "51114d6d-922e-3893-8e83-efb62fa9688a";
+    private static final String SCIENTIST_XAVIER_ID = "6a386e8f-37af-3eac-9e48-18748f2fcd40";
+    private static final String SCIENTIST_GUTTER_MAN_ID = "e203a0bc-d99a-3625-8677-55ca2b0706ea";
     private static final MadScientist[] MAD_SCIENTISTS = {
-            new MadScientist("Professor", "Tesla"),
-            new MadScientist("Doctor", "Curie"),
-            new MadScientist("Doc", "Brown"),
-            new MadScientist("Professor", "Xavier"),
-            new MadScientist("The", "Gutter Man")
+            new MadScientist(SCIENTIST_TESLA_ID, "Professor", "Tesla"),
+            new MadScientist(SCIENTIST_CURIE_ID, "Doctor", "Curie"),
+            new MadScientist(SCIENTIST_BROWN_ID, "Doc", "Brown"),
+            new MadScientist(SCIENTIST_XAVIER_ID, "Professor", "Xavier"),
+            new MadScientist(SCIENTIST_GUTTER_MAN_ID, "The", "Gutter Man")
     };
 
     private static final String[] FAMILIES = {
@@ -281,7 +286,7 @@ public final class VirusFactory {
         MadScientist scientist = MAD_SCIENTISTS[Math.abs(random.nextInt()) % MAD_SCIENTISTS.length];
         String guestName = scientist.getDisplayName() + " " + SIMULATED_FRIEND_FLAG;
         String seed = guestName.toLowerCase(Locale.US) + ":" + UUID.randomUUID().toString();
-        return fromSeed(guestName, seed, VirusOrigin.randomFriendFallback(guestName));
+        return fromSeed(guestName, seed, VirusOrigin.randomFriendFallback(scientist.getId(), guestName));
     }
 
     /**

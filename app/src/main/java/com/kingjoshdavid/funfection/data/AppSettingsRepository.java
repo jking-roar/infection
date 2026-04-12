@@ -15,9 +15,12 @@ public final class AppSettingsRepository {
     }
 
     private static final String PREF_NIGHT_MODE = "app_settings.night_mode";
+    private static final String PREF_SHOW_SELF_IN_FRIENDS = "app_settings.show_self_in_friends";
     private static final String VALUE_LIGHT = "light";
     private static final String VALUE_NIGHT = "night";
     private static final String VALUE_SYSTEM = "system";
+    private static final String VALUE_TRUE = "1";
+    private static final String VALUE_FALSE = "0";
 
     private AppSettingsRepository() {
     }
@@ -47,6 +50,14 @@ public final class AppSettingsRepository {
                 break;
         }
         SharedPreferencesUtil.putString(PREF_NIGHT_MODE, value);
+    }
+
+    public static boolean isCurrentUserVisibleInFriendsList() {
+        return VALUE_TRUE.equals(SharedPreferencesUtil.getString(PREF_SHOW_SELF_IN_FRIENDS, VALUE_FALSE));
+    }
+
+    public static void setCurrentUserVisibleInFriendsList(boolean visible) {
+        SharedPreferencesUtil.putString(PREF_SHOW_SELF_IN_FRIENDS, visible ? VALUE_TRUE : VALUE_FALSE);
     }
 
     /** Converts a {@link NightMode} to the corresponding {@link AppCompatDelegate} constant. */

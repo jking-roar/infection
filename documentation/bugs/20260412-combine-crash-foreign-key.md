@@ -51,4 +51,7 @@ Filter the friends list to not show yourself by default.  Add a configuration it
 
 This configuration should be saved immediately when changed.
 
-Extra fix: add static UUIDs to all the MadScientists, so they can be added to the friends table as well. This would allow them to be linked as sources without causing FK violations, and would also enable features like showing them in the friends list or allowing the player to "friend" them for fun.
+Extra fix: add static UUIDs to all the MadScientists in the codebase, so they can be added to the friends table as well. This would allow them to be linked as sources without causing FK violations, and would also enable features like showing them in the friends list or allowing the player to "friend" them for fun.
+
+# Resolution:
+The issue was resolved by ensuring that the player's own profile ID is added to the `friends` table during app startup if it is not already present. This guarantees that any `VirusOrigin` sources referencing the player's ID can be properly linked in `syncRoomLinksForVirus` without causing foreign key constraint violations. Additionally, a configuration option was added to allow the player to choose whether they want to see themselves in the friends list, with the default behavior being to hide their own profile. Static UUIDs were also assigned to all MadScientists in the codebase, allowing them to be added to the friends table and linked as sources without causing FK violations. This fix ensures that the combine operation can complete successfully without crashing the app, while still maintaining the integrity of the friends data and allowing for fun interactions with the MadScientists.

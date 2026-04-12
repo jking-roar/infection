@@ -6,6 +6,7 @@ import com.kingjoshdavid.funfection.model.Chaos;
 import com.kingjoshdavid.funfection.model.Friend;
 import com.kingjoshdavid.funfection.model.Infectivity;
 import com.kingjoshdavid.funfection.model.Resilience;
+import com.kingjoshdavid.funfection.model.UserProfile;
 import com.kingjoshdavid.funfection.model.Virus;
 import com.kingjoshdavid.funfection.model.VirusOrigin;
 
@@ -133,11 +134,44 @@ public class VirusRepositoryRoomTest {
         assertEquals("Jordan", discovered.getUsernameHistory().get(0).getUsername());
     }
 
+    @Test
+    public void addVirusWithUnknownOriginFriendIdsSkipsUnknownLinksAndDoesNotCrash() {
+        UserProfile currentUser = UserProfileRepository.getCurrentUser();
+        FriendsRepository.ensureCurrentUserFriendExists();
+
+        Virus virus = new Virus("room-origin-link-1", "Link", "Proof", "Tester",
+                Infectivity.rate(3), Resilience.of(4), Chaos.level(5), false, "GEN-LINK-1",
+                originWithDirectSourceAndPatientZero("missing-friend-id", "Missing Friend", false,
+                        currentUser.getId(), currentUser.getUserName()), 2);
+
+        VirusRepository.addVirus(virus);
+
+        List<Virus> selfLinkedViruses = VirusRepository.getVirusesByFriendId(currentUser.getId());
+        assertEquals(1, selfLinkedViruses.size());
+        assertEquals("room-origin-link-1", selfLinkedViruses.get(0).getId());
+        assertTrue(VirusRepository.getVirusesByFriendId("missing-friend-id").isEmpty());
+    }
+
     private VirusOrigin originWithDirectSource(String id, String displayName) {
         String raw = "1\nIMPORTED_INVITE\nImported from invite\n"
                 + id + "\n"
                 + displayName + "\n"
                 + "1\n1\n0\n";
+        String payload = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+        return VirusOrigin.fromSharePayload(payload);
+    }
+
+    private VirusOrigin originWithDirectSourceAndPatientZero(String directId,
+                                                             String directName,
+                                                             boolean directRealFriend,
+                                                             String patientZeroId,
+                                                             String patientZeroName) {
+        String raw = "1\nIMPORTED_INVITE\nImported from invite\n"
+                + directId + "\n"
+                + directName + "\n"
+                + (directRealFriend ? "1" : "0") + "\n1\n1\n"
+                + patientZeroId + "\t" + patientZeroName + "\t2\n";
         String payload = Base64.getUrlEncoder().withoutPadding()
                 .encodeToString(raw.getBytes(StandardCharsets.UTF_8));
         return VirusOrigin.fromSharePayload(payload);

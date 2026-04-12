@@ -16,6 +16,9 @@ public interface FriendDao {
     @Query("SELECT * FROM friends WHERE id = :id LIMIT 1")
     FriendEntity findById(String id);
 
+    @Query("SELECT id FROM friends WHERE id IN (:ids)")
+    List<String> findExistingIds(List<String> ids);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void upsert(FriendEntity friend);
 

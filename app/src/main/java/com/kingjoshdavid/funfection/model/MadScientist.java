@@ -6,12 +6,22 @@ package com.kingjoshdavid.funfection.model;
  */
 public final class MadScientist {
 
+    private final String id;
     private final String title;
     private final String name;
 
     public MadScientist(String title, String name) {
+        this("", title, name);
+    }
+
+    public MadScientist(String id, String title, String name) {
+        this.id = id == null ? "" : id;
         this.title = title == null ? "" : title;
         this.name = name == null ? "" : name;
+    }
+
+    public String getId() {
+        return id;
     }
 
     /** Honorific or prefix, e.g. {@code "Professor"} or {@code "The"}. */

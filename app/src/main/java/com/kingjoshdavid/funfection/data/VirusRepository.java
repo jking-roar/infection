@@ -483,8 +483,19 @@ public final class VirusRepository {
         }
         database.friendVirusDao().deleteByVirusId(virus.getId());
         Set<String> linkedFriendIds = deriveAssociatedFriendIds(virus);
+        if (linkedFriendIds.isEmpty()) {
+            return;
+        }
+        List<String> existingFriendIds = database.friendDao().findExistingIds(new ArrayList<>(linkedFriendIds));
+        if (existingFriendIds == null || existingFriendIds.isEmpty()) {
+            return;
+        }
+        Set<String> existingFriendIdSet = new HashSet<>(existingFriendIds);
         long linkedAt = System.currentTimeMillis();
         for (String friendId : linkedFriendIds) {
+            if (!existingFriendIdSet.contains(friendId)) {
+                continue;
+            }
             com.kingjoshdavid.funfection.data.local.FriendVirusCrossRef link =
                     new com.kingjoshdavid.funfection.data.local.FriendVirusCrossRef();
             link.friendId = friendId;
