@@ -2,15 +2,20 @@ package com.kingjoshdavid.funfection.data;
 
 import com.kingjoshdavid.funfection.engine.InfectionEngine;
 import com.kingjoshdavid.funfection.model.Chaos;
+import com.kingjoshdavid.funfection.model.Friend;
 import com.kingjoshdavid.funfection.model.Infectivity;
 import com.kingjoshdavid.funfection.model.Resilience;
+import com.kingjoshdavid.funfection.model.UserProfile;
 import com.kingjoshdavid.funfection.model.Virus;
+import com.kingjoshdavid.funfection.model.VirusOrigin;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,12 +29,14 @@ public class VirusRepositoryTest {
 
     @Before
     public void clearRepositoryBeforeTest() throws Exception {
+        UserProfileRepository.setCurrentUserForTesting(new UserProfile("local-user", "Quiet Otter"));
         clearRepository();
     }
 
     @After
     public void clearRepositoryAfterTest() throws Exception {
         clearRepository();
+        UserProfileRepository.resetForTesting();
     }
 
     @Test
@@ -201,12 +208,74 @@ public class VirusRepositoryTest {
         assertEquals(18, VirusRepository.getVirusById(offspring.getId()).getGeneration());
     }
 
+    @Test
+    public void addVirusDiscoversCarrierAndPatientZeroFriendsFromOrigin() {
+        VirusOrigin origin = VirusOrigin.importedFromInvite(
+                VirusOrigin.infectedFrom("Local",
+                        VirusOrigin.seededInLab(),
+                        "Morgan",
+                        VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Morgan")),
+                "Alex");
+        Virus virus = new Virus("disc-1", "Discovery", "Spark", "Alex",
+                Infectivity.rate(4), Resilience.of(4), Chaos.level(4), false, "GEN-D1", origin, 2);
+
+        VirusRepository.addVirus(virus);
+
+        List<Friend> friends = FriendsRepository.getFriends();
+        assertEquals(2, friends.size());
+        assertNotNull(findFriendByDisplayName("Alex"));
+        assertNotNull(findFriendByDisplayName("Morgan"));
+    }
+
+    @Test
+    public void replaceVirusUpdatesDiscoveredHandleAndAppendsHistory() {
+        Virus original = new Virus("disc-2", "Discovery", "Spark", "Carrier",
+                Infectivity.rate(3), Resilience.of(3), Chaos.level(3), false, "GEN-D2",
+                originWithDirectSource("vector-1", "Old Handle"), 1);
+        Virus updated = new Virus("disc-2", "Discovery", "Spark", "Carrier",
+                Infectivity.rate(3), Resilience.of(3), Chaos.level(3), false, "GEN-D2",
+                originWithDirectSource("vector-1", "New Handle"), 2);
+
+        VirusRepository.addVirus(original);
+        VirusRepository.replaceVirus(updated);
+
+        Friend loaded = FriendsRepository.getFriendById("vector-1");
+        assertNotNull(loaded);
+        assertEquals("New Handle", loaded.getDisplayName());
+        assertEquals(1, loaded.getHandleHistory().size());
+        assertEquals("Old Handle", loaded.getHandleHistory().get(0));
+    }
+
+    @Test
+    public void addVirusSkipsCurrentUserWhenOriginBelongsToLocalPlayer() {
+        Virus selfOwned = new Virus("self-1", "Lab Seed", "Spark", "Quiet Otter",
+                Infectivity.rate(2), Resilience.of(2), Chaos.level(2), false, "GEN-SELF",
+                VirusOrigin.seededByUser("local-user", "Quiet Otter"), 1);
+
+        VirusRepository.addVirus(selfOwned);
+
+        assertTrue(FriendsRepository.getFriends().isEmpty());
+        assertNull(FriendsRepository.getFriendById("local-user"));
+    }
+
+    @Test
+    public void addVirusPersistsProtectedScientistFromSimulatedFallback() {
+        Virus simulated = new Virus("sim-1", "Random", "Spark", "Professor Tesla [SIMULATED]",
+                Infectivity.rate(2), Resilience.of(2), Chaos.level(2), false, "GEN-SIM",
+                originWithDirectSource("scientist-1", "Professor Tesla [SIMULATED]", false), 1);
+
+        VirusRepository.addVirus(simulated);
+
+        Friend scientist = FriendsRepository.getFriendById("scientist-1");
+        assertNotNull(scientist);
+        assertTrue(scientist.isProtectedProfile());
+        assertFalse(scientist.getDescription().isEmpty());
+        assertFalse(FriendsRepository.deleteFriend("scientist-1"));
+    }
+
     private void clearRepository() throws Exception {
-        Field collectionField = VirusRepository.class.getDeclaredField("COLLECTION");
-        collectionField.setAccessible(true);
-        List<?> collection = (List<?>) collectionField.get(null);
-        //noinspection DataFlowIssue
-        collection.clear();
+        clearStaticList(VirusRepository.class, "COLLECTION");
+        clearStaticList(FriendsRepository.class, "FRIENDS");
     }
 
     private void setRepositoryContents(List<Virus> viruses) throws Exception {
@@ -216,5 +285,37 @@ public class VirusRepositoryTest {
         List<Virus> collection = (List<Virus>) collectionField.get(null);
         collection.clear();
         collection.addAll(viruses);
+    }
+
+    private void clearStaticList(Class<?> owner, String fieldName) throws Exception {
+        Field field = owner.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        List<?> collection = (List<?>) field.get(null);
+        collection.clear();
+    }
+
+    private Friend findFriendByDisplayName(String displayName) {
+        for (Friend friend : FriendsRepository.getFriends()) {
+            if (displayName.equals(friend.getDisplayName())) {
+                return friend;
+            }
+        }
+        return null;
+    }
+
+    private VirusOrigin originWithDirectSource(String id, String displayName) {
+        return originWithDirectSource(id, displayName, true);
+    }
+
+    private VirusOrigin originWithDirectSource(String id, String displayName, boolean realFriend) {
+        String raw = "1\nIMPORTED_INVITE\nImported from invite\n"
+                + id + "\n"
+                + displayName + "\n"
+                + (realFriend ? "1" : "0") + "\n"
+                + (realFriend ? "1" : "0") + "\n"
+                + "0\n";
+        String payload = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+        return VirusOrigin.fromSharePayload(payload);
     }
 }

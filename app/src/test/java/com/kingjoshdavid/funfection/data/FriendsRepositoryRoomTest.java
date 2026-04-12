@@ -12,6 +12,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -90,6 +91,24 @@ public class FriendsRepositoryRoomTest {
         assertTrue(FriendsRepository.deleteFriend("friend-pick-1"));
         assertNull(FriendsRepository.getFriendById("friend-pick-1"));
         assertFalse(FriendsRepository.deleteFriend("friend-pick-1"));
+    }
+
+    @Test
+    public void saveFriendRoundTripsHistoryAndProtectedMetadata() {
+        Friend scientist = new Friend("scientist-room", "Professor Tesla [SIMULATED]", "",
+                "", "private notes should be cleared", "Scientist fallback", true,
+                Collections.singletonList("Professor Tesla"));
+
+        FriendsRepository.saveFriend(scientist);
+
+        Friend loaded = FriendsRepository.getFriendById("scientist-room");
+        assertNotNull(loaded);
+        assertTrue(loaded.isProtectedProfile());
+        assertEquals("Scientist fallback", loaded.getDescription());
+        assertEquals(1, loaded.getHandleHistory().size());
+        assertEquals("Professor Tesla", loaded.getHandleHistory().get(0));
+        assertEquals("", loaded.getNotes());
+        assertFalse(FriendsRepository.deleteFriend("scientist-room"));
     }
 }
 

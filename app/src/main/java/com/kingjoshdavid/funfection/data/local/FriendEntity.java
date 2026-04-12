@@ -12,6 +12,11 @@ public class FriendEntity {
     public String id;
     public String displayName;
     public String inviteCode;
+    public String displayNameOverride;
+    public String notes;
+    public String description;
+    public boolean protectedProfile;
+    public String handleHistoryPayload;
 
     public long createdAt;
 }

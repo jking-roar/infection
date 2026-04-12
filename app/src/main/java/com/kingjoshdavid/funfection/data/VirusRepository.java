@@ -136,6 +136,7 @@ public final class VirusRepository {
         ensureSeeded();
         if (isUsingInMemoryFallback()) {
             COLLECTION.add(0, virus);
+            FriendsRepository.recordDiscovery(virus);
             return;
         }
         runOnIo(() -> {
@@ -146,6 +147,7 @@ public final class VirusRepository {
             VirusEntity entity = toEntity(virus);
             entity.createdAt = System.currentTimeMillis();
             database.virusDao().upsert(entity);
+            FriendsRepository.recordDiscovery(virus);
             return null;
         });
     }
@@ -160,10 +162,12 @@ public final class VirusRepository {
             for (int index = 0; index < COLLECTION.size(); index++) {
                 if (COLLECTION.get(index).getId().equals(virus.getId())) {
                     COLLECTION.set(index, virus);
+                    FriendsRepository.recordDiscovery(virus);
                     return;
                 }
             }
             COLLECTION.add(0, virus);
+            FriendsRepository.recordDiscovery(virus);
             return;
         }
         runOnIo(() -> {
@@ -175,6 +179,7 @@ public final class VirusRepository {
             VirusEntity entity = toEntity(virus);
             entity.createdAt = existing == null ? System.currentTimeMillis() : existing.createdAt;
             database.virusDao().upsert(entity);
+            FriendsRepository.recordDiscovery(virus);
             return null;
         });
     }

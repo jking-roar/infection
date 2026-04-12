@@ -3,9 +3,11 @@ package com.kingjoshdavid.funfection.data;
 import com.kingjoshdavid.funfection.data.local.DatabaseProvider;
 import com.kingjoshdavid.funfection.data.local.FunfectionDatabase;
 import com.kingjoshdavid.funfection.model.Chaos;
+import com.kingjoshdavid.funfection.model.Friend;
 import com.kingjoshdavid.funfection.model.Infectivity;
 import com.kingjoshdavid.funfection.model.Resilience;
 import com.kingjoshdavid.funfection.model.Virus;
+import com.kingjoshdavid.funfection.model.VirusOrigin;
 
 import org.junit.After;
 import org.junit.Before;
@@ -14,6 +16,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Arrays;
 import java.util.List;
 
@@ -96,6 +100,35 @@ public class VirusRepositoryRoomTest {
         assertEquals(VirusRepository.PurgeResult.REMOVED, VirusRepository.purgeVirusById("room-pick-1"));
         assertNull(VirusRepository.getVirusById("room-pick-1"));
         assertEquals(VirusRepository.PurgeResult.MISSING, VirusRepository.purgeVirusById("room-pick-1"));
+    }
+
+    @Test
+    public void addAndReplacePersistDiscoveredFriendsThroughRoom() {
+        Virus first = new Virus("room-disc-1", "First", "Spark", "Jordan",
+                Infectivity.rate(3), Resilience.of(3), Chaos.level(3), false, "GEN-RD1",
+                originWithDirectSource("vector-room-1", "Jordan"), 1);
+        Virus updated = new Virus("room-disc-1", "First", "Spark", "Jordan",
+                Infectivity.rate(3), Resilience.of(3), Chaos.level(3), false, "GEN-RD1",
+                originWithDirectSource("vector-room-1", "Jordan Prime"), 2);
+
+        VirusRepository.addVirus(first);
+        VirusRepository.replaceVirus(updated);
+
+        Friend discovered = FriendsRepository.getFriendById("vector-room-1");
+        assertNotNull(discovered);
+        assertEquals("Jordan Prime", discovered.getDisplayName());
+        assertEquals(1, discovered.getHandleHistory().size());
+        assertEquals("Jordan", discovered.getHandleHistory().get(0));
+    }
+
+    private VirusOrigin originWithDirectSource(String id, String displayName) {
+        String raw = "1\nIMPORTED_INVITE\nImported from invite\n"
+                + id + "\n"
+                + displayName + "\n"
+                + "1\n1\n0\n";
+        String payload = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+        return VirusOrigin.fromSharePayload(payload);
     }
 }
 
