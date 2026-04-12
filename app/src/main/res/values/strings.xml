@@ -2,25 +2,9 @@
 <resources>
     <string name="app_name">funfection</string>
     <string name="theme_primary_font">sans-serif-medium</string>
-    <string name="infection_preview_title">Confirm infection</string>
     <string name="infection_preview_cancel">Cancel</string>
-    <string name="infection_preview_proceed">Proceed with infection</string>
-    <string name="infection_preview_seeds_heading">Seeds of infection</string>
-    <string name="infection_preview_auto_selected">No local strain was selected, so %1$s has been armed automatically.</string>
-    <string name="infection_preview_no_local_seed">No local strain is selected. The lab fallback seed will drive your side of the infection.</string>
-    <string name="infection_preview_your_seeds">Your prepared strains</string>
-    <string name="infection_preview_friend_seeds">Incoming friend strains</string>
-    <string name="infection_preview_no_seed_entries">• No direct strain entries found.</string>
-    <string name="infection_preview_friend_source_invite">Friend source: invite code decoded into %1$d strain(s).</string>
-    <string name="infection_preview_friend_source_random">Friend source: no valid invite code was found, so random strain %1$s will be used.</string>
-    <string name="infection_preview_local_only">Local-only combine: using only your selected strains.</string>
-    <string name="infection_preview_possibilities_heading">Projected possibilities</string>
-    <string name="infection_preview_lineage">Projected lineage: %1$s family with genome %2$s.</string>
     <string name="infection_preview_mutation_likely">Mutation outlook: a volatile mutation spike is expected from this pairing.</string>
     <string name="infection_preview_mutation_stable">Mutation outlook: this pairing is projected to remain a stable transfer.</string>
-    <string name="infection_preview_stats">Transmission profile: infectivity %1$d, resilience %2$d, chaos %3$d, rate %4$s.</string>
-    <string name="infection_preview_carrier_chain">Carrier chain: %1$s.</string>
-    <string name="infection_preview_seed_item">• %1$s — %2$s | genome %3$s | rate %4$s | strength %5$d | generation %6$d</string>
     <string name="create_virus_button">Create Virus</string>
     <string name="lab_seed_title">Create a lab virus</string>
     <string name="lab_seed_hint">Enter a seed or leave blank for a random virus</string>
@@ -28,21 +12,12 @@
     <string name="lab_seed_scan_prompt">Scan a QR code or barcode to use as the seed</string>
     <string name="lab_seed_scan_loaded">Seed loaded from scan.</string>
     <string name="lab_seed_scan_empty">Nothing was scanned — enter a seed manually.</string>
-    <string name="create_virus_toast">New virus created: %1$s</string>
-    <string name="create_virus_seed_manual">Seed used: %1$s.</string>
-    <string name="create_virus_seed_random">Seed used: random.</string>
-    <string name="create_virus_summary">Created %1$s in the %2$s family with genome %3$s. %4$s</string>
-    <string name="combine_local_button">Combine Selected</string>
     <string name="collection_summary_collected_viruses">%1$s\'s lab strains: %2$d</string>
     <string name="username_saved_toast">Saved user name: %1$s</string>
     <string name="tab_collection">Lab</string>
     <string name="tab_infect">Import</string>
     <string name="tab_friends">Friends</string>
     <string name="coming_soon_friends">Coming Soon: Browse your infected network of friends</string>
-    <string name="infect_view_show_qr_button">Show QR</string>
-    <string name="infect_view_share_text_button">Share Text</string>
-    <string name="infect_view_scan_qr_button">Scan QR</string>
-    <string name="infect_select_share_toast">Select at least one virus to share.</string>
     <string name="infect_share_subject">Funfection invite</string>
     <string name="infect_share_chooser">Share virus invite</string>
     <string name="infect_share_body">Swap strains with me in Funfection. Paste this invite code into the lab:
@@ -58,18 +33,7 @@
     <string name="infect_qr_scan_prompt">Scan a Funfection invite QR</string>
     <string name="infect_qr_scan_success">Invite QR loaded. Review it or infect immediately.</string>
     <string name="infect_qr_scan_empty">No QR invite was captured.</string>
-    <string name="infect_result_summary">Combined %1$s with %2$s. %3$s emerged in the %4$s family with genome %5$s. Strength %6$d, lineage generation %7$d. %8$s %9$s</string>
     <string name="infect_new_virus_toast">New virus: %1$s</string>
-    <string name="infect_view_title">Infect a Friend</string>
-    <string name="infect_view_instructions">Select viruses to share, then paste a friend\'s invite code or infect with a
-        random strain.
-    </string>
-    <string name="infect_view_list_label">Your strains</string>
-    <string name="infect_view_invite_label">Friend invite code</string>
-    <string name="infect_view_invite_instructions">Paste a virus code or leave blank for a random match</string>
-    <string name="infect_view_infect_button">Infect</string>
-    <string name="infect_view_latest_outbreak_label">Latest outbreak</string>
-    <string name="infect_view_latest_outbreak_missing_text">No infection has been triggered yet.</string>
     <string name="import_view_title">Import a Strain</string>
     <string name="import_view_instructions">Scan a friend\'s QR code or paste their invite code to bring a new strain into your lab.</string>
     <string name="import_scan_qr_button">Scan QR Code</string>
@@ -86,15 +50,10 @@
     <string name="import_result_summary">%1$s joined the %2$s family with genome %3$s. Strength %4$d, generation %5$d. %6$s</string>
     <string name="import_result_code_decoded">Decoded from invite code (%1$d strain(s)).</string>
     <string name="import_result_random_used">Random strain used as source.</string>
-    <string name="start_virus_code_instructions">Paste a virus code or leave blank for a random match</string>
-    <string name="start_view_virus_code_reminder">Matching strains produce matching offspring. Mutations are rare but
-        possible.
-    </string>
     <string name="collection_name_label">Your Name</string>
     <string name="collection_name_hint">Tell others who you are</string>
     <string name="collection_name_save_button">Save</string>
     <string name="collection_virus_list_label">Your lab strains</string>
-    <string name="lab_action_menu_title">Actions for %1$s</string>
     <string name="lab_action_view_details">View details</string>
     <string name="lab_action_share_text">Share via text</string>
     <string name="lab_action_share_qr">Share via QR code</string>
@@ -109,24 +68,12 @@
     <string name="lab_purge_missing">That strain is no longer available in your lab.</string>
     <string name="lab_purge_last_blocked">Keep at least one strain in your lab before purging.</string>
     <string name="combine_page_header">Combine Strains</string>
-    <string name="combine_selection_instructions">Select two or more strains to fuse into offspring.</string>
-    <string name="combine_pinned_selection_instructions">Pinned strain: %1$s. Choose partner strains, then combine.</string>
-    <string name="combine_pinned_locked">%1$s stays pinned in this combine.</string>
-    <string name="combine_pinned_opened_toast">%1$s is pinned as the lead strain.</string>
-    <string name="combine_selector_open">Open selector panel</string>
-    <string name="combine_selector_title">Selector panel</string>
-    <string name="combine_selector_done">Done selecting</string>
     <string name="combine_selector_none_selected">No partner strains selected yet.</string>
     <string name="combine_selector_selected_count">%1$d partner strain(s) selected.</string>
     <string name="combine_selector_badge_pinned">Pinned</string>
     <string name="combine_selector_badge_selected">Selected</string>
-    <string name="combine_latest_label">Latest combination</string>
-    <string name="combine_result_info_none">No combination run yet.</string>
     <string name="combine_action_button">Combine</string>
     <string name="combine_need_partner">Select at least one partner strain to combine.</string>
-    <string name="create_page_header">Create a Lab Virus</string>
-    <string name="create_latest_creation_label">Latest creation</string>
-    <string name="create_latest_creation_info_none">No virus created yet.</string>
     <string name="virus_page_header">Lab Strain Details</string>
     <string name="virus_actions_heading">Strain actions</string>
     <string name="virus_production_context_line">Production context: %1$s</string>
