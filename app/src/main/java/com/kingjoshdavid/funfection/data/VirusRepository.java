@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -257,11 +258,22 @@ public final class VirusRepository {
             if (database == null) {
                 return Collections.emptyList();
             }
-            List<String> virusIds = database.friendVirusDao().getVirusIdsByFriendId(friendId);
-            if (virusIds == null || virusIds.isEmpty()) {
-                return Collections.emptyList();
+            LinkedHashMap<String, Virus> merged = new LinkedHashMap<>();
+            List<VirusEntity> directMatches = database.virusDao().findByAssociatedFriendId(friendId);
+            for (VirusEntity entity : directMatches) {
+                Virus virus = toDomain(entity);
+                merged.put(virus.getId(), virus);
             }
-            return pickByIds(virusIds);
+            List<String> virusIds = database.friendVirusDao().getVirusIdsByFriendId(friendId);
+            if (virusIds != null && !virusIds.isEmpty()) {
+                List<Virus> linkedViruses = pickByIds(virusIds);
+                for (Virus virus : linkedViruses) {
+                    if (!merged.containsKey(virus.getId())) {
+                        merged.put(virus.getId(), virus);
+                    }
+                }
+            }
+            return new ArrayList<>(merged.values());
         });
     }
 
@@ -467,7 +479,56 @@ public final class VirusRepository {
         entity.productionContext = virus.getProductionContext();
         entity.rawSeed = virus.getRawSeed();
         entity.seed = virus.getSeed();
+        entity.primaryPatientZeroId = primaryPatientZeroId(virus);
+        entity.secondaryPatientZeroId = secondaryPatientZeroId(virus);
+        entity.combinedLeftCarrierId = combinedLeftCarrierId(virus);
+        entity.combinedRightCarrierId = combinedRightCarrierId(virus);
         return entity;
+    }
+
+    private static String primaryPatientZeroId(Virus virus) {
+        if (virus == null || virus.getOriginInfo() == null || virus.getOriginInfo().getPatientZeros().isEmpty()) {
+            return null;
+        }
+        String id = virus.getOriginInfo().getPatientZeros().get(0).getId();
+        return normalizeId(id);
+    }
+
+    private static String secondaryPatientZeroId(Virus virus) {
+        if (virus == null || virus.getOriginInfo() == null || virus.getOriginInfo().getPatientZeros().size() < 2) {
+            return null;
+        }
+        String id = virus.getOriginInfo().getPatientZeros().get(1).getId();
+        return normalizeId(id);
+    }
+
+    private static String combinedLeftCarrierId(Virus virus) {
+        if (!isPairwiseCombinedVirus(virus)) {
+            return null;
+        }
+        return primaryPatientZeroId(virus);
+    }
+
+    private static String combinedRightCarrierId(Virus virus) {
+        if (!isPairwiseCombinedVirus(virus)) {
+            return null;
+        }
+        return secondaryPatientZeroId(virus);
+    }
+
+    private static boolean isPairwiseCombinedVirus(Virus virus) {
+        return virus != null
+                && virus.getOriginInfo() != null
+                && virus.getOrigin() != null
+                && virus.getOrigin().startsWith("Infected from ");
+    }
+
+    private static String normalizeId(String id) {
+        if (id == null) {
+            return null;
+        }
+        String trimmed = id.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private static void syncInMemoryLinksForVirus(Virus virus) {

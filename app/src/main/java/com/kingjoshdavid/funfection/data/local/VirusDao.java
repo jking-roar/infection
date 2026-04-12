@@ -22,6 +22,13 @@ public interface VirusDao {
     @Query("SELECT * FROM viruses WHERE seed = :seed ORDER BY created_at DESC LIMIT 1")
     VirusEntity findBySeed(long seed);
 
+    @Query("SELECT * FROM viruses WHERE primary_patient_zero_id = :friendId"
+            + " OR secondary_patient_zero_id = :friendId"
+            + " OR combined_left_carrier_id = :friendId"
+            + " OR combined_right_carrier_id = :friendId"
+            + " ORDER BY created_at DESC")
+    List<VirusEntity> findByAssociatedFriendId(String friendId);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void upsert(VirusEntity virus);
 

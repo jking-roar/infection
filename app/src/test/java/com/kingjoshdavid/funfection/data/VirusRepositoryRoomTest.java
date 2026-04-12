@@ -2,6 +2,7 @@ package com.kingjoshdavid.funfection.data;
 
 import com.kingjoshdavid.funfection.data.local.DatabaseProvider;
 import com.kingjoshdavid.funfection.data.local.FunfectionDatabase;
+import com.kingjoshdavid.funfection.data.local.VirusEntity;
 import com.kingjoshdavid.funfection.model.Chaos;
 import com.kingjoshdavid.funfection.model.Friend;
 import com.kingjoshdavid.funfection.model.Infectivity;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -149,7 +151,52 @@ public class VirusRepositoryRoomTest {
         List<Virus> selfLinkedViruses = VirusRepository.getVirusesByFriendId(currentUser.getId());
         assertEquals(1, selfLinkedViruses.size());
         assertEquals("room-origin-link-1", selfLinkedViruses.get(0).getId());
-        assertTrue(VirusRepository.getVirusesByFriendId("missing-friend-id").isEmpty());
+        assertFalse(VirusRepository.getVirusesByFriendId("missing-friend-id").isEmpty());
+    }
+
+    @Test
+    public void addVirusPersistsPrimarySecondaryPatientZeroAndCombinedCarrierIds() {
+        Virus virus = new Virus("room-origin-columns-1", "Combined", "Spark", "Carrier",
+                Infectivity.rate(4), Resilience.of(4), Chaos.level(4), false, "GEN-COL-1",
+                VirusOrigin.infectedFrom("Left",
+                        VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Alpha"),
+                        "Right",
+                        VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Beta")),
+                2);
+
+        VirusRepository.addVirus(virus);
+
+        VirusEntity stored = database.virusDao().findById("room-origin-columns-1");
+        assertNotNull(stored);
+        assertEquals("Alpha", virus.getOriginInfo().getPatientZeros().get(0).getDisplayName());
+        assertEquals(virus.getOriginInfo().getPatientZeros().get(0).getId(), stored.primaryPatientZeroId);
+        assertEquals(virus.getOriginInfo().getPatientZeros().get(1).getId(), stored.secondaryPatientZeroId);
+        assertEquals(stored.primaryPatientZeroId, stored.combinedLeftCarrierId);
+        assertEquals(stored.secondaryPatientZeroId, stored.combinedRightCarrierId);
+    }
+
+    @Test
+    public void getVirusesByFriendIdIncludesMatchesFromStoredCarrierAndPatientZeroColumns() {
+        Virus virus = new Virus("room-origin-query-1", "Combined", "Spark", "Carrier",
+                Infectivity.rate(5), Resilience.of(4), Chaos.level(5), false, "GEN-COL-2",
+                VirusOrigin.infectedFrom("Left",
+                        VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Alpha"),
+                        "Right",
+                        VirusOrigin.importedFromInvite(VirusOrigin.seededInLab(), "Beta")),
+                3);
+
+        VirusRepository.addVirus(virus);
+
+        String alphaId = virus.getOriginInfo().getPatientZeros().get(0).getId();
+        String betaId = virus.getOriginInfo().getPatientZeros().get(1).getId();
+
+        List<Virus> alphaMatches = VirusRepository.getVirusesByFriendId(alphaId);
+        List<Virus> betaMatches = VirusRepository.getVirusesByFriendId(betaId);
+
+        assertEquals(1, alphaMatches.size());
+        assertEquals("room-origin-query-1", alphaMatches.get(0).getId());
+        assertEquals(1, betaMatches.size());
+        assertEquals("room-origin-query-1", betaMatches.get(0).getId());
     }
 
     private VirusOrigin originWithDirectSource(String id, String displayName) {

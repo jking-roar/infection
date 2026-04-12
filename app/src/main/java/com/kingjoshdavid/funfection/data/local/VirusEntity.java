@@ -3,9 +3,16 @@ package com.kingjoshdavid.funfection.data.local;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "viruses")
+@Entity(tableName = "viruses",
+        indices = {
+                @Index("primary_patient_zero_id"),
+                @Index("secondary_patient_zero_id"),
+                @Index("combined_left_carrier_id"),
+                @Index("combined_right_carrier_id")
+        })
 public class VirusEntity {
 
     @PrimaryKey
@@ -36,6 +43,18 @@ public class VirusEntity {
     public String rawSeed;
 
     public long seed;
+
+    @ColumnInfo(name = "primary_patient_zero_id")
+    public String primaryPatientZeroId;
+
+    @ColumnInfo(name = "secondary_patient_zero_id")
+    public String secondaryPatientZeroId;
+
+    @ColumnInfo(name = "combined_left_carrier_id")
+    public String combinedLeftCarrierId;
+
+    @ColumnInfo(name = "combined_right_carrier_id")
+    public String combinedRightCarrierId;
 
     @ColumnInfo(name = "created_at")
     public long createdAt;
