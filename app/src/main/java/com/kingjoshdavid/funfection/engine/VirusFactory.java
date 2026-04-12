@@ -126,7 +126,8 @@ public final class VirusFactory {
     }
 
     private static Virus fromSeed(String carrier, String seed, VirusOrigin origin) {
-        Random random = new Random(seed.hashCode());
+        long randomSeed = SeedUtil.seedFromString(seed);
+        Random random = new Random(randomSeed);
         String id = UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).toString();
         String family = FAMILIES[random.nextInt(FAMILIES.length)];
         String prefix = PREFIXES[random.nextInt(PREFIXES.length)];
@@ -139,7 +140,8 @@ public final class VirusFactory {
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutation);
-        return new Virus(id, prefix, suffix, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutation, genome, origin);
+        return new Virus(id, prefix, suffix, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,
+                genome, origin, STARTER_GENERATION, null, seed, randomSeed);
     }
 
     /**
@@ -160,8 +162,7 @@ public final class VirusFactory {
         VirusOrigin origin = isQrCode
                 ? VirusOrigin.foundInWildFromQr()
                 : VirusOrigin.foundInWildFromBarcode();
-        Virus virus = fromSeed(userProfile.getUserName(), effectiveSeed, origin);
-        return virus.withWildSeed(effectiveSeed);
+        return fromSeed(userProfile.getUserName(), effectiveSeed, origin);
     }
 
     /**
@@ -247,7 +248,11 @@ public final class VirusFactory {
             int generation = pieces.length > 9 ? Math.max(1, Integer.parseInt(pieces[9])) : 1;
             VirusOrigin sharedOrigin = pieces.length > 10 ? VirusOrigin.fromSharePayload(pieces[10]) : null;
             VirusOrigin importedOrigin = VirusOrigin.importedFromInvite(sharedOrigin, carrier);
-            return new Virus(id, name, family, carrier,
+            String importedRawSeed = "invite:" + encoded;
+            long importedSeed = pieces.length > 11
+                    ? Long.parseLong(pieces[11])
+                    : SeedUtil.seedFromString(importedRawSeed);
+            Virus parsed = new Virus(id, name, family, carrier,
                     Infectivity.rate(infectivity),
                     Resilience.of(resilience),
                     Chaos.level(chaos),
@@ -255,6 +260,9 @@ public final class VirusFactory {
                     genome,
                     importedOrigin,
                     generation);
+            return new Virus(parsed.getId(), parsed.getPrefix(), parsed.getSuffix(), parsed.getFamily(), parsed.getCarrier(),
+                    parsed.getInfectivity(), parsed.getResilience(), parsed.getChaos(), parsed.hasMutation(), parsed.getGenome(),
+                    parsed.getOriginInfo(), parsed.getGeneration(), parsed.getProductionContext(), importedRawSeed, importedSeed);
         } catch (NumberFormatException error) {
             return null;
         }

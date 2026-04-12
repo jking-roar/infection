@@ -100,14 +100,20 @@ public class Virus implements Serializable {
     private final String productionContext;
 
     /**
-     * Raw seed string captured when this strain was discovered by scanning a QR code or barcode
-     * in the wild.
+     * Raw seed string entered or scanned by the player.
      *
-     * <p><strong>Do not send this field to the UI.</strong> It is stored internally for
-     * duplicate-discovery tracking only. Present when the strain was created via a wild scan;
-     * {@code null} for all other creation paths.</p>
+     * <p><strong>Do not send this field in invites.</strong> It may include user-meaningful
+     * strings and is retained locally for display and duplicate-discovery context.</p>
      */
-    private final String wildSeed;
+    private final String virusSeedRaw;
+
+    /**
+     * Deterministic numeric seed used to generate this strain's randomized attributes.
+     *
+     * <p><strong>Do not send this field to the UI by default.</strong> It is used for
+     * deterministic generation, collision checks, and safe sharing.</p>
+     */
+    private final long virusSeed;
 
     /**
      * Lineage generation depth for this strain.
@@ -264,7 +270,7 @@ public class Virus implements Serializable {
                  int generation,
                  String productionContext) {
         this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
-                origin, generation, productionContext, null);
+                origin, generation, productionContext, defaultSeed(id, genome));
     }
 
     public Virus(String id,
@@ -280,7 +286,8 @@ public class Virus implements Serializable {
                  VirusOrigin origin,
                  int generation,
                  String productionContext,
-                 String wildSeed) {
+                 String rawSeed,
+                 long virusSeed) {
         this.id = id;
         this.prefix = normalizeNamePart(prefix, "Unknown");
         this.suffix = normalizeNamePart(suffix, "");
@@ -294,7 +301,26 @@ public class Virus implements Serializable {
         this.origin = origin == null ? VirusOrigin.legacy("Unknown origin") : origin;
         this.generation = Math.max(1, generation);
         this.productionContext = normalizeOptionalMetadata(productionContext);
-        this.wildSeed = wildSeed == null || wildSeed.trim().isEmpty() ? null : wildSeed.trim();
+        this.virusSeedRaw = normalizeOptionalMetadata(rawSeed);
+        this.virusSeed = virusSeed;
+    }
+
+    public Virus(String id,
+                 String prefix,
+                 String suffix,
+                 String family,
+                 String carrier,
+                 Infectivity infectivity,
+                 Resilience resilience,
+                 Chaos chaos,
+                 boolean mutation,
+                 String genome,
+                 VirusOrigin origin,
+                 int generation,
+                 String productionContext,
+                 long virusSeed) {
+        this(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome,
+                origin, generation, productionContext, null, virusSeed);
     }
 
     public String getId() {
@@ -354,18 +380,19 @@ public class Virus implements Serializable {
     }
 
     /**
-     * Returns the raw seed that was input by a user or scanned from a QR code or barcode or which was generated randomly when this strain was
-     * discovered in the wild.
+     * Returns the deterministic numeric seed used to generate this strain.
      *
-     * <p><strong>Do not expose this value in the UI.</strong> It is for internal duplicate
-     * tracking only. Returns {@code null} for strains not created via a wild scan.</p>
+     * <p><strong>Do not expose this value in the UI.</strong> It is internal engine metadata
+     * used for reproducible reconstruction and duplicate tracking.</p>
      *
-     * When transmitting in a share, this value needs to be encrypted rather than simply encoded, since it may contain personally identifiable information. The app's sharing logic should handle that encryption and decryption as needed when strains are shared between users or reconstructed from share codes.
-     *
-     * @return raw seed used for seeding
+     * @return numeric seed used for deterministic random generation
      */
-    public String getSeed() {
-        return wildSeed;
+    public long getSeed() {
+        return virusSeed;
+    }
+
+    public String getRawSeed() {
+        return virusSeedRaw;
     }
 
     public String getOriginReport(String viewerId) {
@@ -434,7 +461,7 @@ public class Virus implements Serializable {
     public String toShareCode() {
         return id + ":" + family + ":" + infectivity.score() + ":" + resilience.score() + ":" + chaos.score() + ":"
                 + (mutation ? "1" : "0") + ":" + genome + ":" + sanitize(getName()) + ":" + sanitize(carrier)
-                + ":" + generation + ":" + origin.toSharePayload();
+                + ":" + generation + ":" + origin.toSharePayload() + ":" + virusSeed;
     }
 
     /**
@@ -460,18 +487,34 @@ public class Virus implements Serializable {
      */
     public Virus withGeneration(int updatedGeneration) {
         return new Virus(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
-                updatedGeneration, productionContext, wildSeed);
+                updatedGeneration, productionContext, virusSeedRaw, virusSeed);
     }
 
     /**
-     * Returns a copy of this strain with the given wild-scan seed attached.
+     * Returns a copy of this strain with a replaced deterministic seed.
      *
-     * @param seed raw scanned seed value to associate with this strain
-     * @return copied virus with the wild seed set
+     * @param seed deterministic seed value to associate with this strain
+     * @return copied virus with the supplied seed
      */
-    public Virus withWildSeed(String seed) {
+    public Virus withSeed(long seed) {
         return new Virus(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
-                generation, productionContext, seed);
+                generation, productionContext, virusSeedRaw, seed);
+    }
+
+    public Virus withRawSeed(String rawSeedValue) {
+        return new Virus(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
+                generation, productionContext, rawSeedValue, virusSeed);
+    }
+
+    /**
+     * Backward-compatible alias for older call sites that attach a seed from text input.
+     *
+     * @param seedValue textual seed value
+     * @return copied virus with a deterministic numeric seed derived from the text
+     */
+    public Virus withWildSeed(String seedValue) {
+        return new Virus(id, prefix, suffix, family, carrier, infectivity, resilience, chaos, mutation, genome, origin,
+                generation, productionContext, seedValue, defaultSeed(seedValue, id));
     }
 
     public Virus incrementGeneration() {
@@ -525,5 +568,11 @@ public class Virus implements Serializable {
     private static String normalizeOptionalMetadata(String value) {
         String normalized = value == null ? "" : value.trim().replaceAll("\\s+", " ");
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private static long defaultSeed(String first, String second) {
+        String left = first == null ? "" : first;
+        String right = second == null ? "" : second;
+        return ((long) left.hashCode() << 32) ^ (right.hashCode() & 0xffffffffL);
     }
 }

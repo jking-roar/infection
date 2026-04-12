@@ -375,16 +375,53 @@ public class CollectionFragment extends Fragment {
 
     private void createFromWildScan(String seed, boolean isQrCode) {
         Virus createdVirus = VirusFactory.createWildVirus(seed, isQrCode);
-        VirusRepository.addVirusAsync(createdVirus, () -> {
+        VirusRepository.getVirusBySeedAsync(createdVirus.getSeed(), existingVirus -> {
             if (!isAdded()) {
                 return;
             }
-            refreshCollection();
-            Toast.makeText(requireContext(),
-                    getString(R.string.lab_wild_scan_created_toast, createdVirus.getName(), createdVirus.getOrigin()),
-                    Toast.LENGTH_SHORT).show();
-            openVirusDetails(createdVirus);
+            if (existingVirus == null) {
+                VirusRepository.addVirusAsync(createdVirus, () -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    refreshCollection();
+                    Toast.makeText(requireContext(),
+                            getString(R.string.lab_wild_scan_created_toast, createdVirus.getName(), createdVirus.getOrigin()),
+                            Toast.LENGTH_SHORT).show();
+                    openVirusDetails(createdVirus);
+                });
+                return;
+            }
+
+            boolean rawSeedChanged = !sameText(existingVirus.getRawSeed(), createdVirus.getRawSeed());
+            Virus targetVirus = rawSeedChanged ? existingVirus.withRawSeed(createdVirus.getRawSeed()) : existingVirus;
+            Runnable finishDuplicateFlow = () -> {
+                if (!isAdded()) {
+                    return;
+                }
+                refreshCollection();
+                Toast.makeText(requireContext(),
+                        getString(R.string.lab_seed_collision_toast, targetVirus.getName()),
+                        Toast.LENGTH_LONG).show();
+                openVirusDetails(targetVirus);
+            };
+
+            if (rawSeedChanged) {
+                VirusRepository.replaceVirusAsync(targetVirus, finishDuplicateFlow::run);
+            } else {
+                finishDuplicateFlow.run();
+            }
         });
+    }
+
+    private boolean sameText(String left, String right) {
+        if (left == null && right == null) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        return left.trim().equals(right.trim());
     }
 
     // -------------------------------------------------------------------------

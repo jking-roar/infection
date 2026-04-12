@@ -16,6 +16,9 @@ public interface VirusDao {
     @Query("SELECT * FROM viruses WHERE id = :id LIMIT 1")
     VirusEntity findById(String id);
 
+    @Query("SELECT * FROM viruses WHERE seed = :seed ORDER BY created_at DESC LIMIT 1")
+    VirusEntity findBySeed(long seed);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void upsert(VirusEntity virus);
 

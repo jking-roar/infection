@@ -7,6 +7,7 @@ import android.os.Looper;
 import com.kingjoshdavid.funfection.data.local.DatabaseProvider;
 import com.kingjoshdavid.funfection.data.local.FunfectionDatabase;
 import com.kingjoshdavid.funfection.data.local.VirusEntity;
+import com.kingjoshdavid.funfection.engine.SeedUtil;
 import com.kingjoshdavid.funfection.engine.VirusFactory;
 import com.kingjoshdavid.funfection.model.Chaos;
 import com.kingjoshdavid.funfection.model.Infectivity;
@@ -184,6 +185,34 @@ public final class VirusRepository {
         });
     }
 
+    public static void replaceVirusAsync(Virus virus, CompletionCallback callback) {
+        runOnIoAsync(() -> replaceVirus(virus), callback);
+    }
+
+    public static Virus getVirusBySeed(long seed) {
+        ensureSeeded();
+        if (isUsingInMemoryFallback()) {
+            for (Virus virus : COLLECTION) {
+                if (virus.getSeed() == seed) {
+                    return virus;
+                }
+            }
+            return null;
+        }
+        return runOnIo(() -> {
+            FunfectionDatabase database = DatabaseProvider.getIfInitialized();
+            if (database == null) {
+                return null;
+            }
+            VirusEntity entity = database.virusDao().findBySeed(seed);
+            return entity == null ? null : toDomain(entity);
+        });
+    }
+
+    public static void getVirusBySeedAsync(long seed, ResultCallback<Virus> callback) {
+        runOnIoAsync(() -> getVirusBySeed(seed), callback);
+    }
+
     public static boolean removeVirusById(String id) {
         return purgeVirusById(id) == PurgeResult.REMOVED;
     }
@@ -352,6 +381,7 @@ public final class VirusRepository {
         entity.originPayload = virus.getOriginInfo().toSharePayload();
         entity.generation = virus.getGeneration();
         entity.productionContext = virus.getProductionContext();
+        entity.rawSeed = virus.getRawSeed();
         entity.seed = virus.getSeed();
         return entity;
     }
@@ -361,6 +391,10 @@ public final class VirusRepository {
         if (origin == null) {
             origin = VirusOrigin.legacy(entity.originSummary);
         }
+        String rawSeed = entity.rawSeed;
+        long seed = entity.seed == 0L
+                ? SeedUtil.seedFromString(rawSeed == null ? "persisted:" + entity.id : rawSeed)
+                : entity.seed;
         return new Virus(entity.id,
                 entity.prefix,
                 entity.suffix,
@@ -374,6 +408,7 @@ public final class VirusRepository {
                 origin,
                 entity.generation,
                 entity.productionContext,
-                entity.seed);
+                rawSeed,
+                seed);
     }
 }

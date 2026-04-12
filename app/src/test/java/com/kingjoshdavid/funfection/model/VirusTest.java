@@ -18,7 +18,7 @@ public class VirusTest {
 
         assertTrue(shareCode.startsWith("virus-1:Spark:4:5:6:1:GEN-123:Spark-Name:Carrier/One:3:"));
         String[] pieces = shareCode.split(":");
-        assertEquals(11, pieces.length);
+        assertEquals(12, pieces.length);
         assertNotNull(VirusOrigin.fromSharePayload(pieces[10]));
     }
 

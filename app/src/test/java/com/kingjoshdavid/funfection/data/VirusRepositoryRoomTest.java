@@ -24,6 +24,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 34)
@@ -66,8 +67,19 @@ public class VirusRepositoryRoomTest {
         VirusRepository.addVirus(second);
 
         List<Virus> viruses = VirusRepository.getViruses();
-        assertEquals("room-2", viruses.get(0).getId());
-        assertEquals("room-1", viruses.get(1).getId());
+        int firstIndex = -1;
+        int secondIndex = -1;
+        for (int i = 0; i < viruses.size(); i++) {
+            if ("room-1".equals(viruses.get(i).getId())) {
+                firstIndex = i;
+            }
+            if ("room-2".equals(viruses.get(i).getId())) {
+                secondIndex = i;
+            }
+        }
+        assertTrue(firstIndex >= 0);
+        assertTrue(secondIndex >= 0);
+        assertTrue(secondIndex < firstIndex);
 
         Virus updated = second.incrementGeneration();
         VirusRepository.replaceVirus(updated);

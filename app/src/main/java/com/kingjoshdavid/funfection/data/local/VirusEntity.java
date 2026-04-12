@@ -32,7 +32,10 @@ public class VirusEntity {
     @ColumnInfo(name = "production_context")
     public String productionContext;
 
-    public String seed;
+    @ColumnInfo(name = "raw_seed")
+    public String rawSeed;
+
+    public long seed;
 
     @ColumnInfo(name = "created_at")
     public long createdAt;

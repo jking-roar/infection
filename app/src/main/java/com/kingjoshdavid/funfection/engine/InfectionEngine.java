@@ -79,8 +79,10 @@ public final class InfectionEngine {
                 merged.hasMutation());
         VirusOrigin origin = VirusOrigin.combinedLocally(merged.getOriginInfo());
         int generation = merged.getGeneration() + 1;
+        String rawSeed = "local:" + seedSourceOf(merged) + ":" + id;
+        long seed = SeedUtil.seedFromString(rawSeed);
         return new Virus(id, prefix, suffix, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
-            merged.hasMutation(), genome, origin, generation, "Local Mix");
+            merged.hasMutation(), genome, origin, generation, "Local Mix", rawSeed, seed);
     }
 
     /**
@@ -144,8 +146,10 @@ public final class InfectionEngine {
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, family, infectivityRate, resilienceValue, chaosLevel, mutated);
         VirusOrigin origin = VirusOrigin.collapsed(viruses);
+        String rawSeed = buildCollapsedRawSeed(viruses, family, infectivity, resilience, chaos, mutated);
+        long seed = SeedUtil.seedFromString(rawSeed);
         return new Virus(id, prefix, suffix, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome,
-            origin, maxGeneration, productionContext);
+            origin, maxGeneration, productionContext, rawSeed, seed);
     }
 
     /**
@@ -199,8 +203,31 @@ public final class InfectionEngine {
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, dominantFamily, infectivityRate, resilienceValue, chaosLevel, mutation);
         VirusOrigin origin = VirusOrigin.infectedFrom(left.getName(), left.getOriginInfo(), right.getName(), right.getOriginInfo());
+        String rawSeed = "combine:" + seedSourceOf(left) + ":" + seedSourceOf(right) + ":" + id;
+        long seed = SeedUtil.seedFromString(rawSeed);
         return new Virus(id, prefix, suffix, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,
-                genome, origin, generation);
+                genome, origin, generation, null, rawSeed, seed);
+    }
+
+    private static String buildCollapsedRawSeed(List<Virus> viruses,
+                                                String family,
+                                                int infectivity,
+                                                int resilience,
+                                                int chaos,
+                                                boolean mutated) {
+        StringBuilder source = new StringBuilder();
+        for (Virus virus : viruses) {
+            if (source.length() > 0) {
+                source.append('|');
+            }
+            source.append(seedSourceOf(virus));
+        }
+        return "collapse:" + family + ':' + infectivity + ':' + resilience + ':' + chaos + ':'
+                + (mutated ? '1' : '0') + ':' + source;
+    }
+
+    private static long seedSourceOf(Virus virus) {
+        return virus.getSeed();
     }
 
     private static String chooseLowerInfectionPrefix(Virus left, Virus right) {
