@@ -97,5 +97,3 @@ public class MainActivity extends AppCompatActivity {
         intent.removeExtra(EXTRA_OPEN_COMBINE_VIRUS_ID);
     }
 }
-
-
