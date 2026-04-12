@@ -59,6 +59,16 @@
     <string name="collection_name_hint">Tell others who you are</string>
     <string name="collection_name_save_button">Save</string>
     <string name="collection_virus_list_label">Your lab strains</string>
+    <string name="collection_welcome">Welcome, %1$s</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_username_label">Your Name</string>
+    <string name="settings_username_hint">Tell others who you are</string>
+    <string name="settings_username_save_button">Save</string>
+    <string name="settings_night_mode_label">Display Mode</string>
+    <string name="settings_night_mode_system">System</string>
+    <string name="settings_night_mode_light">Light</string>
+    <string name="settings_night_mode_night">Night</string>
+    <string name="settings_icon_description">Settings</string>
     <string name="lab_action_view_details">View details</string>
     <string name="lab_action_share_text">Share via text</string>
     <string name="lab_action_share_qr">Share via QR code</string>

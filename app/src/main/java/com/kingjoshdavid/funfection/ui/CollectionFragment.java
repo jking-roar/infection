@@ -50,7 +50,7 @@ public class CollectionFragment extends Fragment {
     // Collection views
     private ListView virusList;
     private TextView collectionSummary;
-    private EditText userNameInput;
+    private TextView collectionWelcome;
     private List<Virus> viruses = new ArrayList<>();
     private LabVirusListAdapter virusAdapter;
     private EditText pendingCreateSeedInput;
@@ -107,11 +107,9 @@ public class CollectionFragment extends Fragment {
         // --- Collection views ---
         virusList = view.findViewById(R.id.virusList);
         collectionSummary = view.findViewById(R.id.collectionSummary);
-        userNameInput = view.findViewById(R.id.userNameInput);
-        Button saveUserNameButton = view.findViewById(R.id.saveUserNameButton);
+        collectionWelcome = view.findViewById(R.id.collectionWelcome);
         Button createVirusButton = view.findViewById(R.id.createVirusButton);
 
-        userNameInput.setText(UserProfileRepository.getCurrentUser().getUserName());
         virusAdapter = new LabVirusListAdapter(requireContext(), new LabVirusListAdapter.Callbacks() {
             @Override
             public void onViewDetails(Virus virus) {
@@ -139,16 +137,6 @@ public class CollectionFragment extends Fragment {
             }
         });
         virusList.setAdapter(virusAdapter);
-
-        saveUserNameButton.setOnClickListener(v -> {
-            UserProfile updated = UserProfileRepository.updateUserName(
-                    userNameInput.getText().toString());
-            userNameInput.setText(updated.getUserName());
-            refreshCollection();
-            Toast.makeText(requireContext(),
-                    getString(R.string.username_saved_toast, updated.getUserName()),
-                    Toast.LENGTH_SHORT).show();
-        });
 
         createVirusButton.setOnClickListener(v -> promptCreateVirus());
 
@@ -239,6 +227,11 @@ public class CollectionFragment extends Fragment {
                 virusAdapter.setViruses(viruses);
             }
             UserProfile userProfile = UserProfileRepository.getCurrentUser();
+            if (collectionWelcome != null) {
+                collectionWelcome.setText(getString(
+                        R.string.collection_welcome,
+                        userProfile.getUserName()));
+            }
             collectionSummary.setText(getString(
                     R.string.collection_summary_collected_viruses,
                     userProfile.getUserName(),

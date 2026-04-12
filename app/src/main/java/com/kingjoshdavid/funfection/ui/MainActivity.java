@@ -2,10 +2,13 @@ package com.kingjoshdavid.funfection.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.kingjoshdavid.funfection.R;
+import com.kingjoshdavid.funfection.data.AppSettingsRepository;
 import com.kingjoshdavid.funfection.data.FriendsRepository;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.data.VirusRepository;
@@ -18,6 +21,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply saved night-mode preference before setContentView.
+        AppSettingsRepository.initialize(getApplicationContext());
+        AppSettingsRepository.applyNightMode();
+
         super.onCreate(savedInstanceState);
         UserProfileRepository.initialize(getApplicationContext());
         VirusRepository.initialize(getApplicationContext());
@@ -32,8 +39,14 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment fragment = createFragmentForId(item.getItemId());
             showFragment(fragment);
-
+            updateTopBarTitle(getString(R.string.app_name));
             return true;
+        });
+
+        ImageButton settingsButton = findViewById(R.id.settingsButton);
+        settingsButton.setOnClickListener(v -> {
+            showFragment(new SettingsFragment());
+            updateTopBarTitle(getString(R.string.settings_title));
         });
 
         openPinnedCombineIfRequested(getIntent(), savedInstanceState);
@@ -51,6 +64,13 @@ public class MainActivity extends AppCompatActivity {
                 .beginTransaction()
                 .replace(R.id.nav_host_fragment, fragment)
                 .commit();
+    }
+
+    private void updateTopBarTitle(String title) {
+        TextView titleView = findViewById(R.id.appTopBarTitle);
+        if (titleView != null) {
+            titleView.setText(title);
+        }
     }
 
     @NotNull
@@ -77,4 +97,3 @@ public class MainActivity extends AppCompatActivity {
         intent.removeExtra(EXTRA_OPEN_COMBINE_VIRUS_ID);
     }
 }
-

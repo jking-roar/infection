@@ -5,6 +5,37 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Top app bar -->
+    <LinearLayout
+        android:id="@+id/appTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/colorPrimary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp">
+
+        <TextView
+            android:id="@+id/appTopBarTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/app_name"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/settingsButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/settings_icon_description"
+            android:src="@drawable/ic_settings" />
+
+    </LinearLayout>
+
     <FrameLayout
         android:id="@+id/nav_host_fragment"
         android:layout_width="match_parent"
