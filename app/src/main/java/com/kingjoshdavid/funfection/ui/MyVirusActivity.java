@@ -16,6 +16,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.kingjoshdavid.funfection.R;
+import com.kingjoshdavid.funfection.data.FriendsRepository;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.data.VirusRepository;
 import com.kingjoshdavid.funfection.model.Virus;
@@ -39,6 +40,8 @@ public class MyVirusActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         UserProfileRepository.initialize(getApplicationContext());
+        VirusRepository.initialize(getApplicationContext());
+        FriendsRepository.initialize(getApplicationContext());
         setContentView(R.layout.my_virus);
 
         virusName = findViewById(R.id.virusName);

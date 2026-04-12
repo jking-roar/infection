@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.kingjoshdavid.funfection.R;
+import com.kingjoshdavid.funfection.data.FriendsRepository;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
+import com.kingjoshdavid.funfection.data.VirusRepository;
 import org.jetbrains.annotations.NotNull;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         UserProfileRepository.initialize(getApplicationContext());
+        VirusRepository.initialize(getApplicationContext());
+        FriendsRepository.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
 
         if (savedInstanceState == null) {
