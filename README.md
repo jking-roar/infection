@@ -9,7 +9,7 @@ Infect your friends - with fun.
 - Lets you select one or more local virus strains.
 - Accepts optional friend invite/share codes.
 - Combines local + friend strains through `InfectionEngine.infect(...)`.
-- Shows an offspring result and stores it in the in-memory collection.
+- Shows an offspring result and stores it in the collection (persisted via Room; falls back to in-memory for JVM tests).
 - Opens a details screen for the selected virus.
 
 ## App screens
@@ -28,14 +28,14 @@ Top-level:
 - `app/` - Android application module.
 - `gradle/` - Gradle wrapper files.
 - `build.gradle`, `settings.gradle`, `gradle.properties` - project-level Gradle config.
-- `README.md`, `TODO.md` - project docs.
+- `README.md`, `todo.md`, `TODO - long term.md`, `refactor.md` - project docs.
 
 Inside `app/src/main/java/com/kingjoshdavid/funfection/`:
 
 - `ui/` - Activities, fragments, and user-flow orchestration.
 - `engine/` - Strain generation, invite parsing, and combination logic.
 - `model/` - Core domain types (`Virus`, stat value objects, infection rate mapping).
-- `data/` - In-memory repository (`VirusRepository`).
+- `data/` - Repository layer (`VirusRepository`, `FriendsRepository`); backed by Room (SQLite) at runtime, with an in-memory fallback used during JVM unit tests.
 
 Inside `app/src/main/`:
 
@@ -62,7 +62,7 @@ Tests:
 ## Local development requirements
 
 - JDK 17+
-- ~~Android Studio (current stable)~~ IntelliJ used for dev consider install studio?
+- Android Studio (current stable) or IntelliJ IDEA
 - Android SDK installed for API 36
 - An Android device running API 24+ (or emulator)
 
@@ -78,7 +78,7 @@ Current project settings:
 
 ## Preflight checks (recommended)
 
-From the repository root (`C:\code\github\infection`) on Windows PowerShell:
+From the repository root on Windows PowerShell:
 
 ```powershell
 .\gradlew.bat -v
@@ -90,7 +90,7 @@ Also verify `local.properties` has a valid SDK path (`sdk.dir=...`).
 
 ## Build locally
 
-From the repository root (`C:\code\github\infection`) on Windows PowerShell:
+From the repository root on Windows PowerShell:
 
 ```powershell
 .\gradlew.bat :app:assembleDebug
@@ -171,7 +171,7 @@ You can also run from Android Studio:
 
 ## Notes
 
-- Repository state is in-memory only; restarting the app resets the collection.
+- Collection state is persisted via Room (SQLite); the in-memory fallback is only active during JVM unit tests.
 - A blank invite input still produces an offspring strain by generating a seeded friend strain.
 - Virus display names and families are intentionally separate: the name is flavor text for a specific strain, while the family is the lineage label used by combine logic and UI grouping.
 - Genome strings are display-oriented fingerprints used for deterministic mutation behavior and flavor text; they are not treated as a parseable source of truth for stats.
