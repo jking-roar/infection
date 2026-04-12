@@ -22,10 +22,27 @@
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/virusActionBackToLab"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/virus_back_to_lab_button"
+            android:insetBottom="0dp"
+            android:insetTop="0dp"
+            android:minWidth="0dp"
+            android:text=""
+            app:icon="@drawable/ic_action_back_to_lab"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="24dp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/virusActionViewDetails"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="48dp"
+            android:layout_marginStart="@dimen/page_spacing_small"
             android:layout_weight="1"
             android:contentDescription="@string/lab_action_view_details"
             android:insetBottom="0dp"
@@ -72,23 +89,6 @@
             app:iconSize="24dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/virusActionPurge"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="@dimen/page_spacing_small"
-            android:layout_weight="1"
-            android:contentDescription="@string/lab_action_purge"
-            android:insetBottom="0dp"
-            android:insetTop="0dp"
-            android:minWidth="0dp"
-            android:text=""
-            app:icon="@drawable/ic_action_purge"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="24dp" />
-
-        <com.google.android.material.button.MaterialButton
             android:id="@+id/virusActionCombine"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
@@ -106,18 +106,19 @@
             app:iconSize="24dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/virusActionBackToLab"
+            android:id="@+id/virusActionPurge"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginStart="@dimen/page_spacing_small"
             android:layout_weight="1"
-            android:contentDescription="@string/virus_back_to_lab_button"
+            android:contentDescription="@string/lab_action_purge"
             android:insetBottom="0dp"
             android:insetTop="0dp"
             android:minWidth="0dp"
             android:text=""
-            app:icon="@drawable/ic_action_back_to_lab"
+            app:backgroundTint="@color/funfection_danger"
+            app:icon="@drawable/ic_action_purge"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:iconSize="24dp" />

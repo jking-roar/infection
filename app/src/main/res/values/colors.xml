@@ -10,4 +10,6 @@
     <color name="launcher_background">#102542</color>
     <color name="launcher_orb">#FF6B35</color>
     <color name="launcher_orb_secondary">#2EC4B6</color>
+    <color name="funfection_danger">#C0392B</color>
+
 </resources>
