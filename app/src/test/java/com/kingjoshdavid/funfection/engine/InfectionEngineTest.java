@@ -66,15 +66,29 @@ public class InfectionEngineTest {
     }
 
     @Test
-    public void combineMixesFamiliesWhenParentsDiffer() {
+    public void combineUsesFamilyConstantWithinChaosDeviationWhenParentsDifferAndStable() {
         Virus left = virus("left-5", "Spark", 9, 3, 2, "AAA-0");
         Virus right = virus("right-5", "Echo", 1, 9, 10, "BBB-0");
 
         Virus result = InfectionEngine.combine(left, right);
 
-        assertEquals("Spho", result.getFamily());
+        // Stable+stable path uses left family as source with min(leftChaos, rightChaos) allowance.
+        assertFamilyIsConstant(result.getFamily());
+        assertFamilyDeviationWithin(result.getFamily(), left.getFamily(), Math.min(left.getChaos().score(), right.getChaos().score()));
         assertEquals("Spark Sample", result.getName());
         assertEquals("Infected from Spark Sample and Echo Sample", result.getOrigin());
+    }
+
+    @Test
+    public void combineUsesFamilyConstantWithinChaosDeviationWhenOnlyLeftParentIsMutated() {
+        Virus left = virus("left-5b", "Spark", 9, 3, 6, "AAA-0", 0, true);
+        Virus right = virus("right-5b", "Echo", 1, 9, 2, "BBB-0", 0, false);
+
+        Virus result = InfectionEngine.combine(left, right);
+
+        // Mutated-left path uses right family as source with left chaos as allowance.
+        assertFamilyIsConstant(result.getFamily());
+        assertFamilyDeviationWithin(result.getFamily(), right.getFamily(), left.getChaos().score());
     }
 
     @Test
@@ -263,13 +277,33 @@ public class InfectionEngineTest {
     }
 
     private Virus virus(String id, String family, int infectivity, int resilience, int chaos, String genome, int infectionCount) {
+        return virus(id, family, infectivity, resilience, chaos, genome, infectionCount, false);
+    }
+
+    private Virus virus(String id,
+                        String family,
+                        int infectivity,
+                        int resilience,
+                        int chaos,
+                        String genome,
+                        int infectionCount,
+                        boolean mutation) {
         return new Virus(id, family + " Sample", family, "Tester",
                 Infectivity.rate(infectivity),
                 Resilience.of(resilience),
                 Chaos.level(chaos),
-                false,
+                mutation,
                 genome,
                 "Test fixture",
                 infectionCount);
+    }
+
+    private void assertFamilyIsConstant(String family) {
+        assertTrue(Arrays.asList(VirusFactory.FAMILIES).contains(family));
+    }
+
+    private void assertFamilyDeviationWithin(String family, String sourceFamily, int allowance) {
+        int deviation = Math.abs(family.charAt(0) - sourceFamily.charAt(0));
+        assertTrue(deviation <= allowance);
     }
 }
