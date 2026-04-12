@@ -208,10 +208,12 @@ public class CollectionFragment extends Fragment {
         if (pendingOpenCombineVirusId != null) {
             final String virusId = pendingOpenCombineVirusId;
             pendingOpenCombineVirusId = null;
-            Virus pendingVirus = VirusRepository.getVirusById(virusId);
-            if (pendingVirus != null && combineDrawerLayout != null) {
+            VirusRepository.getVirusByIdAsync(virusId, pendingVirus -> {
+                if (!isAdded() || pendingVirus == null || combineDrawerLayout == null) {
+                    return;
+                }
                 combineDrawerLayout.post(() -> openCombine(pendingVirus));
-            }
+            });
         }
     }
 
@@ -220,15 +222,20 @@ public class CollectionFragment extends Fragment {
     // -------------------------------------------------------------------------
 
     private void refreshCollection() {
-        viruses = VirusRepository.getViruses();
-        if (virusAdapter != null) {
-            virusAdapter.setViruses(viruses);
-        }
-        UserProfile userProfile = UserProfileRepository.getCurrentUser();
-        collectionSummary.setText(getString(
-                R.string.collection_summary_collected_viruses,
-                userProfile.getUserName(),
-                viruses.size()));
+        VirusRepository.getVirusesAsync(loadedViruses -> {
+            if (!isAdded()) {
+                return;
+            }
+            viruses = loadedViruses;
+            if (virusAdapter != null) {
+                virusAdapter.setViruses(viruses);
+            }
+            UserProfile userProfile = UserProfileRepository.getCurrentUser();
+            collectionSummary.setText(getString(
+                    R.string.collection_summary_collected_viruses,
+                    userProfile.getUserName(),
+                    viruses.size()));
+        });
     }
 
     private void openVirusDetails(Virus virus) {
@@ -279,39 +286,47 @@ public class CollectionFragment extends Fragment {
     }
 
     private void confirmPurge(Virus virus) {
-        VirusRepository.PurgeResult status = VirusRepository.getPurgeStatus(virus.getId());
-        if (status == VirusRepository.PurgeResult.BLOCKED_LAST) {
-            Toast.makeText(requireContext(), R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (status == VirusRepository.PurgeResult.MISSING) {
-            Toast.makeText(requireContext(), R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
-            refreshCollection();
-            return;
-        }
+        VirusRepository.getPurgeStatusAsync(virus.getId(), status -> {
+            if (!isAdded()) {
+                return;
+            }
+            if (status == VirusRepository.PurgeResult.BLOCKED_LAST) {
+                Toast.makeText(requireContext(), R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (status == VirusRepository.PurgeResult.MISSING) {
+                Toast.makeText(requireContext(), R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+                refreshCollection();
+                return;
+            }
 
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.lab_purge_title)
-                .setMessage(getString(R.string.lab_purge_message, virus.getName()))
-                .setNegativeButton(R.string.infection_preview_cancel, null)
-                .setPositiveButton(R.string.lab_purge_confirm, (dialog, which) -> purgeVirus(virus))
-                .show();
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.lab_purge_title)
+                    .setMessage(getString(R.string.lab_purge_message, virus.getName()))
+                    .setNegativeButton(R.string.infection_preview_cancel, null)
+                    .setPositiveButton(R.string.lab_purge_confirm, (dialog, which) -> purgeVirus(virus))
+                    .show();
+        });
     }
 
     private void purgeVirus(Virus virus) {
-        VirusRepository.PurgeResult result = VirusRepository.purgeVirusById(virus.getId());
-        refreshCollection();
-        if (result == VirusRepository.PurgeResult.BLOCKED_LAST) {
-            Toast.makeText(requireContext(), R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (result == VirusRepository.PurgeResult.MISSING) {
-            Toast.makeText(requireContext(), R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Toast.makeText(requireContext(),
-                getString(R.string.lab_purge_success, virus.getName()),
-                Toast.LENGTH_SHORT).show();
+        VirusRepository.purgeVirusByIdAsync(virus.getId(), result -> {
+            if (!isAdded()) {
+                return;
+            }
+            refreshCollection();
+            if (result == VirusRepository.PurgeResult.BLOCKED_LAST) {
+                Toast.makeText(requireContext(), R.string.lab_purge_last_blocked, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (result == VirusRepository.PurgeResult.MISSING) {
+                Toast.makeText(requireContext(), R.string.lab_purge_missing, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(requireContext(),
+                    getString(R.string.lab_purge_success, virus.getName()),
+                    Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void promptCreateVirus() {
@@ -344,9 +359,13 @@ public class CollectionFragment extends Fragment {
 
     private void createFromLab(String seed) {
         Virus createdVirus = VirusFactory.createLabVirus(seed);
-        VirusRepository.addVirus(createdVirus);
-        refreshCollection();
-        openVirusDetails(createdVirus);
+        VirusRepository.addVirusAsync(createdVirus, () -> {
+            if (!isAdded()) {
+                return;
+            }
+            refreshCollection();
+            openVirusDetails(createdVirus);
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -373,16 +392,20 @@ public class CollectionFragment extends Fragment {
 
     /** Rebuilds the partner-virus list in the selector (excludes the pinned virus). */
     private void refreshCombinePartnerList() {
-        List<Virus> allViruses = VirusRepository.getViruses();
-        List<Virus> partnerViruses = new ArrayList<>();
-        for (Virus v : allViruses) {
-            if (!v.getId().equals(pinnedCombineVirusId)) {
-                partnerViruses.add(v);
+        VirusRepository.getVirusesAsync(allViruses -> {
+            if (!isAdded()) {
+                return;
             }
-        }
-        // No pinned ID in the adapter – pinned virus is shown in its own dedicated row above.
-        combineSelectorAdapter.setViruses(partnerViruses, null);
-        updateCombineSelectorSummary();
+            List<Virus> partnerViruses = new ArrayList<>();
+            for (Virus v : allViruses) {
+                if (!v.getId().equals(pinnedCombineVirusId)) {
+                    partnerViruses.add(v);
+                }
+            }
+            // No pinned ID in the adapter – pinned virus is shown in its own dedicated row above.
+            combineSelectorAdapter.setViruses(partnerViruses, null);
+            updateCombineSelectorSummary();
+        });
     }
 
     private void onPartnerVirusTapped(int position) {
@@ -420,34 +443,40 @@ public class CollectionFragment extends Fragment {
         if (pinnedCombineVirusId == null) {
             return;
         }
-        Virus pinned = VirusRepository.getVirusById(pinnedCombineVirusId);
-        if (pinned == null) {
-            return;
-        }
-
-        List<Virus> toMerge = new ArrayList<>();
-        toMerge.add(pinned);
-        List<Virus> allViruses = VirusRepository.getViruses();
-        for (Virus v : allViruses) {
-            if (!v.getId().equals(pinnedCombineVirusId) && selectedPartnerIds.contains(v.getId())) {
-                toMerge.add(v);
+        VirusRepository.getVirusByIdAsync(pinnedCombineVirusId, pinned -> {
+            if (!isAdded() || pinned == null) {
+                return;
             }
-        }
+            VirusRepository.getVirusesAsync(allViruses -> {
+                if (!isAdded()) {
+                    return;
+                }
+                List<Virus> toMerge = new ArrayList<>();
+                toMerge.add(pinned);
+                for (Virus v : allViruses) {
+                    if (!v.getId().equals(pinnedCombineVirusId) && selectedPartnerIds.contains(v.getId())) {
+                        toMerge.add(v);
+                    }
+                }
 
-        if (toMerge.size() < 2) {
-            Toast.makeText(requireContext(), R.string.combine_need_partner, Toast.LENGTH_SHORT).show();
-            return;
-        }
+                if (toMerge.size() < 2) {
+                    Toast.makeText(requireContext(), R.string.combine_need_partner, Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-        Virus offspring = InfectionEngine.infectLocal(toMerge);
-        VirusRepository.addVirus(offspring);
-
-        // Reset state, close drawer, then open the new strain.
-        pinnedCombineVirusId = null;
-        selectedPartnerIds.clear();
-        combineDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
-        combineDrawerLayout.closeDrawer(GravityCompat.END);
-
-        openVirusDetails(offspring);
+                Virus offspring = InfectionEngine.infectLocal(toMerge);
+                VirusRepository.addVirusAsync(offspring, () -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    // Reset state, close drawer, then open the new strain.
+                    pinnedCombineVirusId = null;
+                    selectedPartnerIds.clear();
+                    combineDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END);
+                    combineDrawerLayout.closeDrawer(GravityCompat.END);
+                    openVirusDetails(offspring);
+                });
+            });
+        });
     }
 }

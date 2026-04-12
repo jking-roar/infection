@@ -1,6 +1,8 @@
 package com.kingjoshdavid.funfection.data;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.kingjoshdavid.funfection.data.local.DatabaseProvider;
 import com.kingjoshdavid.funfection.data.local.FriendEntity;
@@ -18,8 +20,18 @@ import java.util.concurrent.Future;
 
 public final class FriendsRepository {
 
+    public interface ResultCallback<T> {
+        void onResult(T result);
+    }
+
+    public interface CompletionCallback {
+        void onComplete();
+    }
+
     private static final List<Friend> FRIENDS = new ArrayList<>();
-    private static final ExecutorService IO = Executors.newSingleThreadExecutor();
+    private static final String IO_THREAD_NAME = "friends-repository-io";
+    private static final ExecutorService IO = Executors.newSingleThreadExecutor(
+            runnable -> new Thread(runnable, IO_THREAD_NAME));
 
     private FriendsRepository() {
     }
@@ -49,6 +61,10 @@ public final class FriendsRepository {
         });
     }
 
+    public static void getFriendsAsync(ResultCallback<List<Friend>> callback) {
+        runOnIoAsync(FriendsRepository::getFriends, callback);
+    }
+
     public static Friend getFriendById(String id) {
         if (DatabaseProvider.getIfInitialized() == null) {
             for (Friend friend : FRIENDS) {
@@ -67,6 +83,10 @@ public final class FriendsRepository {
             FriendEntity entity = database.friendDao().findById(id);
             return entity == null ? null : toDomain(entity);
         });
+    }
+
+    public static void getFriendByIdAsync(String id, ResultCallback<Friend> callback) {
+        runOnIoAsync(() -> getFriendById(id), callback);
     }
 
     public static void saveFriend(Friend friend) {
@@ -91,6 +111,10 @@ public final class FriendsRepository {
         });
     }
 
+    public static void saveFriendAsync(Friend friend, CompletionCallback callback) {
+        runOnIoAsync(() -> saveFriend(friend), callback);
+    }
+
     public static boolean deleteFriend(String id) {
         if (id == null || id.trim().isEmpty()) {
             return false;
@@ -113,6 +137,10 @@ public final class FriendsRepository {
         });
     }
 
+    public static void deleteFriendAsync(String id, ResultCallback<Boolean> callback) {
+        runOnIoAsync(() -> deleteFriend(id), callback);
+    }
+
     public static List<Friend> pickByIds(List<String> ids) {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
@@ -128,6 +156,13 @@ public final class FriendsRepository {
     }
 
     private static <T> T runOnIo(Callable<T> callable) {
+        if (isIoThread()) {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw new IllegalStateException("FriendsRepository operation failed", e);
+            }
+        }
         Future<T> future = IO.submit(callable);
         try {
             return future.get();
@@ -136,6 +171,46 @@ public final class FriendsRepository {
             throw new IllegalStateException("FriendsRepository operation interrupted", e);
         } catch (ExecutionException e) {
             throw new IllegalStateException("FriendsRepository operation failed", e);
+        }
+    }
+
+    private static <T> void runOnIoAsync(Callable<T> callable, ResultCallback<T> callback) {
+        IO.execute(() -> {
+            T result;
+            try {
+                result = callable.call();
+            } catch (Exception e) {
+                throw new IllegalStateException("FriendsRepository operation failed", e);
+            }
+            if (callback != null) {
+                postToMain(() -> callback.onResult(result));
+            }
+        });
+    }
+
+    private static void runOnIoAsync(Runnable runnable, CompletionCallback callback) {
+        IO.execute(() -> {
+            runnable.run();
+            if (callback != null) {
+                postToMain(callback::onComplete);
+            }
+        });
+    }
+
+    private static boolean isIoThread() {
+        return IO_THREAD_NAME.equals(Thread.currentThread().getName());
+    }
+
+    private static void postToMain(Runnable runnable) {
+        try {
+            Looper mainLooper = Looper.getMainLooper();
+            if (mainLooper == null || Thread.currentThread() == mainLooper.getThread()) {
+                runnable.run();
+                return;
+            }
+            new Handler(mainLooper).post(runnable);
+        } catch (RuntimeException ignored) {
+            runnable.run();
         }
     }
 

@@ -1,6 +1,8 @@
 package com.kingjoshdavid.funfection.data;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.kingjoshdavid.funfection.data.local.DatabaseProvider;
 import com.kingjoshdavid.funfection.data.local.FunfectionDatabase;
@@ -23,10 +25,20 @@ import java.util.concurrent.Future;
 
 public final class VirusRepository {
 
+    public interface ResultCallback<T> {
+        void onResult(T result);
+    }
+
+    public interface CompletionCallback {
+        void onComplete();
+    }
+
     // Kept for JVM unit tests where Android Room is unavailable.
     private static final List<Virus> COLLECTION = new ArrayList<>();
 
-    private static final ExecutorService IO = Executors.newSingleThreadExecutor();
+    private static final String IO_THREAD_NAME = "virus-repository-io";
+    private static final ExecutorService IO = Executors.newSingleThreadExecutor(
+            runnable -> new Thread(runnable, IO_THREAD_NAME));
 
     public enum PurgeResult {
         REMOVED,
@@ -92,6 +104,10 @@ public final class VirusRepository {
         });
     }
 
+    public static void getVirusesAsync(ResultCallback<List<Virus>> callback) {
+        runOnIoAsync(VirusRepository::getViruses, callback);
+    }
+
     public static Virus getVirusById(String id) {
         ensureSeeded();
         if (isUsingInMemoryFallback()) {
@@ -112,6 +128,10 @@ public final class VirusRepository {
         });
     }
 
+    public static void getVirusByIdAsync(String id, ResultCallback<Virus> callback) {
+        runOnIoAsync(() -> getVirusById(id), callback);
+    }
+
     public static void addVirus(Virus virus) {
         ensureSeeded();
         if (isUsingInMemoryFallback()) {
@@ -128,6 +148,10 @@ public final class VirusRepository {
             database.virusDao().upsert(entity);
             return null;
         });
+    }
+
+    public static void addVirusAsync(Virus virus, CompletionCallback callback) {
+        runOnIoAsync(() -> addVirus(virus), callback);
     }
 
     public static void replaceVirus(Virus virus) {
@@ -186,6 +210,10 @@ public final class VirusRepository {
         });
     }
 
+    public static void getPurgeStatusAsync(String id, ResultCallback<PurgeResult> callback) {
+        runOnIoAsync(() -> getPurgeStatus(id), callback);
+    }
+
     public static PurgeResult purgeVirusById(String id) {
         ensureSeeded();
         PurgeResult status = getPurgeStatus(id);
@@ -211,6 +239,10 @@ public final class VirusRepository {
                 ? PurgeResult.REMOVED
                 : PurgeResult.MISSING;
         });
+    }
+
+    public static void purgeVirusByIdAsync(String id, ResultCallback<PurgeResult> callback) {
+        runOnIoAsync(() -> purgeVirusById(id), callback);
     }
 
     private static int findVirusIndexById(String id) {
@@ -245,6 +277,13 @@ public final class VirusRepository {
     }
 
     private static <T> T runOnIo(Callable<T> callable) {
+        if (isIoThread()) {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw new IllegalStateException("VirusRepository operation failed", e);
+            }
+        }
         Future<T> future = IO.submit(callable);
         try {
             return future.get();
@@ -253,6 +292,47 @@ public final class VirusRepository {
             throw new IllegalStateException("VirusRepository operation interrupted", e);
         } catch (ExecutionException e) {
             throw new IllegalStateException("VirusRepository operation failed", e);
+        }
+    }
+
+    private static <T> void runOnIoAsync(Callable<T> callable, ResultCallback<T> callback) {
+        IO.execute(() -> {
+            T result;
+            try {
+                result = callable.call();
+            } catch (Exception e) {
+                throw new IllegalStateException("VirusRepository operation failed", e);
+            }
+            if (callback != null) {
+                postToMain(() -> callback.onResult(result));
+            }
+        });
+    }
+
+    private static void runOnIoAsync(Runnable runnable, CompletionCallback callback) {
+        IO.execute(() -> {
+            runnable.run();
+            if (callback != null) {
+                postToMain(callback::onComplete);
+            }
+        });
+    }
+
+    private static boolean isIoThread() {
+        return IO_THREAD_NAME.equals(Thread.currentThread().getName());
+    }
+
+    private static void postToMain(Runnable runnable) {
+        try {
+            Looper mainLooper = Looper.getMainLooper();
+            if (mainLooper == null || Thread.currentThread() == mainLooper.getThread()) {
+                runnable.run();
+                return;
+            }
+            new Handler(mainLooper).post(runnable);
+        } catch (RuntimeException ignored) {
+            // Local JVM tests run without Android loopers; execute inline there.
+            runnable.run();
         }
     }
 
