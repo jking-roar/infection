@@ -259,18 +259,15 @@ public class VirusRepositoryTest {
     }
 
     @Test
-    public void addVirusPersistsProtectedScientistFromSimulatedFallback() {
+    public void addVirusDoesNotDiscoverScientistFromSimulatedFallback() {
         Virus simulated = new Virus("sim-1", "Random", "Spark", "Professor Tesla [SIMULATED]",
                 Infectivity.rate(2), Resilience.of(2), Chaos.level(2), false, "GEN-SIM",
                 originWithDirectSource("scientist-1", "Professor Tesla [SIMULATED]", false), 1);
 
         VirusRepository.addVirus(simulated);
 
-        Friend scientist = FriendsRepository.getFriendById("scientist-1");
-        assertNotNull(scientist);
-        assertTrue(scientist.isProtectedProfile());
-        assertFalse(scientist.getDescription().isEmpty());
-        assertFalse(FriendsRepository.deleteFriend("scientist-1"));
+        assertNull(FriendsRepository.getFriendById("scientist-1"));
+        assertTrue(FriendsRepository.getFriends().isEmpty());
     }
 
     private void clearRepository() throws Exception {

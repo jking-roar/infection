@@ -11,6 +11,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import androidx.test.core.app.ApplicationProvider;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -109,6 +111,29 @@ public class FriendsRepositoryRoomTest {
         assertEquals("Professor Tesla", loaded.getHandleHistory().get(0));
         assertEquals("", loaded.getNotes());
         assertFalse(FriendsRepository.deleteFriend("scientist-room"));
+    }
+
+    @Test
+    public void initializeSeedsKnownScientistsBeforeDiscovery() {
+        FriendsRepository.initialize(ApplicationProvider.getApplicationContext());
+
+        List<Friend> friends = FriendsRepository.getFriends();
+        assertEquals(5, friends.size());
+
+        Friend tesla = findFriendByDisplayName("Professor Tesla");
+        assertNotNull(tesla);
+        assertTrue(tesla.isProtectedProfile());
+        assertFalse(tesla.getDescription().isEmpty());
+        assertFalse(FriendsRepository.deleteFriend(tesla.getId()));
+    }
+
+    private Friend findFriendByDisplayName(String displayName) {
+        for (Friend friend : FriendsRepository.getFriends()) {
+            if (displayName.equals(friend.getDisplayName())) {
+                return friend;
+            }
+        }
+        return null;
     }
 }
 

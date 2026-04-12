@@ -17,8 +17,6 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +37,7 @@ public final class FriendsRepository {
     private static final List<Friend> FRIENDS = new ArrayList<>();
     private static final String IO_THREAD_NAME = "friends-repository-io";
     private static final String SIMULATED_FLAG = "[SIMULATED]";
-    private static final Map<String, String> SCIENTIST_DESCRIPTIONS = createScientistDescriptions();
+    private static final List<Friend> KNOWN_SCIENTISTS = createKnownScientists();
     private static final ExecutorService IO = Executors.newSingleThreadExecutor(
             runnable -> new Thread(runnable, IO_THREAD_NAME));
 
@@ -47,10 +45,10 @@ public final class FriendsRepository {
     }
 
     public static void initialize(Context context) {
-        if (context == null) {
-            return;
+        if (context != null) {
+            DatabaseProvider.get(context);
         }
-        DatabaseProvider.get(context);
+        seedKnownScientists();
     }
 
     public static List<Friend> getFriends() {
@@ -297,36 +295,24 @@ public final class FriendsRepository {
         if (source == null || source.getId().trim().isEmpty() || source.getDisplayName().trim().isEmpty()) {
             return null;
         }
-        if (isCurrentUser(source.getId())) {
+        if (isCurrentUser(source.getId()) || isKnownScientistId(source.getId()) || !source.isRealFriend()) {
             return null;
         }
-        if (source.isRealFriend()) {
-            return buildDiscoveredFriend(source.getId(), source.getDisplayName());
-        }
-        return buildScientistFriend(source.getId(), source.getDisplayName());
+        return buildDiscoveredFriend(source.getId(), source.getDisplayName());
     }
 
     private static DiscoveredFriend toDiscoveredFriend(VirusOrigin.PatientZero patientZero) {
         if (patientZero == null || patientZero.getId().trim().isEmpty() || patientZero.getDisplayName().trim().isEmpty()) {
             return null;
         }
-        if (isCurrentUser(patientZero.getId())) {
+        if (isCurrentUser(patientZero.getId()) || isKnownScientistId(patientZero.getId())) {
             return null;
         }
-        DiscoveredFriend scientist = buildScientistFriend(patientZero.getId(), patientZero.getDisplayName());
-        return scientist != null ? scientist : buildDiscoveredFriend(patientZero.getId(), patientZero.getDisplayName());
+        return buildDiscoveredFriend(patientZero.getId(), patientZero.getDisplayName());
     }
 
     private static DiscoveredFriend buildDiscoveredFriend(String id, String displayName) {
         return new DiscoveredFriend(id, displayName, false, "");
-    }
-
-    private static DiscoveredFriend buildScientistFriend(String id, String displayName) {
-        String description = describeScientist(displayName);
-        if (description.isEmpty()) {
-            return null;
-        }
-        return new DiscoveredFriend(id, displayName, true, description);
     }
 
     private static void upsertDiscoveredFriend(DiscoveredFriend candidate) {
@@ -390,6 +376,18 @@ public final class FriendsRepository {
         }
     }
 
+    private static boolean isKnownScientistId(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return false;
+        }
+        for (Friend scientist : KNOWN_SCIENTISTS) {
+            if (scientist.getId().equals(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static String normalizeHandle(String value) {
         return value == null ? "" : value.trim().replaceAll("\\s+", " ");
     }
@@ -445,35 +443,70 @@ public final class FriendsRepository {
         return handles;
     }
 
-    private static Map<String, String> createScientistDescriptions() {
-        Map<String, String> descriptions = new LinkedHashMap<>();
-        descriptions.put(normalizeScientistName("Professor Tesla"),
-                "A reclusive pioneer of unstable energy-based strains. Tesla's creations hum with latent power, often behaving unpredictably when exposed to other signals.");
-        descriptions.put(normalizeScientistName("Doctor Curie"),
-                "A meticulous researcher of radiant mutations. Curie specializes in slow-evolving strains that intensify over time, rewarding patience—and punishing carelessness.");
-        descriptions.put(normalizeScientistName("Doc Brown"),
-                "An erratic temporal theorist whose viruses don’t always follow linear progression. Effects may trigger early, late, or seemingly out of order.");
-        descriptions.put(normalizeScientistName("Professor Xavier"),
-                "A strategist of cognitive contagions. Xavier engineers subtle strains that influence behavior, spreading quietly before revealing their full impact.");
-        descriptions.put(normalizeScientistName("The Gutter Man"),
-                "A shadowy figure lurking beneath the system. His strains are crude, resilient, and disturbingly adaptive—thriving in neglected or chaotic environments.");
-        return descriptions;
-    }
-    private static String describeScientist(String displayName) {
-        String normalized = normalizeScientistName(displayName);
-        String description = SCIENTIST_DESCRIPTIONS.get(normalized);
-        return description == null ? "" : description;
+    private static void seedKnownScientists() {
+        if (DatabaseProvider.getIfInitialized() == null) {
+            for (Friend scientist : KNOWN_SCIENTISTS) {
+                upsertKnownScientistInMemory(scientist);
+            }
+            return;
+        }
+
+        runOnIo(() -> {
+            FunfectionDatabase database = DatabaseProvider.getIfInitialized();
+            if (database == null) {
+                return null;
+            }
+            for (Friend scientist : KNOWN_SCIENTISTS) {
+                FriendEntity existing = database.friendDao().findById(scientist.getId());
+                FriendEntity entity = toEntity(scientist);
+                entity.createdAt = existing == null ? System.currentTimeMillis() : existing.createdAt;
+                database.friendDao().upsert(entity);
+            }
+            return null;
+        });
     }
 
-    private static String normalizeScientistName(String displayName) {
-        String normalized = normalizeHandle(displayName);
-        if (normalized.endsWith(SIMULATED_FLAG)) {
-            normalized = normalized.substring(0, normalized.length() - SIMULATED_FLAG.length()).trim();
+    private static void upsertKnownScientistInMemory(Friend scientist) {
+        for (int index = 0; index < FRIENDS.size(); index++) {
+            if (FRIENDS.get(index).getId().equals(scientist.getId())) {
+                FRIENDS.set(index, scientist);
+                return;
+            }
         }
-        return normalized.toLowerCase(Locale.US)
-                .replace("prof.", "professor")
-                .replaceAll("\\s+", " ");
+        FRIENDS.add(scientist);
     }
+
+    private static List<Friend> createKnownScientists() {
+        List<Friend> scientists = new ArrayList<>();
+        scientists.add(createKnownScientist("Professor Tesla",
+                "A reclusive pioneer of unstable energy-based strains. Tesla's creations hum with latent power, often behaving unpredictably when exposed to other signals."));
+        scientists.add(createKnownScientist("Doctor Curie",
+                "A meticulous researcher of radiant mutations. Curie specializes in slow-evolving strains that intensify over time, rewarding patience—and punishing carelessness."));
+        scientists.add(createKnownScientist("Doc Brown",
+                "An erratic temporal theorist whose viruses don’t always follow linear progression. Effects may trigger early, late, or seemingly out of order."));
+        scientists.add(createKnownScientist("Professor Xavier",
+                "A strategist of cognitive contagions. Xavier engineers subtle strains that influence behavior, spreading quietly before revealing their full impact."));
+        scientists.add(createKnownScientist("The Gutter Man",
+                "A shadowy figure lurking beneath the system. His strains are crude, resilient, and disturbingly adaptive—thriving in neglected or chaotic environments."));
+        return Collections.unmodifiableList(scientists);
+    }
+
+    private static Friend createKnownScientist(String displayName, String description) {
+        return new Friend(scientistId(displayName),
+                displayName,
+                "",
+                "",
+                "",
+                description,
+                true,
+                Collections.emptyList());
+    }
+
+    private static String scientistId(String displayName) {
+        String sourceMoniker = normalizeHandle(displayName) + " " + SIMULATED_FLAG;
+        return UUID.nameUUIDFromBytes(("fake:" + sourceMoniker).getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
 
     private static final class DiscoveredFriend {
 
