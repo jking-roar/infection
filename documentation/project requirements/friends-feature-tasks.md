@@ -73,7 +73,7 @@ This tasklist is ordered to deliver a usable **MVP first**, then layer enhanceme
 
 ---
 
-[ ] P0-5) Vectors List UI (Discovered Records Only)
+[x] P0-5) Vectors List UI (Discovered Records Only)
 **Goal:** Render vectors in `FriendsFragment` as a historical exchange network view.
 
 **Implementation Notes:**
