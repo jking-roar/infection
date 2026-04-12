@@ -13,7 +13,7 @@ public final class Friend {
     private final String notes;
     private final String description;
     private final boolean protectedProfile;
-    private final List<String> handleHistory;
+    private final List<UsernameHistoryEntry> usernameHistory;
 
     public Friend(String id, String displayName, String inviteCode) {
         this(id, displayName, inviteCode, "", "", "", false, Collections.emptyList());
@@ -26,7 +26,7 @@ public final class Friend {
                   String notes,
                   String description,
                   boolean protectedProfile,
-                  List<String> handleHistory) {
+                  List<UsernameHistoryEntry> usernameHistory) {
         this.id = id;
         this.displayName = normalize(displayName, "Unknown");
         this.inviteCode = normalize(inviteCode, "");
@@ -34,7 +34,7 @@ public final class Friend {
         this.notes = protectedProfile ? "" : normalize(notes, "");
         this.description = normalize(description, "");
         this.protectedProfile = protectedProfile;
-        this.handleHistory = Collections.unmodifiableList(normalizeHistory(handleHistory));
+        this.usernameHistory = Collections.unmodifiableList(normalizeHistory(usernameHistory));
     }
 
     public String getId() {
@@ -65,8 +65,8 @@ public final class Friend {
         return protectedProfile;
     }
 
-    public List<String> getHandleHistory() {
-        return handleHistory;
+    public List<UsernameHistoryEntry> getUsernameHistory() {
+        return usernameHistory;
     }
 
     private static String normalize(String value, String fallback) {
@@ -74,25 +74,28 @@ public final class Friend {
         return normalized.isEmpty() ? fallback : normalized;
     }
 
-    private static List<String> normalizeHistory(List<String> handleHistory) {
-        if (handleHistory == null || handleHistory.isEmpty()) {
+    private static List<UsernameHistoryEntry> normalizeHistory(List<UsernameHistoryEntry> history) {
+        if (history == null || history.isEmpty()) {
             return Collections.emptyList();
         }
-        List<String> normalized = new ArrayList<>();
-        for (String handle : handleHistory) {
-            String normalizedHandle = normalize(handle, "");
-            if (normalizedHandle.isEmpty()) {
+        List<UsernameHistoryEntry> normalized = new ArrayList<>();
+        for (UsernameHistoryEntry entry : history) {
+            if (entry == null) {
+                continue;
+            }
+            String username = normalize(entry.getUsername(), "");
+            if (username.isEmpty()) {
                 continue;
             }
             boolean duplicate = false;
-            for (String existing : normalized) {
-                if (existing.equalsIgnoreCase(normalizedHandle)) {
+            for (UsernameHistoryEntry existing : normalized) {
+                if (existing.getUsername().equalsIgnoreCase(username)) {
                     duplicate = true;
                     break;
                 }
             }
             if (!duplicate) {
-                normalized.add(normalizedHandle);
+                normalized.add(new UsernameHistoryEntry(username, entry.getAddedAt()));
             }
         }
         return normalized;

@@ -242,8 +242,8 @@ public class VirusRepositoryTest {
         Friend loaded = FriendsRepository.getFriendById("vector-1");
         assertNotNull(loaded);
         assertEquals("New Handle", loaded.getDisplayName());
-        assertEquals(1, loaded.getHandleHistory().size());
-        assertEquals("Old Handle", loaded.getHandleHistory().get(0));
+        assertEquals(1, loaded.getUsernameHistory().size());
+        assertEquals("Old Handle", loaded.getUsernameHistory().get(0).getUsername());
     }
 
     @Test

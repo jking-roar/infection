@@ -6,14 +6,15 @@ import android.os.Looper;
 
 import com.kingjoshdavid.funfection.data.local.DatabaseProvider;
 import com.kingjoshdavid.funfection.data.local.FriendEntity;
+import com.kingjoshdavid.funfection.data.local.FriendUsernameHistoryEntity;
 import com.kingjoshdavid.funfection.data.local.FunfectionDatabase;
 import com.kingjoshdavid.funfection.model.Friend;
+import com.kingjoshdavid.funfection.model.UsernameHistoryEntry;
 import com.kingjoshdavid.funfection.model.Virus;
 import com.kingjoshdavid.funfection.model.VirusOrigin;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,7 +64,8 @@ public final class FriendsRepository {
             List<FriendEntity> entities = database.friendDao().getAll();
             List<Friend> friends = new ArrayList<>(entities.size());
             for (FriendEntity entity : entities) {
-                friends.add(toDomain(entity));
+                List<UsernameHistoryEntry> history = loadUsernameHistory(database, entity.id);
+                friends.add(toDomain(entity, history));
             }
             return friends;
         });
@@ -89,7 +91,11 @@ public final class FriendsRepository {
                 return null;
             }
             FriendEntity entity = database.friendDao().findById(id);
-            return entity == null ? null : toDomain(entity);
+            if (entity == null) {
+                return null;
+            }
+            List<UsernameHistoryEntry> history = loadUsernameHistory(database, entity.id);
+            return toDomain(entity, history);
         });
     }
 
@@ -116,6 +122,7 @@ public final class FriendsRepository {
             FriendEntity entity = toEntity(normalized);
             entity.createdAt = existing == null ? System.currentTimeMillis() : existing.createdAt;
             database.friendDao().upsert(entity);
+            saveUsernameHistory(database, normalized);
             return null;
         });
     }
@@ -140,6 +147,7 @@ public final class FriendsRepository {
             if (database == null) {
                 return false;
             }
+            database.friendUsernameHistoryDao().deleteByFriendId(id);
             return database.friendDao().deleteById(id) > 0;
         });
     }
@@ -241,7 +249,7 @@ public final class FriendsRepository {
         }
     }
 
-    private static Friend toDomain(FriendEntity entity) {
+    private static Friend toDomain(FriendEntity entity, List<UsernameHistoryEntry> usernameHistory) {
         return new Friend(entity.id,
                 entity.displayName,
                 entity.inviteCode,
@@ -249,7 +257,11 @@ public final class FriendsRepository {
                 entity.notes,
                 entity.description,
                 entity.protectedProfile,
-                decodeHandleHistory(entity.handleHistoryPayload));
+                usernameHistory);
+    }
+
+    private static Friend toDomain(FriendEntity entity) {
+        return toDomain(entity, Collections.emptyList());
     }
 
     private static FriendEntity toEntity(Friend friend) {
@@ -261,7 +273,6 @@ public final class FriendsRepository {
         entity.notes = friend.isProtectedProfile() ? "" : friend.getNotes();
         entity.description = friend.getDescription();
         entity.protectedProfile = friend.isProtectedProfile();
-        entity.handleHistoryPayload = encodeHandleHistory(friend.getHandleHistory());
         return entity;
     }
 
@@ -273,7 +284,7 @@ public final class FriendsRepository {
                 friend.getNotes(),
                 friend.getDescription(),
                 friend.isProtectedProfile(),
-                friend.getHandleHistory());
+                friend.getUsernameHistory());
     }
 
     private static LinkedHashMap<String, DiscoveredFriend> collectDiscoveredFriends(VirusOrigin origin) {
@@ -329,11 +340,11 @@ public final class FriendsRepository {
             return;
         }
 
-        List<String> history = new ArrayList<>(existing.getHandleHistory());
+        List<UsernameHistoryEntry> history = new ArrayList<>(existing.getUsernameHistory());
         String currentDisplayName = existing.getDisplayName();
         if (shouldArchiveHandle(currentDisplayName, candidate.displayName)
                 && !containsHandle(history, currentDisplayName)) {
-            history.add(currentDisplayName);
+            history.add(new UsernameHistoryEntry(currentDisplayName, System.currentTimeMillis()));
         }
 
         saveFriend(new Friend(existing.getId(),
@@ -354,13 +365,13 @@ public final class FriendsRepository {
                 && !previous.equalsIgnoreCase(next);
     }
 
-    private static boolean containsHandle(List<String> history, String handle) {
+    private static boolean containsHandle(List<UsernameHistoryEntry> history, String handle) {
         String normalizedHandle = normalizeHandle(handle);
         if (normalizedHandle.isEmpty()) {
             return false;
         }
-        for (String existing : history) {
-            if (normalizedHandle.equalsIgnoreCase(normalizeHandle(existing))) {
+        for (UsernameHistoryEntry entry : history) {
+            if (normalizedHandle.equalsIgnoreCase(normalizeHandle(entry.getUsername()))) {
                 return true;
             }
         }
@@ -402,45 +413,31 @@ public final class FriendsRepository {
         return false;
     }
 
-    private static String encodeHandleHistory(List<String> handleHistory) {
-        if (handleHistory == null || handleHistory.isEmpty()) {
-            return "";
+    private static List<UsernameHistoryEntry> loadUsernameHistory(FunfectionDatabase database, String friendId) {
+        List<FriendUsernameHistoryEntity> entities =
+                database.friendUsernameHistoryDao().getByFriendId(friendId);
+        List<UsernameHistoryEntry> history = new ArrayList<>(entities.size());
+        for (FriendUsernameHistoryEntity entity : entities) {
+            history.add(new UsernameHistoryEntry(entity.username, entity.addedAt));
         }
-        StringBuilder payload = new StringBuilder();
-        for (String handle : handleHistory) {
-            String normalized = normalizeHandle(handle);
-            if (normalized.isEmpty()) {
-                continue;
-            }
-            if (payload.length() > 0) {
-                payload.append('\n');
-            }
-            payload.append(Base64.getUrlEncoder().withoutPadding()
-                    .encodeToString(normalized.getBytes(StandardCharsets.UTF_8)));
-        }
-        return payload.toString();
+        return history;
     }
 
-    private static List<String> decodeHandleHistory(String payload) {
-        if (payload == null || payload.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<String> handles = new ArrayList<>();
-        String[] lines = payload.split("\\n");
-        for (String line : lines) {
-            if (line.trim().isEmpty()) {
+    private static void saveUsernameHistory(FunfectionDatabase database, Friend friend) {
+        for (UsernameHistoryEntry entry : friend.getUsernameHistory()) {
+            String username = normalizeHandle(entry.getUsername());
+            if (username.isEmpty()) {
                 continue;
             }
-            try {
-                String decoded = new String(Base64.getUrlDecoder().decode(line), StandardCharsets.UTF_8);
-                if (!containsHandle(handles, decoded)) {
-                    handles.add(decoded);
-                }
-            } catch (IllegalArgumentException ignored) {
-                // Ignore malformed history entries from older or corrupted local rows.
+            if (database.friendUsernameHistoryDao()
+                    .countByFriendIdAndUsername(friend.getId(), username) == 0) {
+                FriendUsernameHistoryEntity entity = new FriendUsernameHistoryEntity();
+                entity.friendId = friend.getId();
+                entity.username = username;
+                entity.addedAt = entry.getAddedAt();
+                database.friendUsernameHistoryDao().insert(entity);
             }
         }
-        return handles;
     }
 
     private static void seedKnownScientists() {
