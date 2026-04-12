@@ -45,7 +45,14 @@ public final class VirusOrigin implements Serializable {
     }
 
     public static VirusOrigin randomFriendFallback(String moniker) {
-        Source source = Source.fake(stableId("fake:" + moniker), moniker);
+        return randomFriendFallback("", moniker);
+    }
+
+    public static VirusOrigin randomFriendFallback(String sourceId, String moniker) {
+        String id = sourceId == null || sourceId.trim().isEmpty()
+                ? stableId("fake:" + moniker)
+                : sourceId;
+        Source source = Source.fake(id, moniker);
         return new VirusOrigin(Type.RANDOM_FRIEND, "Generated as random friend fallback", source,
                 Collections.emptyList());
     }

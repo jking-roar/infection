@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import com.kingjoshdavid.funfection.R;
 import com.kingjoshdavid.funfection.data.AppSettingsRepository;
+import com.kingjoshdavid.funfection.data.FriendsRepository;
 import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.model.UserProfile;
 
@@ -31,6 +32,7 @@ public class SettingsFragment extends Fragment {
         EditText userNameInput = view.findViewById(R.id.settingsUserNameInput);
         Button saveUserNameButton = view.findViewById(R.id.settingsSaveUserNameButton);
         RadioGroup nightModeGroup = view.findViewById(R.id.settingsNightModeGroup);
+        CheckBox showSelfInFriendsCheckBox = view.findViewById(R.id.settingsShowSelfInFriendsCheckbox);
 
         // Populate username
         userNameInput.setText(UserProfileRepository.getCurrentUser().getUserName());
@@ -38,11 +40,16 @@ public class SettingsFragment extends Fragment {
         saveUserNameButton.setOnClickListener(v -> {
             UserProfile updated = UserProfileRepository.updateUserName(
                     userNameInput.getText().toString());
+            FriendsRepository.ensureCurrentUserFriendExists();
             userNameInput.setText(updated.getUserName());
             Toast.makeText(requireContext(),
                     getString(R.string.username_saved_toast, updated.getUserName()),
                     Toast.LENGTH_SHORT).show();
         });
+
+        showSelfInFriendsCheckBox.setChecked(AppSettingsRepository.isCurrentUserVisibleInFriendsList());
+        showSelfInFriendsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) ->
+                AppSettingsRepository.setCurrentUserVisibleInFriendsList(isChecked));
 
         // Set current night mode selection
         switch (AppSettingsRepository.getNightMode()) {

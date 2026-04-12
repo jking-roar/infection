@@ -84,5 +84,13 @@
 
         </RadioGroup>
 
+        <CheckBox
+            android:id="@+id/settingsShowSelfInFriendsCheckbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/page_spacing_large"
+            android:minHeight="48dp"
+            android:text="@string/settings_show_self_in_friends" />
+
     </LinearLayout>
 </ScrollView>

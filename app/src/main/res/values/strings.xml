@@ -84,6 +84,7 @@
     <string name="settings_night_mode_system">System</string>
     <string name="settings_night_mode_light">Light</string>
     <string name="settings_night_mode_night">Night</string>
+    <string name="settings_show_self_in_friends">You are your friend</string>
     <string name="settings_icon_description">Settings</string>
     <string name="lab_action_view_details">View details</string>
     <string name="lab_action_share_text">Share via text</string>

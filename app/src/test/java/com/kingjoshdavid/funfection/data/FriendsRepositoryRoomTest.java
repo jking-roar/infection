@@ -3,6 +3,7 @@ package com.kingjoshdavid.funfection.data;
 import com.kingjoshdavid.funfection.data.local.DatabaseProvider;
 import com.kingjoshdavid.funfection.data.local.FunfectionDatabase;
 import com.kingjoshdavid.funfection.model.Friend;
+import com.kingjoshdavid.funfection.model.UserProfile;
 import com.kingjoshdavid.funfection.model.UsernameHistoryEntry;
 
 import org.junit.After;
@@ -130,6 +131,30 @@ public class FriendsRepositoryRoomTest {
     }
 
     @Test
+    public void initializeAddsCurrentUserButHidesSelfByDefault() {
+        FriendsRepository.initialize(ApplicationProvider.getApplicationContext());
+
+        UserProfile currentUser = UserProfileRepository.getCurrentUser();
+        Friend storedSelf = FriendsRepository.getFriendById(currentUser.getId());
+        assertNotNull(storedSelf);
+        assertTrue(storedSelf.isProtectedProfile());
+
+        List<Friend> visibleFriends = FriendsRepository.getFriends();
+        assertNull(findFriendById(visibleFriends, currentUser.getId()));
+    }
+
+    @Test
+    public void friendsListCanShowSelfWhenEnabled() {
+        FriendsRepository.initialize(ApplicationProvider.getApplicationContext());
+        UserProfile currentUser = UserProfileRepository.getCurrentUser();
+
+        AppSettingsRepository.setCurrentUserVisibleInFriendsList(true);
+        List<Friend> visibleFriends = FriendsRepository.getFriends();
+
+        assertNotNull(findFriendById(visibleFriends, currentUser.getId()));
+    }
+
+    @Test
     public void usernameHistoryTimestampPersistedAndReturnedOnFetch() {
         long ts = 999_000L;
         Friend friend = new Friend("friend-ts", "Alice", "code-ts",
@@ -176,6 +201,15 @@ public class FriendsRepositoryRoomTest {
     private Friend findFriendByDisplayName(String displayName) {
         for (Friend friend : FriendsRepository.getFriends()) {
             if (displayName.equals(friend.getDisplayName())) {
+                return friend;
+            }
+        }
+        return null;
+    }
+
+    private Friend findFriendById(List<Friend> friends, String id) {
+        for (Friend friend : friends) {
+            if (id.equals(friend.getId())) {
                 return friend;
             }
         }

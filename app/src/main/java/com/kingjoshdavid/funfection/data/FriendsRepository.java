@@ -9,11 +9,11 @@ import com.kingjoshdavid.funfection.data.local.FriendEntity;
 import com.kingjoshdavid.funfection.data.local.FriendUsernameHistoryEntity;
 import com.kingjoshdavid.funfection.data.local.FunfectionDatabase;
 import com.kingjoshdavid.funfection.model.Friend;
+import com.kingjoshdavid.funfection.model.UserProfile;
 import com.kingjoshdavid.funfection.model.UsernameHistoryEntry;
 import com.kingjoshdavid.funfection.model.Virus;
 import com.kingjoshdavid.funfection.model.VirusOrigin;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -37,7 +37,12 @@ public final class FriendsRepository {
 
     private static final List<Friend> FRIENDS = new ArrayList<>();
     private static final String IO_THREAD_NAME = "friends-repository-io";
-    private static final String SIMULATED_FLAG = "[SIMULATED]";
+    private static final String SELF_DESCRIPTION = "Your local player profile.";
+    private static final String SCIENTIST_TESLA_ID = "d929c435-7962-3951-b6d0-3514538a493c";
+    private static final String SCIENTIST_CURIE_ID = "6d44e6bb-0a02-3fc4-83ae-f2531f22f184";
+    private static final String SCIENTIST_BROWN_ID = "51114d6d-922e-3893-8e83-efb62fa9688a";
+    private static final String SCIENTIST_XAVIER_ID = "6a386e8f-37af-3eac-9e48-18748f2fcd40";
+    private static final String SCIENTIST_GUTTER_MAN_ID = "e203a0bc-d99a-3625-8677-55ca2b0706ea";
     private static final List<Friend> KNOWN_SCIENTISTS = createKnownScientists();
     private static final ExecutorService IO = Executors.newSingleThreadExecutor(
             runnable -> new Thread(runnable, IO_THREAD_NAME));
@@ -50,11 +55,14 @@ public final class FriendsRepository {
             DatabaseProvider.get(context);
         }
         seedKnownScientists();
+        ensureCurrentUserFriendExists();
     }
 
     public static List<Friend> getFriends() {
+        boolean includeCurrentUser = AppSettingsRepository.isCurrentUserVisibleInFriendsList();
         if (DatabaseProvider.getIfInitialized() == null) {
             List<Friend> copy = new ArrayList<>(FRIENDS);
+            filterCurrentUserFromList(copy, includeCurrentUser);
             sortFriendsForDisplay(copy);
             return copy;
         }
@@ -69,8 +77,16 @@ public final class FriendsRepository {
                 List<UsernameHistoryEntry> history = loadUsernameHistory(database, entity.id);
                 friends.add(toDomain(entity, history));
             }
+            filterCurrentUserFromList(friends, includeCurrentUser);
             sortFriendsForDisplay(friends);
             return friends;
+        });
+    }
+
+    public static void ensureCurrentUserFriendExists() {
+        runOnIo(() -> {
+            upsertCurrentUserFriend();
+            return null;
         });
     }
 
@@ -490,6 +506,37 @@ public final class FriendsRepository {
         });
     }
 
+    private static void upsertCurrentUserFriend() {
+        UserProfile currentUser = UserProfileRepository.getCurrentUser();
+        if (currentUser == null || currentUser.getId() == null || currentUser.getId().trim().isEmpty()) {
+            return;
+        }
+
+        Friend existing = getFriendById(currentUser.getId());
+        if (existing == null) {
+            saveFriend(new Friend(currentUser.getId(),
+                    currentUser.getUserName(),
+                    "",
+                    "",
+                    "",
+                    SELF_DESCRIPTION,
+                    true,
+                    Collections.emptyList(),
+                    0L));
+            return;
+        }
+
+        saveFriend(new Friend(existing.getId(),
+                currentUser.getUserName(),
+                existing.getInviteCode(),
+                existing.getDisplayNameOverride(),
+                existing.getNotes(),
+                existing.getDescription().isEmpty() ? SELF_DESCRIPTION : existing.getDescription(),
+                true,
+                existing.getUsernameHistory(),
+                existing.getLastInfectionAt()));
+    }
+
     private static void upsertKnownScientistInMemory(Friend scientist) {
         for (int index = 0; index < FRIENDS.size(); index++) {
             if (FRIENDS.get(index).getId().equals(scientist.getId())) {
@@ -502,21 +549,21 @@ public final class FriendsRepository {
 
     private static List<Friend> createKnownScientists() {
         List<Friend> scientists = new ArrayList<>();
-        scientists.add(createKnownScientist("Professor Tesla",
+        scientists.add(createKnownScientist(SCIENTIST_TESLA_ID, "Professor Tesla",
                 "A reclusive pioneer of unstable energy-based strains. Tesla's creations hum with latent power, often behaving unpredictably when exposed to other signals."));
-        scientists.add(createKnownScientist("Doctor Curie",
+        scientists.add(createKnownScientist(SCIENTIST_CURIE_ID, "Doctor Curie",
                 "A meticulous researcher of radiant mutations. Curie specializes in slow-evolving strains that intensify over time, rewarding patience—and punishing carelessness."));
-        scientists.add(createKnownScientist("Doc Brown",
+        scientists.add(createKnownScientist(SCIENTIST_BROWN_ID, "Doc Brown",
                 "An erratic temporal theorist whose viruses don’t always follow linear progression. Effects may trigger early, late, or seemingly out of order."));
-        scientists.add(createKnownScientist("Professor Xavier",
+        scientists.add(createKnownScientist(SCIENTIST_XAVIER_ID, "Professor Xavier",
                 "A strategist of cognitive contagions. Xavier engineers subtle strains that influence behavior, spreading quietly before revealing their full impact."));
-        scientists.add(createKnownScientist("The Gutter Man",
+        scientists.add(createKnownScientist(SCIENTIST_GUTTER_MAN_ID, "The Gutter Man",
                 "A shadowy figure lurking beneath the system. His strains are crude, resilient, and disturbingly adaptive—thriving in neglected or chaotic environments."));
         return Collections.unmodifiableList(scientists);
     }
 
-    private static Friend createKnownScientist(String displayName, String description) {
-        return new Friend(scientistId(displayName),
+    private static Friend createKnownScientist(String id, String displayName, String description) {
+        return new Friend(id,
                 displayName,
                 "",
                 "",
@@ -525,6 +572,28 @@ public final class FriendsRepository {
                 true,
                 Collections.emptyList(),
                 0L);
+    }
+
+    private static void filterCurrentUserFromList(List<Friend> friends, boolean includeCurrentUser) {
+        if (includeCurrentUser || friends == null || friends.isEmpty()) {
+            return;
+        }
+        String currentUserId = "";
+        try {
+            UserProfile currentUser = UserProfileRepository.getCurrentUser();
+            currentUserId = currentUser == null ? "" : currentUser.getId();
+        } catch (RuntimeException ignored) {
+            currentUserId = "";
+        }
+        if (currentUserId == null || currentUserId.trim().isEmpty()) {
+            return;
+        }
+        for (int index = friends.size() - 1; index >= 0; index--) {
+            Friend friend = friends.get(index);
+            if (friend != null && currentUserId.equals(friend.getId())) {
+                friends.remove(index);
+            }
+        }
     }
 
     private static void sortFriendsForDisplay(List<Friend> friends) {
@@ -542,11 +611,6 @@ public final class FriendsRepository {
             // Preserve existing relative order from persistence/insertion for ties.
             return 0;
         });
-    }
-
-    private static String scientistId(String displayName) {
-        String sourceMoniker = normalizeHandle(displayName) + " " + SIMULATED_FLAG;
-        return UUID.nameUUIDFromBytes(("fake:" + sourceMoniker).getBytes(StandardCharsets.UTF_8)).toString();
     }
 
 
