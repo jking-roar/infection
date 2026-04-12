@@ -170,6 +170,51 @@ public class VirusFactoryTest {
     }
 
     @Test
+    public void createWildVirusFromQrSetsWildQrOriginAndSeed() {
+        String seed = "https://example.com/product/12345";
+
+        Virus virus = VirusFactory.createWildVirus(seed, true);
+
+        assertEquals("Found in the wild (QR code)", virus.getOrigin());
+        assertEquals(seed, virus.getWildSeed());
+        assertNotNull(virus.getId());
+        assertEquals("Quiet Otter", virus.getCarrier());
+    }
+
+    @Test
+    public void createWildVirusFromBarcodeSetsWildBarcodeOriginAndSeed() {
+        String seed = "9780201633610";
+
+        Virus virus = VirusFactory.createWildVirus(seed, false);
+
+        assertEquals("Found in the wild (barcode)", virus.getOrigin());
+        assertEquals(seed, virus.getWildSeed());
+        assertNotNull(virus.getId());
+    }
+
+    @Test
+    public void createWildVirusIsDeterministicForSameSeed() {
+        String seed = "deterministic-wild-seed";
+
+        Virus first = VirusFactory.createWildVirus(seed, true);
+        Virus second = VirusFactory.createWildVirus(seed, true);
+
+        assertEquals(first.getId(), second.getId());
+        assertEquals(first.getName(), second.getName());
+        assertEquals(first.getFamily(), second.getFamily());
+    }
+
+    @Test
+    public void createWildVirusFallsBackToRandomSeedWhenBlank() {
+        Virus fromNull = VirusFactory.createWildVirus(null, true);
+        Virus fromBlank = VirusFactory.createWildVirus("   ", false);
+
+        assertNotNull(fromNull.getId());
+        assertNotNull(fromBlank.getId());
+        assertNotEquals(fromNull.getId(), fromBlank.getId());
+    }
+
+    @Test
     public void createStarterVirusesBuildsDefaultCollection() {
         List<Virus> first = VirusFactory.createStarterViruses();
         List<Virus> second = VirusFactory.createStarterViruses();

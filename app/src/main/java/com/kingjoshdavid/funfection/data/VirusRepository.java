@@ -352,6 +352,7 @@ public final class VirusRepository {
         entity.originPayload = virus.getOriginInfo().toSharePayload();
         entity.generation = virus.getGeneration();
         entity.productionContext = virus.getProductionContext();
+        entity.wildSeed = virus.getWildSeed();
         return entity;
     }
 
@@ -372,6 +373,7 @@ public final class VirusRepository {
                 entity.genome,
                 origin,
                 entity.generation,
-                entity.productionContext);
+                entity.productionContext,
+                entity.wildSeed);
     }
 }

@@ -66,11 +66,14 @@ public class CollectionFragment extends Fragment {
     private TextView combineSelectorSummaryView;
     private String pendingOpenCombineVirusId;
 
+    /** Tracks the active "create virus" dialog so it can be dismissed after a wild scan. */
+    private androidx.appcompat.app.AlertDialog pendingCreateDialog;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         createSeedScanLauncher = registerForActivityResult(new ScanContract(), result -> {
-            if (!isAdded() || pendingCreateSeedInput == null) {
+            if (!isAdded()) {
                 return;
             }
             String contents = result.getContents();
@@ -78,9 +81,14 @@ public class CollectionFragment extends Fragment {
                 Toast.makeText(requireContext(), R.string.lab_seed_scan_empty, Toast.LENGTH_SHORT).show();
                 return;
             }
-            pendingCreateSeedInput.setText(contents.trim());
-            pendingCreateSeedInput.setSelection(pendingCreateSeedInput.getText().length());
-            Toast.makeText(requireContext(), R.string.lab_seed_scan_loaded, Toast.LENGTH_SHORT).show();
+            // Dismiss the create-virus dialog and immediately create the strain from the scan.
+            if (pendingCreateDialog != null) {
+                pendingCreateDialog.dismiss();
+                pendingCreateDialog = null;
+            }
+            pendingCreateSeedInput = null;
+            boolean isQrCode = "QR_CODE".equals(result.getFormatName());
+            createFromWildScan(contents.trim(), isQrCode);
         });
     }
 
@@ -345,13 +353,17 @@ public class CollectionFragment extends Fragment {
             createSeedScanLauncher.launch(options);
         });
 
-        new MaterialAlertDialogBuilder(requireContext())
+        pendingCreateDialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.lab_seed_title)
                 .setView(dialogView)
-                .setNegativeButton(R.string.infection_preview_cancel, (d, w) -> pendingCreateSeedInput = null)
+                .setNegativeButton(R.string.infection_preview_cancel, (d, w) -> {
+                    pendingCreateSeedInput = null;
+                    pendingCreateDialog = null;
+                })
                 .setPositiveButton(R.string.create_virus_button,
                         (dialog, which) -> {
                             pendingCreateSeedInput = null;
+                            pendingCreateDialog = null;
                             createFromLab(seedInput.getText().toString());
                         })
                 .show();
@@ -364,6 +376,20 @@ public class CollectionFragment extends Fragment {
                 return;
             }
             refreshCollection();
+            openVirusDetails(createdVirus);
+        });
+    }
+
+    private void createFromWildScan(String seed, boolean isQrCode) {
+        Virus createdVirus = VirusFactory.createWildVirus(seed, isQrCode);
+        VirusRepository.addVirusAsync(createdVirus, () -> {
+            if (!isAdded()) {
+                return;
+            }
+            refreshCollection();
+            Toast.makeText(requireContext(),
+                    getString(R.string.lab_wild_scan_created_toast, createdVirus.getName(), createdVirus.getOrigin()),
+                    Toast.LENGTH_SHORT).show();
             openVirusDetails(createdVirus);
         });
     }
