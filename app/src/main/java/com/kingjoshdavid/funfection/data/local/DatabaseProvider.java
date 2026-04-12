@@ -2,6 +2,7 @@ package com.kingjoshdavid.funfection.data.local;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
 import androidx.room.Room;
 
 public final class DatabaseProvider {
@@ -28,6 +29,7 @@ public final class DatabaseProvider {
         return database;
     }
 
+    @Nullable
     public static FunfectionDatabase getIfInitialized() {
         return database;
     }

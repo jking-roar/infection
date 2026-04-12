@@ -190,9 +190,6 @@ public final class VirusRepository {
         }
 
         if (isUsingInMemoryFallback()) {
-            if (COLLECTION.size() <= 1) {
-                return findVirusIndexById(id) >= 0 ? PurgeResult.BLOCKED_LAST : PurgeResult.MISSING;
-            }
             return findVirusIndexById(id) >= 0 ? PurgeResult.REMOVED : PurgeResult.MISSING;
         }
 
@@ -201,12 +198,11 @@ public final class VirusRepository {
             if (database == null) {
                 return PurgeResult.MISSING;
             }
-            int count = database.virusDao().count();
             boolean exists = database.virusDao().findById(id) != null;
             if (!exists) {
                 return PurgeResult.MISSING;
             }
-            return count <= 1 ? PurgeResult.BLOCKED_LAST : PurgeResult.REMOVED;
+            return PurgeResult.REMOVED;
         });
     }
 
@@ -216,9 +212,8 @@ public final class VirusRepository {
 
     public static PurgeResult purgeVirusById(String id) {
         ensureSeeded();
-        PurgeResult status = getPurgeStatus(id);
-        if (status != PurgeResult.REMOVED) {
-            return status;
+        if (id == null || id.trim().isEmpty()) {
+            return PurgeResult.MISSING;
         }
 
         if (isUsingInMemoryFallback()) {

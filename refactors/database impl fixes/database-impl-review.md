@@ -7,7 +7,7 @@
 
 ## Findings (ordered by severity)
 
-### High - Repository APIs still block the main thread
+### ~~High - Repository APIs still block the main thread~~
 - **Where:** `app/src/main/java/com/kingjoshdavid/funfection/data/VirusRepository.java:247-256`, `app/src/main/java/com/kingjoshdavid/funfection/data/FriendsRepository.java:130-139`
 - **Evidence:** `runOnIo(...)` submits work to a background executor, then immediately calls `future.get()`. Callers therefore block until DB work completes.
 - **User-facing impact:** Most call sites are UI paths (for example `app/src/main/java/com/kingjoshdavid/funfection/ui/InfectFragment.java:77`, `app/src/main/java/com/kingjoshdavid/funfection/ui/CollectionFragment.java:223`, `app/src/main/java/com/kingjoshdavid/funfection/ui/MyVirusActivity.java:146`). This can introduce visible jank and ANR risk as data volume grows.
@@ -18,7 +18,7 @@
   - refer to [live data guidelines.md](live%20data%20guidelines.md) for developer guidelines on using LiveData and async patterns in the future.
 
 
-### Medium - "Cannot delete last virus" rule is not atomic in DB path
+### ~~Medium - "Cannot delete last virus" rule is not atomic in DB path~~
 - **Where:** `app/src/main/java/com/kingjoshdavid/funfection/data/VirusRepository.java:175-186` and `app/src/main/java/com/kingjoshdavid/funfection/data/VirusRepository.java:205-213`
 - **Evidence:** `purgeVirusById(...)` first checks status (`count` + `exists`) and then deletes in a separate operation. Between those calls, concurrent actions can change row count.
 - **Impact:** Under concurrent purge operations, the invariant that the last virus cannot be deleted can be violated.
