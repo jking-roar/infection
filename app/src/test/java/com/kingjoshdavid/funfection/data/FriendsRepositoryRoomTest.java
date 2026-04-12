@@ -3,6 +3,7 @@ package com.kingjoshdavid.funfection.data;
 import com.kingjoshdavid.funfection.data.local.DatabaseProvider;
 import com.kingjoshdavid.funfection.data.local.FunfectionDatabase;
 import com.kingjoshdavid.funfection.model.Friend;
+import com.kingjoshdavid.funfection.model.UsernameHistoryEntry;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 34)
@@ -99,7 +101,7 @@ public class FriendsRepositoryRoomTest {
     public void saveFriendRoundTripsHistoryAndProtectedMetadata() {
         Friend scientist = new Friend("scientist-room", "Professor Tesla [SIMULATED]", "",
                 "", "private notes should be cleared", "Scientist fallback", true,
-                Collections.singletonList("Professor Tesla"));
+                Collections.singletonList(new UsernameHistoryEntry("Professor Tesla", 1000L)));
 
         FriendsRepository.saveFriend(scientist);
 
@@ -107,8 +109,8 @@ public class FriendsRepositoryRoomTest {
         assertNotNull(loaded);
         assertTrue(loaded.isProtectedProfile());
         assertEquals("Scientist fallback", loaded.getDescription());
-        assertEquals(1, loaded.getHandleHistory().size());
-        assertEquals("Professor Tesla", loaded.getHandleHistory().get(0));
+        assertEquals(1, loaded.getUsernameHistory().size());
+        assertEquals("Professor Tesla", loaded.getUsernameHistory().get(0).getUsername());
         assertEquals("", loaded.getNotes());
         assertFalse(FriendsRepository.deleteFriend("scientist-room"));
     }
@@ -125,6 +127,50 @@ public class FriendsRepositoryRoomTest {
         assertTrue(tesla.isProtectedProfile());
         assertFalse(tesla.getDescription().isEmpty());
         assertFalse(FriendsRepository.deleteFriend(tesla.getId()));
+    }
+
+    @Test
+    public void usernameHistoryTimestampPersistedAndReturnedOnFetch() {
+        long ts = 999_000L;
+        Friend friend = new Friend("friend-ts", "Alice", "code-ts",
+                "", "", "", false,
+                Collections.singletonList(new UsernameHistoryEntry("OldAlice", ts)));
+        FriendsRepository.saveFriend(friend);
+
+        Friend loaded = FriendsRepository.getFriendById("friend-ts");
+        assertNotNull(loaded);
+        assertEquals(1, loaded.getUsernameHistory().size());
+        assertEquals("OldAlice", loaded.getUsernameHistory().get(0).getUsername());
+        assertEquals(ts, loaded.getUsernameHistory().get(0).getAddedAt());
+    }
+
+    @Test
+    public void usernameHistoryDeduplicatesByCaseInsensitiveUsernameOnSave() {
+        long ts1 = 1000L;
+        long ts2 = 2000L;
+        Friend friend = new Friend("friend-dedup", "Bob", "code-dedup",
+                "", "", "", false,
+                Arrays.asList(
+                        new UsernameHistoryEntry("Bobby", ts1),
+                        new UsernameHistoryEntry("BOBBY", ts2)));
+        FriendsRepository.saveFriend(friend);
+
+        Friend loaded = FriendsRepository.getFriendById("friend-dedup");
+        assertNotNull(loaded);
+        assertEquals(1, loaded.getUsernameHistory().size());
+        assertEquals("Bobby", loaded.getUsernameHistory().get(0).getUsername());
+    }
+
+    @Test
+    public void deleteFriendAlsoDeletesUsernameHistory() {
+        Friend friend = new Friend("friend-del-hist", "Carol", "code-del",
+                "", "", "", false,
+                Collections.singletonList(new UsernameHistoryEntry("OldCarol", 5000L)));
+        FriendsRepository.saveFriend(friend);
+
+        assertNotNull(FriendsRepository.getFriendById("friend-del-hist"));
+        assertTrue(FriendsRepository.deleteFriend("friend-del-hist"));
+        assertNull(FriendsRepository.getFriendById("friend-del-hist"));
     }
 
     private Friend findFriendByDisplayName(String displayName) {

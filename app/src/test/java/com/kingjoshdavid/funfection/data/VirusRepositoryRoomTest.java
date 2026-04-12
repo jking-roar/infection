@@ -117,8 +117,8 @@ public class VirusRepositoryRoomTest {
         Friend discovered = FriendsRepository.getFriendById("vector-room-1");
         assertNotNull(discovered);
         assertEquals("Jordan Prime", discovered.getDisplayName());
-        assertEquals(1, discovered.getHandleHistory().size());
-        assertEquals("Jordan", discovered.getHandleHistory().get(0));
+        assertEquals(1, discovered.getUsernameHistory().size());
+        assertEquals("Jordan", discovered.getUsernameHistory().get(0).getUsername());
     }
 
     private VirusOrigin originWithDirectSource(String id, String displayName) {

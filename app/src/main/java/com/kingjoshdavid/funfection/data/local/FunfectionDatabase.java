@@ -3,8 +3,9 @@ package com.kingjoshdavid.funfection.data.local;
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {VirusEntity.class, FriendEntity.class}, version = 2, exportSchema = false)
+@Database(entities = {VirusEntity.class, FriendEntity.class, FriendUsernameHistoryEntity.class}, version = 3, exportSchema = false)
 public abstract class FunfectionDatabase extends RoomDatabase {
     public abstract VirusDao virusDao();
     public abstract FriendDao friendDao();
+    public abstract FriendUsernameHistoryDao friendUsernameHistoryDao();
 }

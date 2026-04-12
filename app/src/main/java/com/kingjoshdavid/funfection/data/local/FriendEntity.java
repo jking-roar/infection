@@ -16,7 +16,6 @@ public class FriendEntity {
     public String notes;
     public String description;
     public boolean protectedProfile;
-    public String handleHistoryPayload;
 
     public long createdAt;
 }
