@@ -14,6 +14,7 @@ import java.util.List;
 final class RepositoryRoomTestSupport {
 
     private RepositoryRoomTestSupport() {
+        // private for utility class
     }
 
     static FunfectionDatabase setUpInMemoryDatabase() throws Exception {
