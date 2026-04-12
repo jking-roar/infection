@@ -176,7 +176,7 @@ public class VirusFactoryTest {
         Virus virus = VirusFactory.createWildVirus(seed, true);
 
         assertEquals("Found in the wild (QR code)", virus.getOrigin());
-        assertEquals(seed, virus.getWildSeed());
+        assertEquals(seed, virus.getSeed());
         assertNotNull(virus.getId());
         assertEquals("Quiet Otter", virus.getCarrier());
     }
@@ -188,7 +188,7 @@ public class VirusFactoryTest {
         Virus virus = VirusFactory.createWildVirus(seed, false);
 
         assertEquals("Found in the wild (barcode)", virus.getOrigin());
-        assertEquals(seed, virus.getWildSeed());
+        assertEquals(seed, virus.getSeed());
         assertNotNull(virus.getId());
     }
 

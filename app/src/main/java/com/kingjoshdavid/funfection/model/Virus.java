@@ -354,15 +354,17 @@ public class Virus implements Serializable {
     }
 
     /**
-     * Returns the raw seed that was scanned from a QR code or barcode when this strain was
+     * Returns the raw seed that was input by a user or scanned from a QR code or barcode or which was generated randomly when this strain was
      * discovered in the wild.
      *
      * <p><strong>Do not expose this value in the UI.</strong> It is for internal duplicate
      * tracking only. Returns {@code null} for strains not created via a wild scan.</p>
      *
-     * @return raw scanned seed, or {@code null} if this strain was not created from a wild scan
+     * When transmitting in a share, this value needs to be encrypted rather than simply encoded, since it may contain personally identifiable information. The app's sharing logic should handle that encryption and decryption as needed when strains are shared between users or reconstructed from share codes.
+     *
+     * @return raw seed used for seeding
      */
-    public String getWildSeed() {
+    public String getSeed() {
         return wildSeed;
     }
 
