@@ -65,6 +65,10 @@ public final class Friend {
         return protectedProfile;
     }
 
+    public String getEffectiveDisplayName() {
+        return displayNameOverride.isEmpty() ? displayName : displayNameOverride;
+    }
+
     public List<UsernameHistoryEntry> getUsernameHistory() {
         return usernameHistory;
     }

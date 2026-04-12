@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/page_horizontal_padding"
+    android:paddingTop="@dimen/page_top_padding"
+    android:paddingEnd="@dimen/page_horizontal_padding"
+    android:paddingBottom="@dimen/page_bottom_padding">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/vectors_title"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/page_spacing_small"
+        android:text="@string/vectors_subtitle"
+        android:textSize="14sp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/page_spacing_medium"
+        android:layout_weight="1">
+
+        <ListView
+            android:id="@+id/vectorsList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:choiceMode="none"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="@dimen/page_spacing_small"
+            android:overScrollMode="ifContentScrolls"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/vectorsEmptyText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="32dp"
+            android:text="@string/vectors_empty"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/vectorsLoadingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/vectors_loading"
+            android:textSize="16sp"
+            android:visibility="visible" />
+
+    </FrameLayout>
+
+</LinearLayout>
