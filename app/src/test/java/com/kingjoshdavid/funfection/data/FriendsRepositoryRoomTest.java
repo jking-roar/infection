@@ -159,6 +159,59 @@ public class FriendsRepositoryRoomTest {
     }
 
     @Test
+    public void updatingCurrentUserNameArchivesPreviousHandle() {
+        UserProfileRepository.setCurrentUserForTesting(new UserProfile("self-user", "First Alias"));
+        FriendsRepository.initialize(ApplicationProvider.getApplicationContext());
+
+        UserProfileRepository.updateUserName("Second Alias");
+        FriendsRepository.ensureCurrentUserFriendExists();
+
+        Friend updatedSelf = FriendsRepository.getFriendById("self-user");
+        assertNotNull(updatedSelf);
+        assertEquals("Second Alias", updatedSelf.getDisplayName());
+        assertEquals(1, updatedSelf.getUsernameHistory().size());
+        assertEquals("First Alias", updatedSelf.getUsernameHistory().get(0).getUsername());
+
+        UserProfileRepository.updateUserName("second alias");
+        FriendsRepository.ensureCurrentUserFriendExists();
+
+        Friend caseOnlyRename = FriendsRepository.getFriendById("self-user");
+        assertNotNull(caseOnlyRename);
+        assertEquals(1, caseOnlyRename.getUsernameHistory().size());
+    }
+
+    @Test
+    public void simulatedScientistsAlwaysAppearLastInVisibleFriendsList() {
+        FriendsRepository.initialize(ApplicationProvider.getApplicationContext());
+        AppSettingsRepository.setCurrentUserVisibleInFriendsList(true);
+
+        FriendsRepository.saveFriend(new Friend("friend-order-1", "Alpha",
+                "", "", "", false, Collections.emptyList(), 100L));
+        FriendsRepository.saveFriend(new Friend("friend-order-2", "Beta",
+                "", "", "", false, Collections.emptyList(), 200L));
+
+        List<Friend> visibleFriends = FriendsRepository.getFriends();
+        assertTrue(visibleFriends.size() >= 8);
+
+        int scientistCount = 0;
+        boolean foundScientistBlock = false;
+        for (Friend friend : visibleFriends) {
+            boolean scientist = friend.isProtectedProfile()
+                    && isKnownScientistName(friend.getDisplayName());
+            if (scientist) {
+                scientistCount++;
+                foundScientistBlock = true;
+                continue;
+            }
+            assertFalse(foundScientistBlock);
+        }
+
+        assertEquals(5, scientistCount);
+        assertEquals("friend-order-2", visibleFriends.get(0).getId());
+        assertEquals("friend-order-1", visibleFriends.get(1).getId());
+    }
+
+    @Test
     public void usernameHistoryTimestampPersistedAndReturnedOnFetch() {
         long ts = 999_000L;
         Friend friend = new Friend("friend-ts", "Alice",
@@ -221,6 +274,14 @@ public class FriendsRepositoryRoomTest {
             }
         }
         return null;
+    }
+
+    private boolean isKnownScientistName(String displayName) {
+        return "Professor Tesla".equals(displayName)
+                || "Doctor Curie".equals(displayName)
+                || "Doc Brown".equals(displayName)
+                || "Professor Xavier".equals(displayName)
+                || "The Gutter Man".equals(displayName);
     }
 }
 

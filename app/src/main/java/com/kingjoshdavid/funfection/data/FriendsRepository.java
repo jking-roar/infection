@@ -390,12 +390,7 @@ public final class FriendsRepository {
             return;
         }
 
-        List<UsernameHistoryEntry> history = new ArrayList<>(existing.getUsernameHistory());
-        String currentDisplayName = existing.getDisplayName();
-        if (shouldArchiveHandle(currentDisplayName, candidate.displayName)
-                && !containsHandle(history, currentDisplayName)) {
-            history.add(new UsernameHistoryEntry(currentDisplayName, System.currentTimeMillis()));
-        }
+        List<UsernameHistoryEntry> history = archivedHandleHistory(existing, candidate.displayName);
 
         saveFriend(new Friend(existing.getId(),
                 candidate.displayName,
@@ -405,6 +400,16 @@ public final class FriendsRepository {
                 existing.isProtectedProfile() || candidate.protectedProfile,
                 history,
                 Math.max(existing.getLastInfectionAt(), candidate.lastInfectionAt)));
+    }
+
+    private static List<UsernameHistoryEntry> archivedHandleHistory(Friend existing, String nextDisplayName) {
+        List<UsernameHistoryEntry> history = new ArrayList<>(existing.getUsernameHistory());
+        String currentDisplayName = existing.getDisplayName();
+        if (shouldArchiveHandle(currentDisplayName, nextDisplayName)
+                && !containsHandle(history, currentDisplayName)) {
+            history.add(new UsernameHistoryEntry(currentDisplayName, System.currentTimeMillis()));
+        }
+        return history;
     }
 
     private static boolean shouldArchiveHandle(String previousDisplayName, String nextDisplayName) {
@@ -536,13 +541,14 @@ public final class FriendsRepository {
             return;
         }
 
+        List<UsernameHistoryEntry> history = archivedHandleHistory(existing, currentUser.getUserName());
         saveFriend(new Friend(existing.getId(),
                 currentUser.getUserName(),
                 existing.getDisplayNameOverride(),
                 existing.getNotes(),
                 existing.getDescription().isEmpty() ? SELF_DESCRIPTION : existing.getDescription(),
                 true,
-                existing.getUsernameHistory(),
+                history,
                 existing.getLastInfectionAt()));
     }
 
@@ -609,8 +615,10 @@ public final class FriendsRepository {
             return;
         }
         friends.sort((left, right) -> {
-            if (left.isProtectedProfile() != right.isProtectedProfile()) {
-                return left.isProtectedProfile() ? 1 : -1;
+            int leftRank = displaySortRank(left);
+            int rightRank = displaySortRank(right);
+            if (leftRank != rightRank) {
+                return Integer.compare(leftRank, rightRank);
             }
             int infectionOrder = Long.compare(right.getLastInfectionAt(), left.getLastInfectionAt());
             if (infectionOrder != 0) {
@@ -619,6 +627,16 @@ public final class FriendsRepository {
             // Preserve existing relative order from persistence/insertion for ties.
             return 0;
         });
+    }
+
+    private static int displaySortRank(Friend friend) {
+        if (friend == null) {
+            return Integer.MAX_VALUE;
+        }
+        if (isKnownScientistId(friend.getId())) {
+            return 2;
+        }
+        return friend.isProtectedProfile() ? 1 : 0;
     }
 
 
