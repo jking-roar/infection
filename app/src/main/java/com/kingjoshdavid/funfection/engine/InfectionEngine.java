@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Stream;
+
+import static com.kingjoshdavid.funfection.engine.VirusFactory.FAMILIES;
 
 /**
  * Combines owned and imported viruses into deterministic offspring strains.
@@ -28,6 +31,8 @@ import java.util.UUID;
  */
 public final class InfectionEngine {
 
+    public static final double CHAOTIC_DEVIATION_FACTOR = 0.10;
+
     private InfectionEngine() {
     }
 
@@ -43,7 +48,7 @@ public final class InfectionEngine {
      * <p>{@code resilience}: drives survivability/stability and is never mutation-boosted.</p>
      * <p>{@code chaos}: drives volatility and receives an extra +2 boost on mutation.</p>
      *
-     * @param ownedViruses selected local viruses to use as the left-side parent pool
+     * @param ownedViruses  selected local viruses to use as the left-side parent pool
      * @param friendViruses imported or generated friend viruses to use as the right-side pool
      * @return newly combined offspring virus
      */
@@ -68,7 +73,7 @@ public final class InfectionEngine {
         String localUserName = UserProfileRepository.getCurrentUser().getUserName();
         Virus merged = collapse(ownedViruses, localUserName);
         String id = UUID.nameUUIDFromBytes((merged.getId() + "-local")
-            .getBytes(StandardCharsets.UTF_8)).toString();
+                .getBytes(StandardCharsets.UTF_8)).toString();
         String prefix = merged.getPrefix();
         String suffix = merged.getSuffix();
         String carrier = merged.getCarrier();
@@ -82,7 +87,7 @@ public final class InfectionEngine {
         String rawSeed = "local:" + seedSourceOf(merged) + ":" + id;
         long seed = SeedUtil.seedFromString(rawSeed);
         return new Virus(id, prefix, suffix, merged.getFamily(), carrier, infectivityRate, resilienceValue, chaosLevel,
-            merged.hasMutation(), genome, origin, generation, "Local Mix", rawSeed, seed);
+                merged.hasMutation(), genome, origin, generation, "Local Mix", rawSeed, seed);
     }
 
     /**
@@ -99,7 +104,7 @@ public final class InfectionEngine {
      *
      * <p>This keeps each axis in the engine-normalized range {@code 1..10} before final merge.</p>
      *
-     * @param viruses source set to collapse
+     * @param viruses        source set to collapse
      * @param defaultCarrier fallback carrier name used when the source set is empty
      * @return collapsed template virus used as a parent in final combination
      */
@@ -138,7 +143,7 @@ public final class InfectionEngine {
         }
 
         String id = UUID.nameUUIDFromBytes((family + infectivity + resilience + chaos + carrier)
-            .getBytes(StandardCharsets.UTF_8)).toString();
+                .getBytes(StandardCharsets.UTF_8)).toString();
         String prefix = chooseLowerInfectionPrefix(viruses);
         String suffix = chooseHigherInfectionSuffix(viruses);
         String productionContext = sameFamily ? "Cluster" : "Hybrid";
@@ -150,7 +155,7 @@ public final class InfectionEngine {
         String rawSeed = buildCollapsedRawSeed(viruses, family, infectivity, resilience, chaos, mutated);
         long seed = SeedUtil.seedFromString(rawSeed);
         return new Virus(id, prefix, suffix, family, carrier, infectivityRate, resilienceValue, chaosLevel, mutated, genome,
-            origin, maxGeneration, productionContext, rawSeed, seed);
+                origin, maxGeneration, productionContext, rawSeed, seed);
     }
 
     /**
@@ -167,7 +172,7 @@ public final class InfectionEngine {
      * <p>{@code chaos = mergeStat(left.chaos, right.chaos, true)}</p>
      * <p>{@code prefix = parent with lower generation (tie -> left)}</p>
      * <p>{@code suffix = parent with higher generation (tie -> right)}</p>
-      * <p>{@code generation = max(left.generation, right.generation) + 1}</p>
+     * <p>{@code generation = max(left.generation, right.generation) + 1}</p>
      *
      * <p>If mutation occurs:</p>
      * <p>{@code infectivity = clamp(infectivity + 1)}</p>
@@ -176,7 +181,7 @@ public final class InfectionEngine {
      * <p>Interpretation: infectivity and chaos are the mutation-sensitive axes (spread and
      * volatility), while resilience is the stabilizing axis that is merged but not mutation-buffed.</p>
      *
-     * @param left collapsed left-side template
+     * @param left  collapsed left-side template
      * @param right collapsed right-side template
      * @return offspring virus representing the final infection result
      */
@@ -197,7 +202,7 @@ public final class InfectionEngine {
 
         String lineage = shortIdPrefix(left.getId()) + shortIdPrefix(right.getId());
         String id = UUID.nameUUIDFromBytes((lineage + dominantFamily + infectivity + resilience + chaos + mutation)
-            .getBytes(StandardCharsets.UTF_8)).toString();
+                .getBytes(StandardCharsets.UTF_8)).toString();
         String carrier = left.getCarrier() + " x " + right.getCarrier();
         String prefix = chooseLowerInfectionPrefix(left, right);
         String suffix = chooseHigherInfectionSuffix(left, right);
@@ -285,7 +290,7 @@ public final class InfectionEngine {
      * Chaos contributes equally to this pressure calculation, then has the largest post-mutation
      * boost in {@link #combine(Virus, Virus)}.</p>
      *
-     * @param left left-side parent template
+     * @param left  left-side parent template
      * @param right right-side parent template
      * @return {@code true} when the combined strain mutates
      */
@@ -307,14 +312,61 @@ public final class InfectionEngine {
     /**
      * Builds a mixed-family label when parent families differ.
      *
-     * <p>Formula: first two chars of left family + last two chars of right family.</p>
+     * <p>old Formula: first two chars of left family + last two chars of right family.</p>
+     *
+     * <p>new formula: compute based on the alleles of the two viruses</p>
      */
     private static String mixFamily(Virus left, Virus right) {
-        String leftFamily = normalizeFamily(left.getFamily());
-        String rightFamily = normalizeFamily(right.getFamily());
-        int leftEnd = Math.min(2, leftFamily.length());
-        int rightStart = Math.max(0, rightFamily.length() - 2);
-        return leftFamily.substring(0, leftEnd) + rightFamily.substring(rightStart);
+//        String leftFamily = normalizeFamily(left.getFamily());
+//        String rightFamily = normalizeFamily(right.getFamily());
+//        int leftEnd = Math.min(2, leftFamily.length());
+//        int rightStart = Math.max(0, rightFamily.length() - 2);
+//        return leftFamily.substring(0, leftEnd) + rightFamily.substring(rightStart);
+
+        if ((left.hasMutation() && !right.hasMutation())) {
+            return mutateFrom(right, left.getChaos().score());
+        } else if (!left.hasMutation() && right.hasMutation()) {
+            return mutateFrom(left, right.getChaos().score());
+        } else if (left.hasMutation() && right.hasMutation()) {
+            return mutateFrom(right, left.getChaos().score() + right.getChaos().score());
+        } else {
+            return mutateFrom(left, Math.min(left.getChaos().score(), right.getChaos().score()));
+        }
+    }
+
+    /**
+     * Selects a family label from the candidate set that is within mutation distance of the source
+     * family, or returns the source family if no candidates are close enough.
+     *
+     * @param source the virus whose family is the starting point for mutation
+     * @param chaosEnergy the amount of mutation energy available, which determines how far the mutation can deviate from the source family
+     * @return a new family label that is within mutation distance of the source family, or the source family if no such label exists
+     */
+    private static String mutateFrom(Virus source, int chaosEnergy) {
+        int variation = getVariationThreshold(chaosEnergy);
+
+        String family = source.getFamily();
+        String[] candidates = Stream.of(FAMILIES)
+                .filter(name -> !name.equals(source.getFamily()))
+                .filter(name -> Math.abs(name.charAt(0) - family.charAt(0)) <= variation)
+                .toArray(String[]::new);
+        if (candidates.length > 0) {
+            Random random = new Random(seedSourceOf(source));
+            int index = random.nextInt(candidates.length);
+            return candidates[index];
+        }
+        return source.getFamily();
+    }
+
+    private static int getVariationThreshold(int chaosEnergy) {
+        int variation = 0;
+        //Math random used here for chaos effect.
+        for (int i = 0; i < chaosEnergy; i++) {
+            if(Math.random() < CHAOTIC_DEVIATION_FACTOR) {
+                variation++;
+            }
+        }
+        return variation;
     }
 
     private static String shortIdPrefix(String id) {

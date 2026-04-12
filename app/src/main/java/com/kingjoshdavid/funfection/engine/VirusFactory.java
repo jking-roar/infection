@@ -41,7 +41,7 @@ public final class VirusFactory {
             new MadScientist(SCIENTIST_GUTTER_MAN_ID, "The", "Gutter Man")
     };
 
-    private static final String[] FAMILIES = {
+    public static final String[] FAMILIES = {
             "Spark","Echo","Mirth","Glitch","Bloom","Pulse",
             "Aether","Bramble","Cinder","Drizzle","Ember","Fable",
             "Glimmer","Hollow","Icicle","Jumble","Kindle","Lattice",
