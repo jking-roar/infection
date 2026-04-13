@@ -164,8 +164,8 @@ public final class VirusFactory {
         String effectiveSeed = normalizedSeed.isEmpty() ? UUID.randomUUID().toString() : normalizedSeed;
         UserProfile userProfile = UserProfileRepository.getCurrentUser();
         VirusOrigin origin = isQrCode
-                ? VirusOrigin.foundInWildFromQr()
-                : VirusOrigin.foundInWildFromBarcode();
+                ? VirusOrigin.foundInWildFromQr(userProfile.getId(), userProfile.getUserName())
+                : VirusOrigin.foundInWildFromBarcode(userProfile.getId(), userProfile.getUserName());
         return fromSeed(userProfile.getUserName(), effectiveSeed, origin);
     }
 
@@ -251,7 +251,9 @@ public final class VirusFactory {
             String carrier = pieces[8];
             int generation = pieces.length > 9 ? Math.max(1, Integer.parseInt(pieces[9])) : 1;
             VirusOrigin sharedOrigin = pieces.length > 10 ? VirusOrigin.fromSharePayload(pieces[10]) : null;
-            VirusOrigin importedOrigin = VirusOrigin.importedFromInvite(sharedOrigin, carrier);
+            UserProfile userProfile = UserProfileRepository.getCurrentUser();
+            VirusOrigin importedOrigin = VirusOrigin.importedFromInvite(sharedOrigin, carrier)
+                    .ensurePatientZero(userProfile.getId(), userProfile.getUserName());
             String importedRawSeed = "invite-id:" + id;
             long importedSeed = pieces.length > 11
                     ? Long.parseLong(pieces[11])

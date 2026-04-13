@@ -10,12 +10,12 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = 'com.kingjoshdavid.funfection'
-    compileSdk 36
+    compileSdk = 36
 
     defaultConfig {
         applicationId 'com.kingjoshdavid.funfection'
-        minSdk 24
-        targetSdk 36
+        minSdk = 24
+        targetSdk = 36
         versionCode 1
         versionName '1.0'
     }

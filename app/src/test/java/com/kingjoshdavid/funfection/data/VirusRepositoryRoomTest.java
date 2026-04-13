@@ -148,8 +148,7 @@ public class VirusRepositoryRoomTest {
         VirusRepository.addVirus(virus);
 
         List<Virus> selfLinkedViruses = VirusRepository.getVirusesByFriendId(currentUser.getId());
-        assertEquals(1, selfLinkedViruses.size());
-        assertEquals("room-origin-link-1", selfLinkedViruses.get(0).getId());
+        assertTrue(containsVirus(selfLinkedViruses, "room-origin-link-1"));
         assertTrue(VirusRepository.getVirusesByFriendId("missing-friend-id").isEmpty());
     }
 
@@ -233,6 +232,15 @@ public class VirusRepositoryRoomTest {
         } finally {
             io.shutdownNow();
         }
+    }
+
+    private boolean containsVirus(List<Virus> viruses, String virusId) {
+        for (Virus virus : viruses) {
+            if (virusId.equals(virus.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

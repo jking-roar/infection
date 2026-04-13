@@ -71,6 +71,7 @@ public final class InfectionEngine {
      */
     public static Virus infectLocal(List<Virus> ownedViruses) {
         String localUserName = UserProfileRepository.getCurrentUser().getUserName();
+        String localUserId = UserProfileRepository.getCurrentUser().getId();
         Virus merged = collapse(ownedViruses, localUserName);
         String id = UUID.nameUUIDFromBytes((merged.getId() + "-local")
                 .getBytes(StandardCharsets.UTF_8)).toString();
@@ -82,7 +83,8 @@ public final class InfectionEngine {
         Chaos chaosLevel = Chaos.level(merged.getChaos().score());
         String genome = VirusFactory.buildGenome(id, merged.getFamily(), infectivityRate, resilienceValue, chaosLevel,
                 merged.hasMutation());
-        VirusOrigin origin = VirusOrigin.combinedLocally(merged.getOriginInfo());
+        VirusOrigin origin = VirusOrigin.combinedLocally(merged.getOriginInfo())
+                .ensurePatientZero(localUserId, localUserName);
         int generation = merged.getGeneration() + 1;
         String rawSeed = "local:" + seedSourceOf(merged) + ":" + id;
         long seed = SeedUtil.seedFromString(rawSeed);
@@ -210,7 +212,10 @@ public final class InfectionEngine {
         Resilience resilienceValue = Resilience.of(resilience);
         Chaos chaosLevel = Chaos.level(chaos);
         String genome = VirusFactory.buildGenome(id, dominantFamily, infectivityRate, resilienceValue, chaosLevel, mutation);
-        VirusOrigin origin = VirusOrigin.infectedFrom(left.getName(), left.getOriginInfo(), right.getName(), right.getOriginInfo());
+        String localUserId = UserProfileRepository.getCurrentUser().getId();
+        String localUserName = UserProfileRepository.getCurrentUser().getUserName();
+        VirusOrigin origin = VirusOrigin.infectedFrom(left.getName(), left.getOriginInfo(), right.getName(), right.getOriginInfo())
+                .ensurePatientZero(localUserId, localUserName);
         String rawSeed = "combine:" + seedSourceOf(left) + ":" + seedSourceOf(right) + ":" + id;
         long seed = SeedUtil.seedFromString(rawSeed);
         return new Virus(id, prefix, suffix, dominantFamily, carrier, infectivityRate, resilienceValue, chaosLevel, mutation,

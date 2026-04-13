@@ -196,6 +196,8 @@ public class VirusFactoryTest {
         assertEquals(SeedUtil.seedFromString(seed), virus.getSeed());
         assertNotNull(virus.getId());
         assertEquals("Quiet Otter", virus.getCarrier());
+        assertFalse(virus.getOriginInfo().getPatientZeros().isEmpty());
+        assertEquals("user-1", virus.getOriginInfo().getPatientZeros().get(0).getId());
     }
 
     @Test
@@ -207,6 +209,17 @@ public class VirusFactoryTest {
         assertEquals("Found in the wild (barcode)", virus.getOrigin());
         assertEquals(SeedUtil.seedFromString(seed), virus.getSeed());
         assertNotNull(virus.getId());
+        assertFalse(virus.getOriginInfo().getPatientZeros().isEmpty());
+        assertEquals("user-1", virus.getOriginInfo().getPatientZeros().get(0).getId());
+    }
+
+    @Test
+    public void parseSingleBackfillsPatientZeroWhenInviteHasNoOriginPayload() {
+        Virus parsed = VirusFactory.parseSingle("legacy-id:Spark:4:5:6:0:GEN-123:Legacy Name:LegacyCarrier:1");
+
+        assertNotNull(parsed);
+        assertFalse(parsed.getOriginInfo().getPatientZeros().isEmpty());
+        assertEquals("LegacyCarrier", parsed.getOriginInfo().getPatientZeros().get(0).getDisplayName());
     }
 
     @Test

@@ -1,6 +1,9 @@
 package com.kingjoshdavid.funfection.engine;
 
+import com.kingjoshdavid.funfection.data.UserProfileRepository;
 import com.kingjoshdavid.funfection.model.*;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -9,6 +12,16 @@ import java.util.Collections;
 import static org.junit.Assert.*;
 
 public class InfectionEngineTest {
+
+    @Before
+    public void setUp() {
+        UserProfileRepository.setCurrentUserForTesting(new UserProfile("engine-user", "Engine User"));
+    }
+
+    @After
+    public void tearDown() {
+        UserProfileRepository.resetForTesting();
+    }
 
     @Test
     public void shouldMutateReturnsTrueForDeterministicMutationPair() {
@@ -70,6 +83,17 @@ public class InfectionEngineTest {
         Virus result = InfectionEngine.combine(left, right);
 
         assertEquals("Creator", result.getCarrier());
+    }
+
+    @Test
+    public void combineBackfillsPatientZeroFromCurrentUserWhenParentsLackLineage() {
+        Virus left = virus("no-origin-left", "Spark", 6, 6, 6, "NO-1", 2);
+        Virus right = virus("no-origin-right", "Spark", 6, 6, 6, "NO-2", 2);
+
+        Virus result = InfectionEngine.combine(left, right);
+
+        assertFalse(result.getOriginInfo().getPatientZeros().isEmpty());
+        assertEquals("engine-user", result.getOriginInfo().getPatientZeros().get(0).getId());
     }
 
     @Test
@@ -267,16 +291,17 @@ public class InfectionEngineTest {
     }
 
     @Test
-    public void infectWithRandomFriendDoesNotCreatePatientZeroDegree() {
+    public void infectWithRandomFriendBackfillsCurrentUserPatientZero() {
         Virus owned = virus("owned-sim-1", "Spark", 5, 5, 5, "OWN-S1", 0);
         Virus fakeFriend = VirusFactory.createRandomFriendVirus();
 
         Virus result = InfectionEngine.infect(Collections.singletonList(owned), Collections.singletonList(fakeFriend));
 
         assertTrue(result.getOriginInfo().hasDirectSource());
-        assertFalse(result.getOriginInfo().isRealFriendSource());
-        assertEquals(0, result.getOriginInfo().getDegreeOfSeparation());
-        assertTrue(result.getOriginInfo().getPatientZeros().isEmpty());
+        assertTrue(result.getOriginInfo().isRealFriendSource());
+        assertEquals(1, result.getOriginInfo().getDegreeOfSeparation());
+        assertFalse(result.getOriginInfo().getPatientZeros().isEmpty());
+        assertEquals("engine-user", result.getOriginInfo().getPatientZeros().get(0).getId());
     }
 
     private Virus virus(String id, String family, int infectivity, int resilience, int chaos, String genome) {

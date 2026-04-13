@@ -41,7 +41,8 @@ public final class VirusOrigin implements Serializable {
 
     public static VirusOrigin seededByUser(String userId, String userName) {
         Source source = Source.real(userId, userName, 0);
-        return new VirusOrigin(Type.LAB, "Seeded in lab", source, Collections.emptyList());
+        return new VirusOrigin(Type.LAB, "Seeded in lab", source,
+                Collections.singletonList(PatientZero.fromSource(source)));
     }
 
     public static VirusOrigin randomFriendFallback(String moniker) {
@@ -87,12 +88,34 @@ public final class VirusOrigin implements Serializable {
         return new VirusOrigin(Type.COLLAPSED, "Collapsed host strain", directSource, lineage);
     }
 
-    public static VirusOrigin foundInWildFromQr() {
-        return new VirusOrigin(Type.WILD_QR, "Found in the wild (QR code)", null, Collections.emptyList());
+    public static VirusOrigin foundInWildFromQr(String userId, String userName) {
+        Source source = Source.real(userId, userName, 0);
+        return new VirusOrigin(Type.WILD_QR, "Found in the wild (QR code)", source,
+                Collections.singletonList(PatientZero.fromSource(source)));
     }
 
-    public static VirusOrigin foundInWildFromBarcode() {
-        return new VirusOrigin(Type.WILD_BARCODE, "Found in the wild (barcode)", null, Collections.emptyList());
+    public static VirusOrigin foundInWildFromBarcode(String userId, String userName) {
+        Source source = Source.real(userId, userName, 0);
+        return new VirusOrigin(Type.WILD_BARCODE, "Found in the wild (barcode)", source,
+                Collections.singletonList(PatientZero.fromSource(source)));
+    }
+
+    public VirusOrigin ensurePatientZero(String patientZeroId, String patientZeroHandle) {
+        if (!patientZeros.isEmpty()) {
+            return this;
+        }
+        String normalizedId = patientZeroId == null ? "" : patientZeroId.trim();
+        String normalizedHandle = patientZeroHandle == null ? "" : patientZeroHandle.trim();
+        if (normalizedId.isEmpty() || normalizedHandle.isEmpty()) {
+            return this;
+        }
+        Source fallbackSource = directSource;
+        if (fallbackSource == null || !fallbackSource.isRealFriend()) {
+            fallbackSource = Source.real(normalizedId, normalizedHandle, 1);
+        }
+        List<PatientZero> lineage = new ArrayList<>();
+        lineage.add(new PatientZero(normalizedId, normalizedHandle, 1));
+        return new VirusOrigin(type, summary, fallbackSource, lineage);
     }
 
     public static VirusOrigin combinedLocally(VirusOrigin mergedOrigin) {

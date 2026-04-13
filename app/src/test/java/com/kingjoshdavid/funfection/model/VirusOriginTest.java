@@ -54,5 +54,16 @@ public class VirusOriginTest {
         assertEquals(origin.getPatientZeros().get(1).getId(), decoded.getPatientZeros().get(1).getId());
         assertEquals("Beta", decoded.getPatientZeros().get(1).getDisplayName());
     }
+
+    @Test
+    public void ensurePatientZeroBackfillsWhenOriginLineageIsMissing() {
+        VirusOrigin legacy = VirusOrigin.legacy("Unknown");
+
+        VirusOrigin withPatientZero = legacy.ensurePatientZero("user-123", "Handle");
+
+        assertEquals(1, withPatientZero.getPatientZeros().size());
+        assertEquals("user-123", withPatientZero.getPatientZeros().get(0).getId());
+        assertEquals("Handle", withPatientZero.getPatientZeros().get(0).getDisplayName());
+    }
 }
 
