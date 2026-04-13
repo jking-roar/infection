@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -151,7 +150,7 @@ public class VirusRepositoryRoomTest {
         List<Virus> selfLinkedViruses = VirusRepository.getVirusesByFriendId(currentUser.getId());
         assertEquals(1, selfLinkedViruses.size());
         assertEquals("room-origin-link-1", selfLinkedViruses.get(0).getId());
-        assertFalse(VirusRepository.getVirusesByFriendId("missing-friend-id").isEmpty());
+        assertTrue(VirusRepository.getVirusesByFriendId("missing-friend-id").isEmpty());
     }
 
     @Test
@@ -166,7 +165,7 @@ public class VirusRepositoryRoomTest {
 
         VirusRepository.addVirus(virus);
 
-        VirusEntity stored = database.virusDao().findById("room-origin-columns-1");
+        VirusEntity stored = readVirusEntityById("room-origin-columns-1");
         assertNotNull(stored);
         assertEquals("Alpha", virus.getOriginInfo().getPatientZeros().get(0).getDisplayName());
         assertEquals(virus.getOriginInfo().getPatientZeros().get(0).getId(), stored.primaryPatientZeroId);
@@ -222,6 +221,18 @@ public class VirusRepositoryRoomTest {
         String payload = Base64.getUrlEncoder().withoutPadding()
                 .encodeToString(raw.getBytes(StandardCharsets.UTF_8));
         return VirusOrigin.fromSharePayload(payload);
+    }
+
+    private VirusEntity readVirusEntityById(String id) {
+        java.util.concurrent.ExecutorService io = java.util.concurrent.Executors.newSingleThreadExecutor();
+        try {
+            java.util.concurrent.Future<VirusEntity> future = io.submit(() -> database.virusDao().findById(id));
+            return future.get();
+        } catch (Exception error) {
+            throw new IllegalStateException("Failed to query virus entity in test", error);
+        } finally {
+            io.shutdownNow();
+        }
     }
 }
 

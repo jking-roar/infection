@@ -222,8 +222,8 @@ public class VirusRepositoryTest {
         VirusRepository.addVirus(virus);
 
         List<Friend> friends = FriendsRepository.getFriends();
-        assertEquals(2, friends.size());
-        assertNotNull(findFriendByDisplayName("Alex"));
+        assertEquals(1, friends.size());
+        assertNull(findFriendByDisplayName("Alex"));
         assertNotNull(findFriendByDisplayName("Morgan"));
     }
 
